@@ -83,12 +83,44 @@ harbor bell, hung on a chain. The Monarchs have kept it ringable and unrung for 
 years. Whoever wins may ring it. Vey has spent two decades making sure nobody
 unworthy ever did — that is her stewardship, the mirror of Tero's netshed.
 
-### How it's discovered (fragment system — all optional, never quest-marked)
+### LOUD QUESTION, QUIET ANSWER (the anti-too-hidden doctrine)
 
-One quiet interactable per district ("landmark interaction", already budgeted in
-doc 04 §2.2). Each sets a hidden `undertide.*` flag. No UI counter, no checklist —
-Nino's Ledger gains a hand-drawn page per fragment, which is the only tracking the
-player ever sees.
+The classic failure of hidden stories is hiding the *question* along with the answer —
+players never learn a mystery exists, so they never care. Outer Wilds is not subtle
+about its mystery (the sun explodes in your face in act one; the ship log nags); it is
+only subtle about the resolution. We copy that split explicitly:
+
+1. **The inciting incident IS the mystery.** Ash didn't just drift home — **Ash came
+   back for a funeral.** Gran died three weeks ago. It's said plainly in the Ch.1
+   intro; Tero's reaction ("...She hated flowers. The harbor sent flowers.") is the
+   first crack. The player is holding the grief from scene one — the question is
+   never "what's this city trivia," it's *"who was my gran, and why does every adult
+   go quiet when I ask?"* Nobody fails to care about that.
+2. **The question is asked out loud, repeatedly, by characters.** Ch.1: Nino asks
+   "why's it even called SOLPORT?" and reports that every adult he asks suddenly has
+   chores. Each district repeats the deflection pattern — someone almost says it and
+   stops. An on-screen question a character keeps asking becomes the player's
+   question automatically.
+3. **Nino's Ledger is the ship log.** From Ch.1 it has a visible page — THE BIG
+   QUESTION — with hand-drawn empty boxes. Finding a fragment fills a box with
+   Nino's sketch of it. Diegetic, charming, and impossible to not notice. Talking to
+   Nino after any fragment gets his kid-detective theory (often hilariously wrong —
+   which keeps the tone from getting heavy too early).
+4. **Fragments sit in the main path's blast radius.** Every mandatory quest walks
+   the player within a screen of that district's fragment, and something visibly
+   glints/marks it (the bell's polished clapper catches light). Optional means
+   "one tap you could skip," never "pixel-hunt."
+5. **The full twist is delivered to EVERY player on the mandatory path** — Ferra's
+   Ch.4 line, Kairo's Ch.5 slip, Tero's Ch.6 confession, Vey's "say your whole
+   name." Fragments don't gatekeep the truth; they determine how much it resonates
+   (and unlock the Whole Bell epilogue). A player who ignores everything still gets
+   the story; a player who chased it gets to *have known first* — the Outer Wilds
+   feeling of realizing before the game says it.
+
+### How it's discovered (fragment system)
+
+One interactable per district (the "landmark interaction" already budgeted in doc 04
+§2.2), each ≤3 lines, each filling a visible box on Nino's BIG QUESTION Ledger page.
 
 | Ch | Fragment | What it shows |
 |---|---|---|
@@ -147,9 +179,10 @@ sign-off. On a second playthrough, the title screen is a memorial.
 - Nobody monologues about Sol. Fragments are ≤3 lines. Grief speaks in objects.
 - Tero never says her name until Ch.6. He says "we," catches it, says "I."
 - Vey's love is procedural: 19 years of maintenance. Show the polish, not tears.
-- The game NEVER explains the title. No character ever says "Solport means Sol's
-  port." The bell rim scratch and the museum locker do it, or the player's own
-  realization does. Trust the player — that's the Outer Wilds contract.
+- The game never explains the title in dialogue — no character says "Solport means
+  Sol's port." But the game makes SURE the player is asking (Nino's question, the
+  deflections, the Ledger page). Loud question, quiet answer: awareness is
+  guaranteed on the main path; the click of realization is the player's to have.
 
 ## 2. Main cast
 
@@ -220,8 +253,10 @@ Structure per chapter (the **Chapter Loop**, identical skeleton, authored conten
   *whatever they press*, Ash shoots, hits the wall, counter concedes, crowd goes silent.
   This "forced failure" is the game teaching controls with training wheels AND the
   story's wound. (Implementation: doc 04 §3 tutorial script.)
-- Present day: Ash returns by ferry. Meets Nino (thinks Ash is a legend), Mabel (worried),
-  Tero (won't look at Ash). Tutorial beats in the Netyard: move, pass, shoot,
+- Present day: Ash returns by ferry — **for gran's funeral, three weeks gone** (docs
+  02 §1b: the funeral is the mystery's front door; gran is never named here). Meets
+  Nino (thinks Ash is a legend), Mabel (worried), Tero (won't look at Ash, and goes
+  silent at any mention of gran). Tutorial beats in the Netyard: move, pass, shoot,
   tackle, sprint, switch — framed as Tero's "prove you learned anything" drills.
 - Quest: help Bram haul nets → Bram joins. Juno joins after racing her cart across the
   hub (simple follow-the-path minigame, teaches hub movement).

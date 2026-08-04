@@ -2,91 +2,271 @@
   "ch1_intro": {
     "start": "n1",
     "nodes": {
-      "n1": { "speaker": "nino", "text": "You're back! You're REALLY back!\nCoach! COACH! Ash is back!", "next": "n2" },
-      "n2": { "speaker": "tero", "text": "...So the ferry still runs.", "next": "n3" },
-      "n3": { "speaker": "tero", "text": "Three years, Ash. The Netyard went quiet.\nThe Gulls hold our pin now. Salt's crew.", "next": "n4" },
+      "n1": {
+        "speaker": "nino",
+        "text": "You're back! You're REALLY back!\nCoach! COACH! Ash is back!",
+        "next": "n2"
+      },
+      "n2": {
+        "speaker": "tero",
+        "text": "...So the ferry still runs.",
+        "next": "n2b"
+      },
+      "n3": {
+        "speaker": "tero",
+        "text": "Three years, Ash. The Netyard went quiet.\nThe Gulls hold our pin now. Salt's crew.",
+        "next": "n4"
+      },
       "n4": {
         "speaker": "ash",
         "text": "…",
         "choices": [
-          { "text": "I'm taking it back.", "next": "n5a", "flags": ["ledger.ego"] },
-          { "text": "We're taking it back.", "next": "n5b", "flags": ["ledger.team"] }
+          {
+            "text": "I'm taking it back.",
+            "next": "n5a",
+            "flags": [
+              "ledger.ego"
+            ]
+          },
+          {
+            "text": "We're taking it back.",
+            "next": "n5b",
+            "flags": [
+              "ledger.team"
+            ]
+          }
         ]
       },
-      "n5a": { "speaker": "tero", "text": "Hm. Still all 'I'.\nThe cage will teach you.", "next": "n6" },
-      "n5b": { "speaker": "tero", "text": "'We.' Good.\nJuno! Bram! Gate's open!", "next": "n6" },
-      "n6": { "speaker": "juno", "text": "okay okay okay — story time later\nGAME time now, yes? yes", "next": "n7" },
-      "n7": { "speaker": "bram", "text": "...I'll try not to break anyone.", "next": "n8" },
-      "n8": { "speaker": "nino", "text": "THE NETYARD OPENS ITS GATES!\n(I'm doing the announcements. Nobody asked. I don't care.)", "end": true }
+      "n5a": {
+        "speaker": "tero",
+        "text": "Hm. Still all 'I'.\nThe cage will teach you.",
+        "next": "n6"
+      },
+      "n5b": {
+        "speaker": "tero",
+        "text": "'We.' Good.\nJuno! Bram! Gate's open!",
+        "next": "n6"
+      },
+      "n6": {
+        "speaker": "juno",
+        "text": "okay okay okay — story time later\nGAME time now, yes? yes",
+        "next": "n7"
+      },
+      "n7": {
+        "speaker": "bram",
+        "text": "...I'll try not to break anyone.",
+        "next": "n8"
+      },
+      "n8": {
+        "speaker": "nino",
+        "text": "THE NETYARD OPENS ITS GATES!\n(I'm doing the announcements. Nobody asked. I don't care.)",
+        "end": true
+      },
+      "n2b": {
+        "speaker": "ash",
+        "text": "I came back for the funeral.\nThree weeks late.",
+        "next": "n2c"
+      },
+      "n2c": {
+        "speaker": "tero",
+        "text": "...She hated flowers.\nThe harbor sent flowers.",
+        "next": "n2d"
+      },
+      "n2d": {
+        "speaker": "tero",
+        "text": "(He looks at the cage, not at you.\nWhatever he was about to say, he doesn't.)",
+        "next": "n3"
+      }
     }
   },
   "ch1_drill_pass": {
     "start": "d1",
     "nodes": {
-      "d1": { "speaker": "tero", "text": "Before Salt's crew, you drill. No arguments.", "next": "d2" },
-      "d2": { "speaker": "tero", "text": "Six passes. A is the pass. Aim with your feet.\nThe wall counts as a friend — it never sulks.", "next": "d3" },
-      "d3": { "speaker": "juno", "text": "translation: kick it to ME six times", "end": true }
+      "d1": {
+        "speaker": "tero",
+        "text": "Before Salt's crew, you drill. No arguments.",
+        "next": "d2"
+      },
+      "d2": {
+        "speaker": "tero",
+        "text": "Six passes. A is the pass. Aim with your feet.\nThe wall counts as a friend — it never sulks.",
+        "next": "d3"
+      },
+      "d3": {
+        "speaker": "juno",
+        "text": "translation: kick it to ME six times",
+        "end": true
+      }
     }
   },
   "ch1_drill_shoot": {
     "start": "s1",
     "nodes": {
-      "s1": { "speaker": "tero", "text": "Passes stick. Good.\nNow: hold B to charge, let go to ring it. Three bells.", "next": "s2" },
-      "s2": { "speaker": "tero", "text": "Hold too long and greed bends the shot.\nThe sweet spot is a decision, not an accident.", "end": true }
+      "s1": {
+        "speaker": "tero",
+        "text": "Passes stick. Good.\nNow: hold B to charge, let go to ring it. Three bells.",
+        "next": "s2"
+      },
+      "s2": {
+        "speaker": "tero",
+        "text": "Hold too long and greed bends the shot.\nThe sweet spot is a decision, not an accident.",
+        "end": true
+      }
     }
   },
   "ch1_prematch": {
     "start": "p1",
     "nodes": {
-      "p1": { "speaker": "salt", "text": "Well, well. The ghost of Brine Harbor.", "next": "p2" },
-      "p2": { "speaker": "salt", "text": "Beat us and the pin's yours.\nLose — and you go back to being a rumour.", "next": "p3" },
-      "p3": { "speaker": "tero", "text": "First to three bells.\nThe wall is your sixth man. Trust it.", "end": true }
+      "p1": {
+        "speaker": "salt",
+        "text": "Well, well. The ghost of Brine Harbor.",
+        "next": "p2"
+      },
+      "p2": {
+        "speaker": "salt",
+        "text": "Beat us and the pin's yours.\nLose — and you go back to being a rumour.",
+        "next": "p3"
+      },
+      "p3": {
+        "speaker": "tero",
+        "text": "First to three bells.\nThe wall is your sixth man. Trust it.",
+        "end": true
+      }
     }
   },
   "ch1_retry": {
     "start": "r1",
     "nodes": {
-      "r1": { "speaker": "salt", "text": "That all you got, ghost?", "next": "r2" },
-      "r2": { "speaker": "tero", "text": "Again. The Gulls swarm the ball —\nso the space is always BEHIND them. Pass. Move. Ring it.", "end": true }
+      "r1": {
+        "speaker": "salt",
+        "text": "That all you got, ghost?",
+        "next": "r2"
+      },
+      "r2": {
+        "speaker": "tero",
+        "text": "Again. The Gulls swarm the ball —\nso the space is always BEHIND them. Pass. Move. Ring it.",
+        "end": true
+      }
     }
   },
   "hub_tero": {
     "start": "t1",
     "nodes": {
-      "t1": { "speaker": "tero", "text": "One pin doesn't make a crew.\nKeep your touch sharp — Spicegate won't wait.", "next": "t2" },
-      "t2": { "speaker": "tero", "text": "The Netyard's open. Use it.", "end": true }
+      "t1": {
+        "speaker": "tero",
+        "text": "One pin doesn't make a crew.\nKeep your touch sharp — Spicegate won't wait.",
+        "next": "t2"
+      },
+      "t2": {
+        "speaker": "tero",
+        "text": "The Netyard's open. Use it.",
+        "end": true
+      }
     }
   },
   "hub_nino": {
     "start": "n1",
     "nodes": {
-      "n1": { "speaker": "nino", "text": "I started a chant. Listen: A-SH! A-SH!\n...it works better with more people.", "next": "n2" },
-      "n2": { "speaker": "nino", "text": "The Ledger says you're ONE win into history.\nOnly like... forty more to go!", "end": true }
+      "n1": {
+        "speaker": "nino",
+        "text": "I started a chant. Listen: A-SH! A-SH!\n...it works better with more people.",
+        "next": "n2"
+      },
+      "n2": {
+        "speaker": "nino",
+        "text": "The Ledger says you're ONE win into history.\nOnly like... forty more to go!",
+        "next": "n3"
+      },
+      "n3": {
+        "speaker": "nino",
+        "text": "ALSO. New Ledger page: THE BIG QUESTION.\nWhy is it called SOLPORT? Who names a whole city?",
+        "next": "n4"
+      },
+      "n4": {
+        "speaker": "nino",
+        "text": "I asked Tero — he cleaned a net that was ALREADY clean.\nI asked Mabel — she gave me a chore. A CHORE, Ash.",
+        "next": "n5",
+        "setFlags": [
+          "undertide.question"
+        ]
+      },
+      "n5": {
+        "speaker": "nino",
+        "text": "Somebody in this harbor knows something.\nThe Ledger never forgets. (I drew empty boxes and everything.)",
+        "end": true
+      }
     }
   },
   "hub_bell": {
     "start": "b1",
     "nodes": {
-      "b1": { "speaker": "system", "text": "An old harbor bell, green with salt.\nSomeone still polishes the clapper.", "next": "b2" },
-      "b2": { "speaker": "system", "text": "Scratched into the rim, almost worn away:\n\"RING IT FOR ME WHEN I CAN'T — S.\"", "next": "b3", "setFlags": ["undertide.ch1"] },
-      "b3": { "speaker": "ash", "text": "(...who rings it now?)", "end": true }
+      "b1": {
+        "speaker": "system",
+        "text": "An old harbor bell, green with salt.\nSomeone still polishes the clapper.",
+        "next": "b2"
+      },
+      "b2": {
+        "speaker": "system",
+        "text": "Scratched into the rim, almost worn away:\n\"RING IT FOR ME WHEN I CAN'T — S.\"",
+        "next": "b3",
+        "setFlags": [
+          "undertide.ch1"
+        ]
+      },
+      "b3": {
+        "speaker": "ash",
+        "text": "(...who rings it now?)",
+        "end": true
+      }
     }
   },
   "hub_salt": {
     "start": "s1",
     "nodes": {
-      "s1": { "speaker": "salt", "text": "Don't look at me like that. We WANT you to win now.\nNobody brags about losing to losers.", "next": "s2" },
-      "s2": { "speaker": "salt", "text": "Fancy a rematch sometime? The cage is right there.", "end": true }
+      "s1": {
+        "speaker": "salt",
+        "text": "Don't look at me like that. We WANT you to win now.\nNobody brags about losing to losers.",
+        "next": "s2"
+      },
+      "s2": {
+        "speaker": "salt",
+        "text": "Fancy a rematch sometime? The cage is right there.",
+        "end": true
+      }
     }
   },
   "ch1_aftermath": {
     "start": "a1",
     "nodes": {
-      "a1": { "speaker": "salt", "text": "...Take it. The pin.\nYou earned it — for real.", "next": "a2" },
-      "a2": { "speaker": "salt", "text": "But Spicegate's next on the ladder,\nand Nadia doesn't play nice like me.", "next": "a3" },
-      "a3": { "speaker": "nino", "text": "FIRST PIN! I'm writing it down!\nThe Ledger remembers EVERYTHING.", "next": "a4" },
-      "a4": { "speaker": "tero", "text": "One down.\nDon't smile yet.", "next": "a5", "setFlags": ["pin.gulls", "ch1.complete"] },
-      "a5": { "speaker": "system", "text": "PIN EARNED — THE BRINE GULLS\nChapter 1 (vertical slice) complete. Spicegate arrives in the next build.", "end": true }
+      "a1": {
+        "speaker": "salt",
+        "text": "...Take it. The pin.\nYou earned it — for real.",
+        "next": "a2"
+      },
+      "a2": {
+        "speaker": "salt",
+        "text": "But Spicegate's next on the ladder,\nand Nadia doesn't play nice like me.",
+        "next": "a3"
+      },
+      "a3": {
+        "speaker": "nino",
+        "text": "FIRST PIN! I'm writing it down!\nThe Ledger remembers EVERYTHING.",
+        "next": "a4"
+      },
+      "a4": {
+        "speaker": "tero",
+        "text": "One down.\nDon't smile yet.",
+        "next": "a5",
+        "setFlags": [
+          "pin.gulls",
+          "ch1.complete"
+        ]
+      },
+      "a5": {
+        "speaker": "system",
+        "text": "PIN EARNED — THE BRINE GULLS\nChapter 1 (vertical slice) complete. Spicegate arrives in the next build.",
+        "end": true
+      }
     }
   }
 }

@@ -102,6 +102,18 @@ export class HubScene extends Phaser.Scene {
       b: { x: -100, y: -100, r: 1, hitR: 1 }, // unused in the hub
     });
 
+    // The bell's polished clapper catches the light (docs/02 §1b: fragments
+    // glint — optional never means invisible).
+    const glint = this.add.rectangle(194, 93, 2, 2, 0xffffff, 0.9).setDepth(3).setAlpha(0);
+    this.tweens.add({
+      targets: glint,
+      alpha: { from: 0, to: 0.9 },
+      duration: 180,
+      yoyo: true,
+      repeat: -1,
+      repeatDelay: 2600,
+    });
+
     this.game.events.on('dialogue-done', this.onDialogueDone, this);
     this.events.once('shutdown', () => {
       this.game.events.off('dialogue-done', this.onDialogueDone, this);
