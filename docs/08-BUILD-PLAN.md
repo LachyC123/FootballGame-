@@ -129,7 +129,14 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > twice) → free roam with post-win NPC states. Flag-driven NPC presence
 > (Juno/Bram appear after the intro; Salt only after losing the pin), dynamic
 > per-NPC dialogue, 3-state gate. Journey test walks the entire flow with real
-> movement input. Next: quest-step engine generalization + Spicegate (Ch.2).
+> movement input. Chapter 2 SHIPPED: HubScene generalized to
+> districts (harbor + Spicegate as data: draw/NPCs/gates/sequences); Spicegate
+> market map (awnings, lanterns, Kettle steam), Nadia/Seppi/Juno chapter chain
+> (intro → crate errand → delivery → Juno's 'delivery girl' beat with trust
+> choice → Kettle challenge), Spice Runners team (tiki-fast profile), arena
+> dressing system (Netyard/Kettle cards, colours, away labels), scorer-named
+> bell callouts, debt-book fragment (undertide.ch2, initials only), hub
+> footsteps + gulls + lantern flicker polish. Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

@@ -1,0 +1,107 @@
+{
+  "ch2_nadia_intro": {
+    "start": "n1",
+    "nodes": {
+      "n1": { "speaker": "nadia", "text": "Well. The harbor crew.\nHeard you rang three on poor Salt.", "next": "n2" },
+      "n2": { "speaker": "nadia", "text": "Here's Spicegate math: cage time costs stall time.\nNobody plays the Kettle for free.", "next": "n3" },
+      "n3": { "speaker": "ash", "text": "Name the price.", "next": "n4" },
+      "n4": { "speaker": "nadia", "text": "Seppi's short-handed and loud about it.\nMove a crate for him, and we'll talk.", "next": "n5" },
+      "n5": { "speaker": "nadia", "text": "Harbor crew, hm. You've got HER—\n...you've got nerve. I'll say that.", "next": "n6", "setFlags": ["ch2.metNadia"] },
+      "n6": { "speaker": "ash", "text": "(Got... whose what?)", "end": true }
+    }
+  },
+  "ch2_seppi": {
+    "start": "s1",
+    "nodes": {
+      "s1": { "speaker": "seppi", "text": "You're the crate crew? Good. Spices for Nadia.\nDrop it and she owes ME for once.", "next": "s2" },
+      "s2": { "speaker": "seppi", "text": "Careful with her, harbor kid. That stall ledger of hers\ngoes back a hundred years. Debts outlive everybody.", "next": "s3" },
+      "s3": { "speaker": "seppi", "text": "...Well. Almost everybody.\nAnyway! Crate! Go!", "next": "s4", "setFlags": ["ch2.crate"] },
+      "s4": { "speaker": "ash", "text": "(Almost?)", "end": true }
+    }
+  },
+  "ch2_nadia_wait": {
+    "start": "w1",
+    "nodes": {
+      "w1": { "speaker": "nadia", "text": "Seppi's stall is the loud one. Follow the complaining.", "end": true }
+    }
+  },
+  "ch2_deliver": {
+    "start": "d1",
+    "nodes": {
+      "d1": { "speaker": "nadia", "text": "Ha! He actually paid his tab in cargo. A first.\nFine — the Kettle will hear your challenge.", "next": "d2" },
+      "d2": { "speaker": "nadia", "text": "One thing. Your winger — Juno.\nShe ran deliveries for my crew, before your harbor took her back.", "next": "d3" },
+      "d3": { "speaker": "nadia", "text": "She'll want to beat us ALONE.\nSort her head out first, or the Kettle will do it for you.", "next": "d4", "setFlags": ["ch2.delivered"] },
+      "d4": { "speaker": "ash", "text": "(Juno never mentioned Spicegate.)", "end": true }
+    }
+  },
+  "ch2_juno": {
+    "start": "j1",
+    "nodes": {
+      "j1": { "speaker": "juno", "text": "so. yes. i ran crates for the Runners.\nthey called me delivery girl. for TWO YEARS, Ash.", "next": "j2" },
+      "j2": { "speaker": "juno", "text": "not runner. not winger. DELIVERY GIRL.\ni want to beat them so bad my teeth hurt.", "next": "j3" },
+      "j3": {
+        "speaker": "ash",
+        "text": "…",
+        "choices": [
+          { "text": "Show them who you are.", "next": "j4a", "flags": ["ledger.ego", "juno.fire"] },
+          { "text": "WE show them. All of us.", "next": "j4b", "flags": ["ledger.team", "juno.trust"] }
+        ]
+      },
+      "j4a": { "speaker": "juno", "text": "...yeah. YEAH.\nfeed me the ball and stay out of the blast radius.", "next": "j5" },
+      "j4b": { "speaker": "juno", "text": "...okay. okay okay okay.\nall of us. but i get the LAST bell. deal?", "next": "j5" },
+      "j5": { "speaker": "juno", "text": "(she's already jogging to the Kettle)\nCAGE. NOW.", "next": "j6", "setFlags": ["ch2.junoTalk"] },
+      "j6": { "speaker": "ash", "text": "(Never seen her this quiet-loud before.)", "end": true }
+    }
+  },
+  "ch2_prematch": {
+    "start": "p1",
+    "nodes": {
+      "p1": { "speaker": "nadia", "text": "Kettle rules: first to three bells, walls in play.\nDebts get settled in the cage.", "next": "p2" },
+      "p2": { "speaker": "nadia", "text": "Oh — and delivery girl?\nTry to keep up with the REAL runners.", "next": "p3" },
+      "p3": { "speaker": "juno", "text": "(quietly, to no one)\nlast bell's mine.", "end": true }
+    }
+  },
+  "ch2_retry": {
+    "start": "r1",
+    "nodes": {
+      "r1": { "speaker": "nadia", "text": "That's the Kettle, harbor crew.\nIt boils everyone the first time.", "next": "r2" },
+      "r2": { "speaker": "juno", "text": "they pass FAST but they pass PREDICTABLE.\ncut the lanes. trust me. again. AGAIN.", "end": true }
+    }
+  },
+  "ch2_aftermath": {
+    "start": "a1",
+    "nodes": {
+      "a1": { "speaker": "nadia", "text": "...Ha. HA! Did you see that?\nSpicegate, did you SEE that?!", "next": "a2" },
+      "a2": { "speaker": "nadia", "text": "The pin's yours — and so is my sponsorship.\nYour travel runs on Spicegate coin now. Call it an investment.", "next": "a3" },
+      "a3": { "speaker": "juno", "text": "...they clapped.\ndid you hear? they CLAPPED. for ME.", "next": "a4" },
+      "a4": { "speaker": "nadia", "text": "Of course they did, runner.\nThat's what you always were.", "next": "a5", "setFlags": ["pin.spice", "ch2.complete"] },
+      "a5": { "speaker": "system", "text": "PIN EARNED — THE SPICE RUNNERS\nOld Cobble waits up the hill. (Arrives in the next build.)", "end": true }
+    }
+  },
+  "hub_nadia": {
+    "start": "h1",
+    "nodes": {
+      "h1": { "speaker": "nadia", "text": "My sponsorship money says the Saints will bore you\nto death before they beat you. Prove me right.", "end": true }
+    }
+  },
+  "hub_seppi": {
+    "start": "h1",
+    "nodes": {
+      "h1": { "speaker": "seppi", "text": "Crate crew! My best customer!\nTechnically my only unpaid one, but STILL.", "end": true }
+    }
+  },
+  "hub_juno_spice": {
+    "start": "h1",
+    "nodes": {
+      "h1": { "speaker": "juno", "text": "i keep walking past my old stall like it's nothing.\nit's not nothing. but it's getting smaller.", "end": true }
+    }
+  },
+  "spice_debtbook": {
+    "start": "b1",
+    "nodes": {
+      "b1": { "speaker": "system", "text": "Nadia's stall ledger — older than the awnings.\nDebts a century deep, in a dozen different hands.", "next": "b2" },
+      "b2": { "speaker": "system", "text": "One line, crossed out so hard the page tore:\n\"S.M. — PAID IN FULL. FOREVER.\"", "next": "b3", "setFlags": ["undertide.ch2"] },
+      "b3": { "speaker": "ash", "text": "(S.M. ... the bell said 'S' too.)", "end": true }
+    }
+  }
+}

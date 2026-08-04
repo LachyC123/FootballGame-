@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateDialogueFile, DialogueError } from '../../src/domain/progress/dialogue';
 import ch1 from '../../src/content/data/dialogue/ch1.json';
+import ch2 from '../../src/content/data/dialogue/ch2.json';
 import speakers from '../../src/content/data/speakers.json';
 
 const KNOWN = new Set(Object.keys(speakers));
@@ -10,6 +11,15 @@ describe('shipped dialogue validates', () => {
     const graphs = validateDialogueFile(ch1, KNOWN);
     expect(Object.keys(graphs)).toContain('ch1_intro');
     expect(Object.keys(graphs)).toContain('ch1_aftermath');
+  });
+
+  it('ch2.json passes and completes the chapter', () => {
+    const graphs = validateDialogueFile(ch2, KNOWN);
+    const flags = Object.values(graphs['ch2_aftermath']!.nodes).flatMap((n) => n.setFlags ?? []);
+    expect(flags).toContain('ch2.complete');
+    expect(flags).toContain('pin.spice');
+    const fragment = Object.values(graphs['spice_debtbook']!.nodes).flatMap((n) => n.setFlags ?? []);
+    expect(fragment).toContain('undertide.ch2');
   });
 
   it('ch1 aftermath sets the chapter-complete flags', () => {

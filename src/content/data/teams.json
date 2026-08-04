@@ -4,11 +4,47 @@
     "name": "Netyard Crew",
     "crewName": "The Crew",
     "players": [
-      { "characterId": "chr_ash", "stats": { "pace": 5, "power": 5, "touch": 5, "guard": 4, "engine": 5 } },
-      { "characterId": "chr_juno", "stats": { "pace": 8, "power": 4, "touch": 6, "guard": 3, "engine": 6 } },
-      { "characterId": "chr_bram", "stats": { "pace": 3, "power": 7, "touch": 4, "guard": 8, "engine": 6 } }
+      {
+        "characterId": "chr_ash",
+        "stats": {
+          "pace": 5,
+          "power": 5,
+          "touch": 5,
+          "guard": 4,
+          "engine": 5
+        }
+      },
+      {
+        "characterId": "chr_juno",
+        "stats": {
+          "pace": 8,
+          "power": 4,
+          "touch": 6,
+          "guard": 3,
+          "engine": 6
+        }
+      },
+      {
+        "characterId": "chr_bram",
+        "stats": {
+          "pace": 3,
+          "power": 7,
+          "touch": 4,
+          "guard": 8,
+          "engine": 6
+        }
+      }
     ],
-    "aiProfile": { "press": 0.5, "line": 0.5, "tempo": 0.5, "risk": 0.4, "phys": 0.3, "show": 0.0, "wall": 0.4, "stam": 0.6 },
+    "aiProfile": {
+      "press": 0.5,
+      "line": 0.5,
+      "tempo": 0.5,
+      "risk": 0.4,
+      "phys": 0.3,
+      "show": 0.0,
+      "wall": 0.4,
+      "stam": 0.6
+    },
     "reactionMs": 200
   },
   {
@@ -16,11 +52,95 @@
     "name": "Brine Gulls",
     "crewName": "The Gulls",
     "players": [
-      { "characterId": "chr_salt", "stats": { "pace": 5, "power": 5, "touch": 4, "guard": 4, "engine": 5 } },
-      { "characterId": "chr_gull_a", "stats": { "pace": 4, "power": 4, "touch": 3, "guard": 4, "engine": 4 } },
-      { "characterId": "chr_gull_b", "stats": { "pace": 4, "power": 4, "touch": 3, "guard": 3, "engine": 4 } }
+      {
+        "characterId": "chr_salt",
+        "stats": {
+          "pace": 5,
+          "power": 5,
+          "touch": 4,
+          "guard": 4,
+          "engine": 5
+        }
+      },
+      {
+        "characterId": "chr_gull_a",
+        "stats": {
+          "pace": 4,
+          "power": 4,
+          "touch": 3,
+          "guard": 4,
+          "engine": 4
+        }
+      },
+      {
+        "characterId": "chr_gull_b",
+        "stats": {
+          "pace": 4,
+          "power": 4,
+          "touch": 3,
+          "guard": 3,
+          "engine": 4
+        }
+      }
     ],
-    "aiProfile": { "press": 0.9, "line": 0.5, "tempo": 0.2, "risk": 0.3, "phys": 0.3, "show": 0.1, "wall": 0.1, "stam": 0.2 },
+    "aiProfile": {
+      "press": 0.9,
+      "line": 0.5,
+      "tempo": 0.2,
+      "risk": 0.3,
+      "phys": 0.3,
+      "show": 0.1,
+      "wall": 0.1,
+      "stam": 0.2
+    },
     "reactionMs": 280
+  },
+  {
+    "id": "team_spice",
+    "name": "Spice Runners",
+    "crewName": "The Runners",
+    "players": [
+      {
+        "characterId": "chr_nadia",
+        "stats": {
+          "pace": 6,
+          "power": 4,
+          "touch": 8,
+          "guard": 3,
+          "engine": 6
+        }
+      },
+      {
+        "characterId": "chr_spice_a",
+        "stats": {
+          "pace": 5,
+          "power": 4,
+          "touch": 6,
+          "guard": 4,
+          "engine": 5
+        }
+      },
+      {
+        "characterId": "chr_spice_b",
+        "stats": {
+          "pace": 6,
+          "power": 3,
+          "touch": 6,
+          "guard": 3,
+          "engine": 5
+        }
+      }
+    ],
+    "aiProfile": {
+      "press": 0.5,
+      "line": 0.6,
+      "tempo": 0.9,
+      "risk": 0.4,
+      "phys": 0.1,
+      "show": 0.3,
+      "wall": 0.4,
+      "stam": 0.6
+    },
+    "reactionMs": 240
   }
 ]

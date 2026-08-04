@@ -130,6 +130,10 @@ const CHARACTERS = [
   { id: 'tero', skin: 0xd9a67e, hair: 0xcfcfd4, style: 'crop', kit: 'coach', build: 'avg' },
   { id: 'nino', skin: 0xe0a878, hair: 0x2f2b28, style: 'spiky', kit: 'kid', build: 'slim' },
   { id: 'kairo', skin: 0xdcab7f, hair: 0x2c2440, style: 'spiky', kit: 'volt', build: 'avg' },
+  { id: 'nadia', skin: 0xb98d63, hair: 0xf2c14e, style: 'wrap', kit: 'spice', build: 'slim' },
+  { id: 'seppi', skin: 0xd8a273, hair: 0x6b4a2f, style: 'crop', kit: 'market', build: 'big' },
+  { id: 'spice_a', skin: 0xc59a70, hair: 0x241f2b, style: 'crop', kit: 'spice', build: 'avg' },
+  { id: 'spice_b', skin: 0xe0a878, hair: 0x3a352f, style: 'buzz', kit: 'spice', build: 'slim' },
   { id: 'oldkid_a', skin: 0xc59a70, hair: 0x3a352f, style: 'crop', kit: 'oldkids', build: 'big' },
   { id: 'oldkid_b', skin: 0xd8a273, hair: 0x241f2b, style: 'buzz', kit: 'oldkids', build: 'avg' },
 ];
@@ -141,6 +145,8 @@ const KITS = {
   kid: { shirt: 0xf2c14e, shade: 0xc29433, shorts: 0x24333d, socks: 0xd9d3c0, boots: 0x3a3f47 },
   volt: { shirt: 0x5a4fcf, shade: 0x3d3591, shorts: 0x241f2b, socks: 0xe8e3d0, boots: 0x241f2b },
   oldkids: { shirt: 0x6e7681, shade: 0x4c525b, shorts: 0x3a3f47, socks: 0xb9b3a4, boots: 0x2f2b28 },
+  spice: { shirt: 0xb03535, shade: 0x7c2424, shorts: 0x241f2b, socks: 0xf2c14e, boots: 0x2f2b28 },
+  market: { shirt: 0x8a6a3a, shade: 0x5e4826, shorts: 0x3a3f47, socks: 0xcbbfa4, boots: 0x2f2b28 },
 };
 
 // Run cycle leg offsets [frontLeg dy, backLeg dy] and body bob per frame.
@@ -269,6 +275,11 @@ function drawHead(c, char, dir, hx, hy) {
       c.rect(hx, hy + 4, 8, 1, 0xdfe3e8);
       c.rect(hx, hy, 8, 4, 0x8d939c);
     }
+    if (char.style === 'wrap') {
+      c.rect(hx, hy, 8, 4, hair);
+      c.rect(hx, hy, 8, 1, shade(hair));
+      c.rect(hx + 3, hy + 4, 2, 2, shade(hair)); // knot at the back
+    }
     return;
   }
   switch (char.style) {
@@ -293,6 +304,12 @@ function drawHead(c, char, dir, hx, hy) {
       c.rect(hx, hy, 8, 2, 0xdfe3e8);
       c.set(hx + 8, hy + 1, 0xdfe3e8);
       c.rect(hx, hy, 8, 1, 0x8d939c);
+      break;
+    case 'wrap':
+      c.rect(hx, hy, 8, 3, hair);
+      c.rect(hx, hy, 8, 1, shade(hair));
+      c.set(hx - 1, hy + 1, hair);
+      c.set(hx - 1, hy + 2, shade(hair));
       break;
   }
   if (dir === 's') {

@@ -68,6 +68,7 @@ export class MatchCore {
   private counters: Record<string, number> = {};
   private homeAi: SimpleAi;
   private awayAi: SimpleAi;
+  private lastKickerId: string | null = null;
 
   constructor(config: MatchConfig) {
     this.config = config;
@@ -259,7 +260,10 @@ export class MatchCore {
   private onBell(scoringTeam: 0 | 1): void {
     this.score[scoringTeam]++;
     this.counters['bells'] = (this.counters['bells'] ?? 0) + 1;
-    this.events.push({ type: 'bell', team: scoringTeam, pos: { ...this.ball.pos } });
+    const scorer = this.players.find((p) => p.id === this.lastKickerId);
+    const bellEvent: MatchEvent = { type: 'bell', team: scoringTeam, pos: { ...this.ball.pos } };
+    if (scorer && scorer.team === scoringTeam) bellEvent.playerId = scorer.id;
+    this.events.push(bellEvent);
     this.ball.mode = 'dead';
     this.ball.ownerId = null;
     const limit = this.config.rules.scoreLimit;
@@ -732,6 +736,7 @@ export class MatchCore {
       this.events.push({ type: 'pass', playerId: p.id, pos: { ...b.pos } });
     }
     this.counters['passes'] = (this.counters['passes'] ?? 0) + 1;
+    this.lastKickerId = p.id;
     p.action = 'kick';
     p.actionT = 0.1;
   }
@@ -762,6 +767,7 @@ export class MatchCore {
     b.receiverHintId = null;
     b.immunityId = p.id;
     b.immunityT = T.kickImmunityT;
+    this.lastKickerId = p.id;
     this.events.push({ type: 'shotFired', playerId: p.id, team: p.team, speed, pos: { ...b.pos } });
     this.counters['shots'] = (this.counters['shots'] ?? 0) + 1;
     p.action = 'kick';

@@ -23,12 +23,48 @@ export interface DrillSpec {
   title: string;
 }
 
+export interface ArenaDress {
+  title: string;
+  subtitle: string;
+  awayLabel: string;
+  netColor: number;
+  floorAccent: number;
+  crowdColors: number[];
+}
+
+const NETYARD: ArenaDress = {
+  title: 'THE NETYARD',
+  subtitle: 'DJ TIDE: LIVE FROM BRINE HARBOR!',
+  awayLabel: 'GULLS',
+  netColor: 0x39525a,
+  floorAccent: 0x2e9e8f,
+  crowdColors: [0x2e9e8f, 0xc2643a, 0xd9d3c0, 0x8a94a2],
+};
+
+export const KETTLE: ArenaDress = {
+  title: 'THE KETTLE',
+  subtitle: 'DJ TIDE: SPICEGATE, MAKE SOME NOISE!',
+  awayLabel: 'RUNNERS',
+  netColor: 0x7c4a2a,
+  floorAccent: 0xb03535,
+  crowdColors: [0xb03535, 0xf2c14e, 0xd9d3c0, 0xc2643a],
+};
+
 interface SceneData {
   config?: MatchConfig;
   story?: boolean;
   drill?: DrillSpec;
   returnTo?: string;
+  arena?: ArenaDress;
 }
+
+const NAMES: Record<string, string> = {
+  chr_ash: 'ASH',
+  chr_juno: 'JUNO',
+  chr_bram: 'BRAM',
+  chr_salt: 'SALT',
+  chr_nadia: 'NADIA',
+};
 
 const BALL_COLOR = 0xf5f1e3;
 
@@ -45,6 +81,7 @@ export class MatchScene extends Phaser.Scene {
   private sceneData: SceneData = {};
   private prevPhase = '';
   private pauseGroup: Array<{ destroy(): void }> = [];
+  private arena: ArenaDress = NETYARD;
   private crowdA: Phaser.GameObjects.Graphics | null = null;
   private crowdB: Phaser.GameObjects.Graphics | null = null;
   private ballSprite!: Phaser.GameObjects.Ellipse;
@@ -85,6 +122,7 @@ export class MatchScene extends Phaser.Scene {
     this.storyMode = data.story ?? false;
     this.drill = data.drill ?? null;
     this.sceneData = data;
+    this.arena = data.arena ?? NETYARD;
     this.prevPhase = '';
     this.pauseGroup = [];
     music.play(this.drill ? 'harbor' : 'match');
@@ -410,7 +448,7 @@ export class MatchScene extends Phaser.Scene {
       const clock = Math.max(0, Math.ceil(snap.clockS));
       const mm = Math.floor(clock / 60);
       const ss = (clock % 60).toString().padStart(2, '0');
-      this.scoreText.setText(`CREW ${snap.score[0]} — ${snap.score[1]} GULLS`);
+      this.scoreText.setText(`CREW ${snap.score[0]} — ${snap.score[1]} ${this.arena.awayLabel}`);
       this.clockText.setText(snap.phase === 'goldenGoal' ? `NEXT BELL WINS` : `${mm}:${ss}`);
     }
 
@@ -526,7 +564,14 @@ export class MatchScene extends Phaser.Scene {
           ease: 'Back.easeOut',
         });
         this.tweens.add({ targets: this.bellText, alpha: 0, delay: 900, duration: 300 });
-        this.toast(e.team === 0 ? 'THE CREW RINGS ONE IN!' : 'THE GULLS ANSWER.');
+        const scorer = e.playerId ? NAMES[e.playerId] : undefined;
+        this.toast(
+          e.team === 0
+            ? scorer
+              ? `${scorer} RINGS THE BELL!`
+              : 'THE CREW RINGS ONE IN!'
+            : `THE ${this.arena.awayLabel} ANSWER.`,
+        );
         this.scoreSlam();
         break;
       }
@@ -613,7 +658,7 @@ export class MatchScene extends Phaser.Scene {
       .setDepth(30);
     const panel = drawPanel(this, cx - 110, 56, 220, 158, 30);
     const title = this.add
-      .text(cx, 74, won ? 'FULL TIME — CREW WIN' : h < a ? 'FULL TIME — GULLS WIN' : 'FULL TIME', {
+      .text(cx, 74, won ? 'FULL TIME — CREW WIN' : h < a ? `FULL TIME — ${this.arena.awayLabel} WIN` : 'FULL TIME', {
         fontFamily: FONT_BODY,
         fontSize: FS_BODY,
         color: won ? UI.gold : UI.textMain,
@@ -681,7 +726,7 @@ export class MatchScene extends Phaser.Scene {
         g.fillRect(x, y, 16, 16);
       }
     }
-    g.fillStyle(0x2e9e8f, 0.04);
+    g.fillStyle(this.arena.floorAccent, 0.04);
     g.fillRect(minX, 150, 90, 60);
     g.fillRect(320, 40, 110, 70);
 
@@ -741,8 +786,8 @@ export class MatchScene extends Phaser.Scene {
       g.strokeRect(gx, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
     }
 
-    // Netyard dressing: nets draped over the top band.
-    g.lineStyle(1, 0x39525a, 0.5);
+    // Arena dressing: nets/banners draped over the top band.
+    g.lineStyle(1, this.arena.netColor, 0.5);
     for (let x = minX; x < maxX; x += 12) {
       g.lineBetween(x, minY, x + 6, minY + 5);
       g.lineBetween(x + 6, minY, x, minY + 5);
@@ -781,7 +826,7 @@ export class MatchScene extends Phaser.Scene {
     // Intro card (skippable by being brief). Drills skip the broadcast fiction.
     if (this.drill) return;
     const card = this.add
-      .text(GAME_WIDTH / 2, 100, 'THE NETYARD', {
+      .text(GAME_WIDTH / 2, 100, this.arena.title, {
         fontFamily: FONT_DISPLAY,
         fontSize: FS_DISPLAY,
         color: '#e8e3d0',
@@ -792,7 +837,7 @@ export class MatchScene extends Phaser.Scene {
       .setDepth(26)
       .setAlpha(0.95);
     const sub = this.add
-      .text(GAME_WIDTH / 2, 116, 'DJ TIDE: LIVE FROM BRINE HARBOR!', {
+      .text(GAME_WIDTH / 2, 116, this.arena.subtitle, {
         fontFamily: FONT_BODY,
         fontSize: FS_BODY,
         color: '#f2c14e',
@@ -805,7 +850,7 @@ export class MatchScene extends Phaser.Scene {
   /** One crowd frame: bobbing heads with scarf colours (deterministic layout). */
   private makeCrowd(frame: number): Phaser.GameObjects.Graphics {
     const g = this.add.graphics().setDepth(1);
-    const colors = [0x2e9e8f, 0xc2643a, 0xd9d3c0, 0x8a94a2];
+    const colors = this.arena.crowdColors;
     for (let i = 0; i < 56; i++) {
       const x = 8 + i * 8.4;
       const row = i % 2;

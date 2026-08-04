@@ -4,11 +4,17 @@
  */
 const KNOWN_SCENES = new Set(['Boot', 'Preload', 'Title', 'Match', 'Hub']);
 
-export function getStartOverride(): { scene: string; seed: number } | null {
+export function getStartOverride(): { scene: string; seed: number; district?: string } | null {
   if (!import.meta.env.DEV) return null;
   const params = new URLSearchParams(location.search);
   const scene = params.get('scene');
   if (scene === null || !KNOWN_SCENES.has(scene)) return null;
   const seed = Number(params.get('seed') ?? '1');
-  return { scene, seed: Number.isFinite(seed) ? seed : 1 };
+  const district = params.get('district');
+  const out: { scene: string; seed: number; district?: string } = {
+    scene,
+    seed: Number.isFinite(seed) ? seed : 1,
+  };
+  if (district) out.district = district;
+  return out;
 }

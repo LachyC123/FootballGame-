@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { FONT_BODY, FS_BODY, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import type { DialogueGraph, DialogueNode } from '../domain/progress/dialogue';
 import { SfxPlayer } from '../platform/sfxPlayer';
-import dialoguesRaw from '../content/data/dialogue/ch1.json';
+import ch1Raw from '../content/data/dialogue/ch1.json';
+import ch2Raw from '../content/data/dialogue/ch2.json';
 import speakersRaw from '../content/data/speakers.json';
 
 interface SpeakerMeta {
@@ -12,7 +13,7 @@ interface SpeakerMeta {
 }
 
 const SPEAKERS = speakersRaw as Record<string, SpeakerMeta>;
-const DIALOGUES = dialoguesRaw as unknown as Record<string, DialogueGraph>;
+const DIALOGUES = { ...ch1Raw, ...ch2Raw } as unknown as Record<string, DialogueGraph>;
 
 export interface DialogueSceneData {
   dialogueId: string;

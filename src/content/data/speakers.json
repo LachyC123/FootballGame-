@@ -1,9 +1,47 @@
 {
-  "ash": { "name": "ASH", "portrait": "portrait_ash", "blipDetune": 0 },
-  "juno": { "name": "JUNO", "portrait": "portrait_juno", "blipDetune": 500 },
-  "bram": { "name": "BRAM", "portrait": "portrait_bram", "blipDetune": -600 },
-  "salt": { "name": "SALT", "portrait": "portrait_salt", "blipDetune": -200 },
-  "tero": { "name": "COACH TERO", "portrait": "portrait_tero", "blipDetune": -800 },
-  "nino": { "name": "NINO", "portrait": "portrait_nino", "blipDetune": 800 },
-  "system": { "name": "", "portrait": null, "blipDetune": 0 }
+  "ash": {
+    "name": "ASH",
+    "portrait": "portrait_ash",
+    "blipDetune": 0
+  },
+  "juno": {
+    "name": "JUNO",
+    "portrait": "portrait_juno",
+    "blipDetune": 500
+  },
+  "bram": {
+    "name": "BRAM",
+    "portrait": "portrait_bram",
+    "blipDetune": -600
+  },
+  "salt": {
+    "name": "SALT",
+    "portrait": "portrait_salt",
+    "blipDetune": -200
+  },
+  "tero": {
+    "name": "COACH TERO",
+    "portrait": "portrait_tero",
+    "blipDetune": -800
+  },
+  "nino": {
+    "name": "NINO",
+    "portrait": "portrait_nino",
+    "blipDetune": 800
+  },
+  "system": {
+    "name": "",
+    "portrait": null,
+    "blipDetune": 0
+  },
+  "nadia": {
+    "name": "NADIA",
+    "portrait": "portrait_nadia",
+    "blipDetune": 300
+  },
+  "seppi": {
+    "name": "SEPPI",
+    "portrait": "portrait_seppi",
+    "blipDetune": -400
+  }
 }
