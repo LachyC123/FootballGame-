@@ -20,6 +20,21 @@
       "n8": { "speaker": "nino", "text": "THE NETYARD OPENS ITS GATES!\n(I'm doing the announcements. Nobody asked. I don't care.)", "end": true }
     }
   },
+  "ch1_drill_pass": {
+    "start": "d1",
+    "nodes": {
+      "d1": { "speaker": "tero", "text": "Before Salt's crew, you drill. No arguments.", "next": "d2" },
+      "d2": { "speaker": "tero", "text": "Six passes. A is the pass. Aim with your feet.\nThe wall counts as a friend — it never sulks.", "next": "d3" },
+      "d3": { "speaker": "juno", "text": "translation: kick it to ME six times", "end": true }
+    }
+  },
+  "ch1_drill_shoot": {
+    "start": "s1",
+    "nodes": {
+      "s1": { "speaker": "tero", "text": "Passes stick. Good.\nNow: hold B to charge, let go to ring it. Three bells.", "next": "s2" },
+      "s2": { "speaker": "tero", "text": "Hold too long and greed bends the shot.\nThe sweet spot is a decision, not an accident.", "end": true }
+    }
+  },
   "ch1_prematch": {
     "start": "p1",
     "nodes": {

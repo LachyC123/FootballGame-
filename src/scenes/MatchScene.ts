@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { FONT_BODY, FONT_DISPLAY, FS_BODY, FS_DISPLAY, FS_DISPLAY_2X, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import { MatchCore } from '../domain/match/core';
 import { GOAL_BOTTOM, GOAL_TOP, PITCH } from '../domain/match/geometry';
 import { TUNING as T } from '../domain/match/tuning';
 import type { MatchConfig, MatchEvent, MatchSnapshot } from '../domain/match/types';
 import { InputService } from '../platform/input/inputService';
 import { loadSettings } from '../platform/settings';
-import { resumeSfx } from '../platform/sfx';
+import { crowd, resumeSfx } from '../platform/sfx';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import { CharacterView } from '../presentation/characterView';
 
@@ -15,9 +15,16 @@ import { CharacterView } from '../presentation/characterView';
  * touch UI, placeholder feel layer and retry loop (docs/08 Phase 1).
  * PH- visuals throughout — generated textures, replaced from Phase 2.
  */
+export interface DrillSpec {
+  type: 'pass' | 'shoot';
+  target: number;
+  title: string;
+}
+
 interface SceneData {
   config?: MatchConfig;
   story?: boolean;
+  drill?: DrillSpec;
 }
 
 const BALL_COLOR = 0xf5f1e3;
@@ -30,6 +37,7 @@ export class MatchScene extends Phaser.Scene {
 
   private playerSprites = new Map<string, CharacterView>();
   private storyMode = false;
+  private drill: DrillSpec | null = null;
   private lastDeltaS = 1 / 60;
   private ballSprite!: Phaser.GameObjects.Ellipse;
   private ballShadow!: Phaser.GameObjects.Ellipse;
@@ -67,6 +75,7 @@ export class MatchScene extends Phaser.Scene {
     const config = data.config ?? defaultMatchConfig(Math.floor(Math.random() * 1e9));
     this.core = new MatchCore(config);
     this.storyMode = data.story ?? false;
+    this.drill = data.drill ?? null;
     this.accumulator = 0;
     this.paused = false;
     this.matchOver = false;
@@ -90,17 +99,17 @@ export class MatchScene extends Phaser.Scene {
 
     // HUD.
     this.scoreText = this.add
-      .text(GAME_WIDTH / 2, 6, '', { fontFamily: 'monospace', fontSize: '12px', color: '#e8e3d0' })
+      .text(GAME_WIDTH / 2, 6, '', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#e8e3d0' })
       .setOrigin(0.5, 0)
       .setDepth(20);
     this.clockText = this.add
-      .text(GAME_WIDTH / 2, 20, '', { fontFamily: 'monospace', fontSize: '9px', color: '#9a968a' })
+      .text(GAME_WIDTH / 2, 20, '', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#9a968a' })
       .setOrigin(0.5, 0)
       .setDepth(20);
     this.toastText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 34, '', {
-        fontFamily: 'monospace',
-        fontSize: '9px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#f2c14e',
       })
       .setOrigin(0.5)
@@ -123,8 +132,8 @@ export class MatchScene extends Phaser.Scene {
       .setAlpha(0);
     this.bellText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 30, '', {
-        fontFamily: 'monospace',
-        fontSize: '30px',
+        fontFamily: FONT_DISPLAY,
+        fontSize: FS_DISPLAY_2X,
         color: '#f2c14e',
         stroke: '#0e0e14',
         strokeThickness: 4,
@@ -140,6 +149,21 @@ export class MatchScene extends Phaser.Scene {
     });
     this.touchGfx = this.add.graphics().setDepth(25);
 
+    if (this.drill) {
+      // Drill dressing: objective replaces the clock; skip is always available.
+      this.scoreText.setText(this.drill.title);
+      const skip = this.add
+        .text(6, GAME_HEIGHT - 16, 'skip drill ›', {
+          fontFamily: FONT_BODY,
+          fontSize: FS_BODY,
+          color: '#9a968a',
+        })
+        .setDepth(26)
+        .setInteractive({ useHandCursor: true });
+      skip.on('pointerdown', () => this.completeDrill());
+      this.input.keyboard?.on('keydown-ESC', () => this.completeDrill());
+    }
+
     // Pause.
     this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
     this.input.keyboard?.on('keydown-P', () => this.togglePause());
@@ -149,7 +173,12 @@ export class MatchScene extends Phaser.Scene {
     });
 
     resumeSfx();
-    if (window.__SOLPORT__) window.__SOLPORT__.scene = 'Match';
+    crowd.start(this.drill ? 0.02 : 0.05);
+    this.events.once('shutdown', () => crowd.stop());
+    if (window.__SOLPORT__) {
+      window.__SOLPORT__.scene = 'Match';
+      window.__SOLPORT__.mode = this.drill ? 'drill' : 'match';
+    }
   }
 
   private onSuspend = (): void => {
@@ -310,11 +339,17 @@ export class MatchScene extends Phaser.Scene {
       }
     }
 
-    const clock = Math.max(0, Math.ceil(snap.clockS));
-    const mm = Math.floor(clock / 60);
-    const ss = (clock % 60).toString().padStart(2, '0');
-    this.scoreText.setText(`CREW ${snap.score[0]} — ${snap.score[1]} GULLS`);
-    this.clockText.setText(snap.phase === 'goldenGoal' ? `NEXT BELL WINS` : `${mm}:${ss}`);
+    if (this.drill) {
+      const progress = this.drill.type === 'pass' ? (snap.counters['passes'] ?? 0) : snap.score[0];
+      this.clockText.setText(`${Math.min(progress, this.drill.target)} / ${this.drill.target}`);
+      if (progress >= this.drill.target && !this.matchOver) this.completeDrill();
+    } else {
+      const clock = Math.max(0, Math.ceil(snap.clockS));
+      const mm = Math.floor(clock / 60);
+      const ss = (clock % 60).toString().padStart(2, '0');
+      this.scoreText.setText(`CREW ${snap.score[0]} — ${snap.score[1]} GULLS`);
+      this.clockText.setText(snap.phase === 'goldenGoal' ? `NEXT BELL WINS` : `${mm}:${ss}`);
+    }
 
     this.renderTouchUi();
   }
@@ -462,6 +497,10 @@ export class MatchScene extends Phaser.Scene {
         this.toast('GOLDEN GOAL — NEXT BELL WINS');
         break;
       case 'fullTime':
+        if (this.drill) {
+          this.completeDrill();
+          break;
+        }
         this.sfxp.play('uiConfirm', 0.8);
         this.showResults();
         break;
@@ -488,6 +527,18 @@ export class MatchScene extends Phaser.Scene {
     }
   }
 
+  private completeDrill(): void {
+    if (this.matchOver) return;
+    this.matchOver = true;
+    this.sfxp.play('uiConfirm', 0.8);
+    this.flash(0.15, 150);
+    this.toast('DRILL COMPLETE');
+    this.time.delayedCall(700, () => {
+      this.game.events.emit('story-match-result', { homeWon: true });
+      this.scene.stop();
+    });
+  }
+
   private showResults(): void {
     this.matchOver = true;
     const snap = this.core.snapshot();
@@ -497,16 +548,16 @@ export class MatchScene extends Phaser.Scene {
       .setDepth(30);
     const title = this.add
       .text(GAME_WIDTH / 2, 86, h > a ? 'FULL TIME — CREW WIN' : h < a ? 'FULL TIME — GULLS WIN' : 'FULL TIME', {
-        fontFamily: 'monospace',
-        fontSize: '16px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_DISPLAY,
         color: h >= a ? '#f2c14e' : '#e8e3d0',
       })
       .setOrigin(0.5)
       .setDepth(31);
     const score = this.add
       .text(GAME_WIDTH / 2, 112, `${h} — ${a}`, {
-        fontFamily: 'monospace',
-        fontSize: '24px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_DISPLAY_2X,
         color: '#e8e3d0',
       })
       .setOrigin(0.5)
@@ -516,7 +567,7 @@ export class MatchScene extends Phaser.Scene {
         GAME_WIDTH / 2,
         140,
         `passes ${snap.counters['passes'] ?? 0} · shots ${snap.counters['shots'] ?? 0} · tackles ${snap.counters['tackles'] ?? 0}`,
-        { fontFamily: 'monospace', fontSize: '8px', color: '#9a968a' },
+        { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#9a968a' },
       )
       .setOrigin(0.5)
       .setDepth(31);
@@ -524,8 +575,8 @@ export class MatchScene extends Phaser.Scene {
     const primaryLabel = this.storyMode ? (won ? '[ CONTINUE ]' : '[ RETRY ]') : '[ RETRY ]';
     const primary = this.add
       .text(GAME_WIDTH / 2, 172, primaryLabel, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#f2c14e',
       })
       .setOrigin(0.5)
@@ -546,8 +597,8 @@ export class MatchScene extends Phaser.Scene {
     if (!this.storyMode) {
       const toTitle = this.add
         .text(GAME_WIDTH / 2, 192, 'title screen', {
-          fontFamily: 'monospace',
-          fontSize: '9px',
+          fontFamily: FONT_BODY,
+          fontSize: FS_BODY,
           color: '#9a968a',
         })
         .setOrigin(0.5)
@@ -610,11 +661,12 @@ export class MatchScene extends Phaser.Scene {
       g.lineBetween(x, minY, x + 6, minY + 5);
       g.lineBetween(x + 6, minY, x, minY + 5);
     }
-    // Intro card (skippable by being brief).
+    // Intro card (skippable by being brief). Drills skip the broadcast fiction.
+    if (this.drill) return;
     const card = this.add
       .text(GAME_WIDTH / 2, 100, 'THE NETYARD', {
-        fontFamily: 'monospace',
-        fontSize: '18px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_DISPLAY,
         color: '#e8e3d0',
         stroke: '#0e0e14',
         strokeThickness: 3,
@@ -624,8 +676,8 @@ export class MatchScene extends Phaser.Scene {
       .setAlpha(0.95);
     const sub = this.add
       .text(GAME_WIDTH / 2, 116, 'DJ TIDE: LIVE FROM BRINE HARBOR!', {
-        fontFamily: 'monospace',
-        fontSize: '8px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#f2c14e',
       })
       .setOrigin(0.5)

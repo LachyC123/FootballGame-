@@ -1,4 +1,13 @@
 /* Platform shell — Master Plan §4 viewport/safe-area contract (docs/05 §8). */
+@font-face {
+  font-family: 'm5x7';
+  src: url('/assets/fonts/m5x7.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'm6x11plus';
+  src: url('/assets/fonts/m6x11plus.ttf') format('truetype');
+}
+
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);

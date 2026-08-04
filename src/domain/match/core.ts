@@ -94,9 +94,9 @@ export class MatchCore {
     const first = this.players[0];
     if (!first) throw new Error('MatchCore: no players');
     this.controlledId = first.id;
-    this.homeAi = new SimpleAi(0, config.home.aiProfile, config.home.reactionMs, this.rng);
-    this.awayAi = new SimpleAi(1, config.away.aiProfile, config.away.reactionMs, this.rng);
-    this.setupKickoff(this.rng.next() < 0.5 ? 0 : 1);
+    this.homeAi = new SimpleAi(0, config.home.aiProfile, config.home.reactionMs, this.rng, config.home.dummy ?? false);
+    this.awayAi = new SimpleAi(1, config.away.aiProfile, config.away.reactionMs, this.rng, config.away.dummy ?? false);
+    this.setupKickoff(config.rules.kickoffOverride ?? (this.rng.next() < 0.5 ? 0 : 1));
   }
 
   // ---- public API ---------------------------------------------------------
@@ -271,7 +271,7 @@ export class MatchCore {
     }
     this.phase = 'bell';
     this.phaseT = T.bellPauseS;
-    this.kickoffTeam = scoringTeam === 0 ? 1 : 0;
+    this.kickoffTeam = this.config.rules.kickoffOverride ?? (scoringTeam === 0 ? 1 : 0);
   }
 
   // ---- players ------------------------------------------------------------

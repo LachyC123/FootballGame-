@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { FONT_BODY, FONT_DISPLAY, FS_BODY, FS_DISPLAY_2X, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import { BUILD_VERSION } from '../app/buildInfo';
 import { loadSave } from '../platform/saveStore';
 import { unlockAudio } from '../platform/audio';
@@ -41,8 +41,8 @@ export class TitleScene extends Phaser.Scene {
 
     this.add
       .text(cx, 70, 'SOLPORT CAGES', {
-        fontFamily: 'monospace',
-        fontSize: '28px',
+        fontFamily: FONT_DISPLAY,
+        fontSize: FS_DISPLAY_2X,
         color: '#e8e3d0',
         stroke: '#0e0e14',
         strokeThickness: 4,
@@ -50,16 +50,16 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
     this.add
       .text(cx, 92, 'working title • vertical slice build', {
-        fontFamily: 'monospace',
-        fontSize: '9px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#7d7a6e',
       })
       .setOrigin(0.5);
 
     const prompt = this.add
       .text(cx, 140, 'TAP TO START', {
-        fontFamily: 'monospace',
-        fontSize: '14px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#f2c14e',
       })
       .setOrigin(0.5);
@@ -67,8 +67,8 @@ export class TitleScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH - 4, GAME_HEIGHT - 4, `v${this.registry.get('buildVersion') as string}`, {
-        fontFamily: 'monospace',
-        fontSize: '8px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#4a4a55',
       })
       .setOrigin(1, 1);
@@ -122,8 +122,8 @@ export class TitleScene extends Phaser.Scene {
     entries.forEach((entry, i) => {
       const t = this.add
         .text(cx, 132 + i * 18, entry.label, {
-          fontFamily: 'monospace',
-          fontSize: '12px',
+          fontFamily: FONT_BODY,
+          fontSize: FS_BODY,
           color: i === 0 ? '#f2c14e' : '#e8e3d0',
         })
         .setOrigin(0.5)

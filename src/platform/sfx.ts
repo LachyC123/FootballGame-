@@ -52,6 +52,44 @@ export function resumeSfx(): void {
   if (ac && ac.state === 'suspended') void ac.resume().catch(() => undefined);
 }
 
+let crowdSrc: AudioBufferSourceNode | null = null;
+let crowdGain: GainNode | null = null;
+
+/** Looping filtered-noise crowd bed (docs/07 §6 allows a generated crowd loop). */
+export const crowd = {
+  start(volume = 0.05): void {
+    if (loadSettings().muted) return;
+    const ac = audio();
+    if (!ac || crowdSrc) return;
+    const len = Math.floor(ac.sampleRate * 2);
+    const buffer = ac.createBuffer(1, len, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      // Brown-ish noise reads as distant crowd once lowpassed.
+      last = (last + (Math.random() * 2 - 1) * 0.02) * 0.98;
+      data[i] = last * 8;
+    }
+    crowdSrc = ac.createBufferSource();
+    crowdSrc.buffer = buffer;
+    crowdSrc.loop = true;
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 420;
+    crowdGain = ac.createGain();
+    crowdGain.gain.value = volume;
+    crowdSrc.connect(filter).connect(crowdGain).connect(ac.destination);
+    crowdSrc.start();
+  },
+  stop(): void {
+    crowdSrc?.stop();
+    crowdSrc?.disconnect();
+    crowdGain?.disconnect();
+    crowdSrc = null;
+    crowdGain = null;
+  },
+};
+
 export const sfx = {
   pass: (pitchVar: number): void => blip(220 * (1 + pitchVar * 0.1), 0.07, 'triangle', 0.25, 140),
   kick: (charge: number): void => blip(140 + charge * 60, 0.12, 'square', 0.3, 60),

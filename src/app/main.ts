@@ -5,6 +5,7 @@ import { TitleScene } from '../scenes/TitleScene';
 import { MatchScene } from '../scenes/MatchScene';
 import { DialogueScene } from '../scenes/DialogueScene';
 import { StoryScene } from '../scenes/StoryScene';
+import { FlashbackScene } from '../scenes/FlashbackScene';
 import { installLifecycle } from '../platform/lifecycle';
 import { GAME_HEIGHT, GAME_WIDTH } from './constants';
 
@@ -20,7 +21,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, TitleScene, StoryScene, MatchScene, DialogueScene],
+  scene: [BootScene, PreloadScene, TitleScene, StoryScene, FlashbackScene, MatchScene, DialogueScene],
 });
 
 installLifecycle(game);
@@ -28,7 +29,7 @@ installLifecycle(game);
 // Exposed for Playwright journeys and the dev console only.
 declare global {
   interface Window {
-    __SOLPORT__?: { game: Phaser.Game; scene?: string };
+    __SOLPORT__?: { game: Phaser.Game; scene?: string; mode?: string };
   }
 }
 window.__SOLPORT__ = { game };

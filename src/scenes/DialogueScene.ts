@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { FONT_BODY, FS_BODY, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import type { DialogueGraph, DialogueNode } from '../domain/progress/dialogue';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import dialoguesRaw from '../content/data/dialogue/ch1.json';
@@ -57,23 +57,23 @@ export class DialogueScene extends Phaser.Scene {
 
     const px = 10;
     const pw = GAME_WIDTH - 20;
-    const ph = 64;
+    const ph = 78;
     const py = GAME_HEIGHT - ph - 8;
     this.panel = this.add
       .rectangle(px + pw / 2, py + ph / 2, pw, ph, 0x141218, 0.94)
       .setStrokeStyle(1, 0xf2c14e, 0.8);
     this.portraitImg = this.add.image(px + 26, py + ph / 2, '__DEFAULT').setScale(2);
-    this.nameText = this.add.text(px + 50, py + 6, '', {
-      fontFamily: 'monospace',
-      fontSize: '9px',
+    this.nameText = this.add.text(px + 50, py + 4, '', {
+      fontFamily: FONT_BODY,
+      fontSize: FS_BODY,
       color: '#f2c14e',
     });
-    this.bodyText = this.add.text(px + 50, py + 18, '', {
-      fontFamily: 'monospace',
-      fontSize: '10px',
+    this.bodyText = this.add.text(px + 50, py + 22, '', {
+      fontFamily: FONT_BODY,
+      fontSize: FS_BODY,
       color: '#e8e3d0',
       wordWrap: { width: pw - 64 },
-      lineSpacing: 3,
+      lineSpacing: 2,
     });
     this.promptTri = this.add
       .triangle(px + pw - 10, py + ph - 8, 0, 0, 6, 0, 3, 4, 0xf2c14e)
@@ -148,9 +148,9 @@ export class DialogueScene extends Phaser.Scene {
     const choices = this.node.choices ?? [];
     choices.forEach((choice, i) => {
       const t = this.add
-        .text(GAME_WIDTH - 24, GAME_HEIGHT - 96 - (choices.length - 1 - i) * 16, `▸ ${choice.text}`, {
-          fontFamily: 'monospace',
-          fontSize: '10px',
+        .text(GAME_WIDTH - 24, GAME_HEIGHT - 92 - (choices.length - 1 - i) * 22, `▸ ${choice.text}`, {
+          fontFamily: FONT_BODY,
+          fontSize: FS_BODY,
           color: '#e8e3d0',
           backgroundColor: '#141218ee',
           padding: { x: 6, y: 3 },

@@ -1,23 +1,39 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { FONT_BODY, FS_BODY, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import { BUILD_VERSION } from '../app/buildInfo';
 import { createDefaultSave } from '../domain/progress/save';
 import { commitSave } from '../platform/saveStore';
 import { SfxPlayer } from '../platform/sfxPlayer';
-import { defaultMatchConfig } from './MatchScene';
+import { defaultMatchConfig, type DrillSpec } from './MatchScene';
+import type { MatchConfig } from '../domain/match/types';
 
 type Step =
+  | { kind: 'flashback' }
   | { kind: 'dialogue'; id: string }
+  | { kind: 'drill'; spec: DrillSpec }
   | { kind: 'match' }
   | { kind: 'complete' };
 
 const CH1_STEPS: Step[] = [
+  { kind: 'flashback' },
   { kind: 'dialogue', id: 'ch1_intro' },
+  { kind: 'dialogue', id: 'ch1_drill_pass' },
+  { kind: 'drill', spec: { type: 'pass', target: 6, title: 'THE HONEST PASS' } },
+  { kind: 'dialogue', id: 'ch1_drill_shoot' },
+  { kind: 'drill', spec: { type: 'shoot', target: 3, title: 'RING IT' } },
   { kind: 'dialogue', id: 'ch1_prematch' },
   { kind: 'match' },
   { kind: 'dialogue', id: 'ch1_aftermath' },
   { kind: 'complete' },
 ];
+
+/** Drill fixture: crew vs standing mannequins, crew always kicks off. */
+function drillConfig(seed: number): MatchConfig {
+  const config = defaultMatchConfig(seed);
+  config.rules = { durationS: 600, scoreLimit: 99, goldenGoal: false, kickoffOverride: 0 };
+  config.away.dummy = true;
+  return config;
+}
 
 /**
  * Chapter orchestrator (Phase 2 condensed Chapter 1): Netyard backdrop with the
@@ -41,9 +57,11 @@ export class StoryScene extends Phaser.Scene {
 
     this.game.events.on('dialogue-done', this.onDialogueDone, this);
     this.game.events.on('story-match-result', this.onMatchResult, this);
+    this.game.events.on('flashback-done', this.onFlashbackDone, this);
     this.events.once('shutdown', () => {
       this.game.events.off('dialogue-done', this.onDialogueDone, this);
       this.game.events.off('story-match-result', this.onMatchResult, this);
+      this.game.events.off('flashback-done', this.onFlashbackDone, this);
     });
 
     if (window.__SOLPORT__) window.__SOLPORT__.scene = 'Story';
@@ -57,6 +75,19 @@ export class StoryScene extends Phaser.Scene {
       case 'dialogue':
         this.scene.launch('Dialogue', { dialogueId: step.id });
         break;
+      case 'flashback':
+        this.scene.sleep();
+        this.scene.launch('Flashback');
+        break;
+      case 'drill': {
+        this.scene.sleep();
+        this.scene.launch('Match', {
+          config: drillConfig(Math.floor(Math.random() * 1e9)),
+          story: true,
+          drill: step.spec,
+        });
+        break;
+      }
       case 'match': {
         const config = defaultMatchConfig(Math.floor(Math.random() * 1e9));
         this.scene.sleep();
@@ -68,6 +99,13 @@ export class StoryScene extends Phaser.Scene {
         break;
     }
   }
+
+  private onFlashbackDone = (): void => {
+    this.scene.wake();
+    this.scene.bringToTop();
+    this.stepIndex++;
+    this.runStep();
+  };
 
   private onDialogueDone = (payload: { dialogueId: string; flags: string[] }): void => {
     for (const f of payload.flags) this.flags.add(f);
@@ -108,7 +146,7 @@ export class StoryScene extends Phaser.Scene {
     void dim;
     const pin = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 18, '◈', {
-        fontFamily: 'monospace',
+        fontFamily: FONT_BODY,
         fontSize: '34px',
         color: '#f2c14e',
       })
@@ -119,16 +157,16 @@ export class StoryScene extends Phaser.Scene {
     this.tweens.add({ targets: pin, scale: 1, alpha: 1, duration: 500, ease: 'Back.easeOut' });
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 16, 'THE GULL PIN IS YOURS', {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#e8e3d0',
       })
       .setOrigin(0.5)
       .setDepth(31);
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 34, 'tap to return to title', {
-        fontFamily: 'monospace',
-        fontSize: '8px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#9a968a',
       })
       .setOrigin(0.5)
@@ -183,8 +221,8 @@ export class StoryScene extends Phaser.Scene {
     place('char_gull_b', 344, 158);
     this.add
       .text(GAME_WIDTH / 2, 76, 'THE NETYARD — BRINE HARBOR', {
-        fontFamily: 'monospace',
-        fontSize: '8px',
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
         color: '#9a968a',
       })
       .setOrigin(0.5);

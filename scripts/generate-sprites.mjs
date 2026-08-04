@@ -129,6 +129,9 @@ const CHARACTERS = [
   { id: 'gull_b', skin: 0xb98d63, hair: 0x2f2b28, style: 'buzz', kit: 'gulls', build: 'slim' },
   { id: 'tero', skin: 0xd9a67e, hair: 0xcfcfd4, style: 'crop', kit: 'coach', build: 'avg' },
   { id: 'nino', skin: 0xe0a878, hair: 0x2f2b28, style: 'spiky', kit: 'kid', build: 'slim' },
+  { id: 'kairo', skin: 0xdcab7f, hair: 0x2c2440, style: 'spiky', kit: 'volt', build: 'avg' },
+  { id: 'oldkid_a', skin: 0xc59a70, hair: 0x3a352f, style: 'crop', kit: 'oldkids', build: 'big' },
+  { id: 'oldkid_b', skin: 0xd8a273, hair: 0x241f2b, style: 'buzz', kit: 'oldkids', build: 'avg' },
 ];
 
 const KITS = {
@@ -136,6 +139,8 @@ const KITS = {
   gulls: { shirt: 0xc2643a, shade: 0x8a4527, shorts: 0x3a3230, socks: 0xcbbfa4, boots: 0x2f2b28 },
   coach: { shirt: 0x3f4652, shade: 0x2b303a, shorts: 0x2b303a, socks: 0x8a8f98, boots: 0x241f2b },
   kid: { shirt: 0xf2c14e, shade: 0xc29433, shorts: 0x24333d, socks: 0xd9d3c0, boots: 0x3a3f47 },
+  volt: { shirt: 0x5a4fcf, shade: 0x3d3591, shorts: 0x241f2b, socks: 0xe8e3d0, boots: 0x241f2b },
+  oldkids: { shirt: 0x6e7681, shade: 0x4c525b, shorts: 0x3a3f47, socks: 0xb9b3a4, boots: 0x2f2b28 },
 };
 
 // Run cycle leg offsets [frontLeg dy, backLeg dy] and body bob per frame.

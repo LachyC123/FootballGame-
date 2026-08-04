@@ -7,10 +7,6 @@ async function clickWorld(page: Page, x: number, y: number): Promise<void> {
   await page.mouse.click(box.x + (x / 480) * box.width, box.y + (y / 270) * box.height);
 }
 
-async function sceneIs(page: Page, name: string): Promise<boolean> {
-  return page.evaluate((n) => window.__SOLPORT__?.scene === n, name);
-}
-
 test('friendly match from the title menu is playable', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__SOLPORT__?.scene === 'Title');
@@ -28,29 +24,42 @@ test('friendly match from the title menu is playable', async ({ page }) => {
   expect(alive).toBe(true);
 });
 
-test('new game runs Chapter 1: dialogue → choice → match', async ({ page }) => {
+test('new game runs Chapter 1: flashback → dialogue → drills (skippable) → match', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.waitForFunction(() => window.__SOLPORT__?.scene === 'Title');
   await clickWorld(page, 240, 135); // unlock
   await page.waitForTimeout(400);
   await clickWorld(page, 240, 132); // NEW GAME
-  await page.waitForFunction(
-    () => window.__SOLPORT__?.scene === 'Story' || window.__SOLPORT__?.scene === 'Dialogue',
-    undefined,
-    { timeout: 10_000 },
-  );
-  // Click through dialogue; when the choice appears, centre clicks stop
-  // advancing, so periodically try the choice button position too.
-  for (let i = 0; i < 40; i++) {
-    if (await sceneIs(page, 'Match')) break;
-    await clickWorld(page, 240, 120); // advance / complete typewriter
-    await page.waitForTimeout(120);
+  await page.waitForFunction(() => window.__SOLPORT__?.scene === 'Flashback', undefined, {
+    timeout: 10_000,
+  });
+  // Skip through the flashback beats.
+  for (let i = 0; i < 8; i++) {
     await clickWorld(page, 240, 120);
-    await page.waitForTimeout(120);
-    await clickWorld(page, 420, 157); // choice A hit area (harmless otherwise)
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(250);
   }
-  expect(await sceneIs(page, 'Match')).toBe(true);
+  // Click through dialogue / choice / drill-skip until the REAL match starts.
+  const atRealMatch = (): Promise<boolean> =>
+    page.evaluate(
+      () => window.__SOLPORT__?.scene === 'Match' && window.__SOLPORT__?.mode === 'match',
+    );
+  for (let i = 0; i < 60; i++) {
+    if (await atRealMatch()) break;
+    await clickWorld(page, 240, 120); // dialogue advance / flashback skip
+    await page.waitForTimeout(120);
+    await clickWorld(page, 420, 150); // choice A hit area (harmless otherwise)
+    await page.waitForTimeout(120);
+    const inDrill = await page.evaluate(
+      () => window.__SOLPORT__?.scene === 'Match' && window.__SOLPORT__?.mode === 'drill',
+    );
+    if (inDrill) {
+      await clickWorld(page, 40, 260); // skip drill ›
+      await page.waitForTimeout(900); // completion toast + transition
+    }
+  }
+  expect(await atRealMatch()).toBe(true);
   const alive = await page.evaluate(() => Boolean(window.__SOLPORT__?.game.isRunning));
   expect(alive).toBe(true);
 });

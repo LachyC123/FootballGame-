@@ -24,6 +24,8 @@ export interface TeamSetup {
   human: boolean;
   aiProfile: AiProfile;
   reactionMs: number;
+  /** Drill mannequins: AI holds position and never acts. */
+  dummy?: boolean;
 }
 
 export interface AiProfile {
@@ -41,6 +43,8 @@ export interface MatchRules {
   durationS: number;
   scoreLimit: number;
   goldenGoal: boolean;
+  /** Drills: this team always takes the kickoff (incl. after a bell). */
+  kickoffOverride?: 0 | 1;
 }
 
 export interface MatchConfig {
