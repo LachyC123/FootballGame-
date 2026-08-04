@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { allSfxEntries } from '../content/audioManifest';
 import { getStartOverride } from '../dev/launcher';
 
 /**
@@ -16,6 +17,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.on('progress', (value: number) => {
       bar.width = Math.max(4, 160 * value);
     });
+    for (const { key, url } of allSfxEntries()) {
+      this.load.audio(key, url);
+    }
   }
 
   create(): void {

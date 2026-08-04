@@ -6,7 +6,8 @@ import { TUNING as T } from '../domain/match/tuning';
 import type { MatchConfig, MatchEvent, MatchSnapshot } from '../domain/match/types';
 import { InputService } from '../platform/input/inputService';
 import { loadSettings } from '../platform/settings';
-import { sfx, resumeSfx } from '../platform/sfx';
+import { resumeSfx } from '../platform/sfx';
+import { SfxPlayer } from '../platform/sfxPlayer';
 
 /**
  * MatchScene: renders MatchCore state; owns the fixed-step accumulator, HUD,
@@ -44,7 +45,19 @@ export class MatchScene extends Phaser.Scene {
   private dust!: Phaser.GameObjects.Particles.ParticleEmitter;
   private spark!: Phaser.GameObjects.Particles.ParticleEmitter;
   private confetti!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private trail!: Phaser.GameObjects.Particles.ParticleEmitter;
   private matchOver = false;
+
+  // Premium feel state (docs/03 §6): hit stop + time dilation + squash.
+  private sfxp!: SfxPlayer;
+  private freezeMs = 0;
+  private timeScale = 1;
+  private timeScaleTween: Phaser.Tweens.Tween | null = null;
+  private ballSquash = 1;
+  private flashRect!: Phaser.GameObjects.Rectangle;
+  private bellText!: Phaser.GameObjects.Text;
+  private stepClock = 0;
+  private lastClockShown = -1;
 
   constructor() {
     super('Match');
@@ -96,6 +109,29 @@ export class MatchScene extends Phaser.Scene {
     this.staminaBar = this.add.rectangle(0, 0, 24, 3, 0x7bd88f).setDepth(20).setVisible(false);
     this.chargeArc = this.add.graphics().setDepth(20);
 
+    // Premium feel objects.
+    this.sfxp = new SfxPlayer(this);
+    this.freezeMs = 0;
+    this.timeScale = 1;
+    this.ballSquash = 1;
+    this.stepClock = 0;
+    this.lastClockShown = -1;
+    this.flashRect = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0xffffff, 1)
+      .setDepth(28)
+      .setAlpha(0);
+    this.bellText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 30, '', {
+        fontFamily: 'monospace',
+        fontSize: '30px',
+        color: '#f2c14e',
+        stroke: '#0e0e14',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(29)
+      .setAlpha(0);
+
     // Input + touch UI.
     this.inputSvc = new InputService(this, {
       a: { x: GAME_WIDTH - 78, y: GAME_HEIGHT - 34, r: 16, hitR: 24 },
@@ -136,15 +172,100 @@ export class MatchScene extends Phaser.Scene {
       this.renderTouchUi();
       return;
     }
-    // Fixed-step accumulator with suspension clamp (docs/05 §4).
-    this.accumulator += Math.min(deltaMs / 1000, 0.25);
+    // Hit stop: freeze simulation, keep rendering (docs/03 §6, 20–90 ms).
+    if (this.freezeMs > 0) {
+      this.freezeMs -= deltaMs;
+      this.renderTouchUi();
+      return;
+    }
+    // Fixed-step accumulator with suspension clamp (docs/05 §4) + time dilation.
+    this.accumulator += Math.min((deltaMs / 1000) * this.timeScale, 0.25);
     const command = this.inputSvc.sample();
     while (this.accumulator >= T.fixedDt) {
       this.core.tick(command);
       this.accumulator -= T.fixedDt;
       for (const event of this.core.drainEvents()) this.onEvent(event);
     }
+    this.emitAmbientFeel(deltaMs / 1000);
     this.render(this.core.snapshot());
+  }
+
+  // ---- juice helpers ------------------------------------------------------
+
+  private hitStop(ms: number): void {
+    if (loadSettings().reducedMotion) ms *= 0.5;
+    this.freezeMs = Math.max(this.freezeMs, ms);
+  }
+
+  private slowMo(scale: number, recoverMs: number): void {
+    if (loadSettings().reducedMotion) return;
+    this.timeScaleTween?.stop();
+    this.timeScale = scale;
+    this.timeScaleTween = this.tweens.add({
+      targets: this,
+      timeScale: 1,
+      duration: recoverMs,
+      ease: 'Sine.easeIn',
+    });
+  }
+
+  private flash(alpha: number, ms: number, color = 0xffffff): void {
+    this.flashRect.setFillStyle(color).setAlpha(alpha);
+    this.tweens.add({ targets: this.flashRect, alpha: 0, duration: ms });
+  }
+
+  private shockwave(x: number, y: number, tint = 0xf2c14e): void {
+    const ring = this.add.circle(x, y, 4).setDepth(27);
+    ring.setStrokeStyle(2, tint, 0.9);
+    ring.setFillStyle(0, 0);
+    this.tweens.add({
+      targets: ring,
+      radius: 30,
+      alpha: 0,
+      duration: 350,
+      ease: 'Cubic.easeOut',
+      onComplete: () => ring.destroy(),
+    });
+  }
+
+  private flashPlayer(playerId: string): void {
+    const sprite = this.playerSprites.get(playerId);
+    const body = sprite?.getByName('body') as Phaser.GameObjects.Ellipse | undefined;
+    if (!body) return;
+    const team = this.core.snapshot().players.find((p) => p.id === playerId)?.team ?? 0;
+    body.setFillStyle(0xffffff);
+    this.time.delayedCall(60, () => body.setFillStyle(team === 0 ? HOME_COLOR : AWAY_COLOR));
+  }
+
+  /** Sprint footsteps + dust, ball trail — continuous feel, not event-driven. */
+  private emitAmbientFeel(dt: number): void {
+    const snap = this.core.snapshot();
+    this.stepClock += dt;
+    const stepDue = this.stepClock >= 0.16;
+    if (stepDue) this.stepClock = 0;
+    for (const p of snap.players) {
+      if (p.sprinting && stepDue) {
+        this.dust.emitParticleAt(p.pos.x, p.pos.y + 4, 1);
+        if (p.id === snap.controlledId) this.sfxp.play('step', 0.12, 300);
+      }
+    }
+    const b = snap.ball;
+    const speed = Math.hypot(b.vel.x, b.vel.y);
+    if (speed > 230 && (b.mode === 'shotFlight' || b.mode === 'passFlight')) {
+      this.trail.emitParticleAt(b.pos.x, b.pos.y - b.z * 0.5, 1);
+    }
+    // Final-10-seconds clock pulse.
+    const clock = Math.max(0, Math.ceil(snap.clockS));
+    if (snap.phase === 'play' && clock <= 10 && clock !== this.lastClockShown) {
+      this.lastClockShown = clock;
+      this.clockText.setColor('#d9534f');
+      this.tweens.add({
+        targets: this.clockText,
+        scale: { from: 1.5, to: 1 },
+        duration: 200,
+      });
+      this.sfxp.play('uiClick', 0.25, 50);
+    }
   }
 
   // ---- rendering ----------------------------------------------------------
@@ -166,8 +287,10 @@ export class MatchScene extends Phaser.Scene {
 
     const b = snap.ball;
     const zScale = 1 + Math.min(0.5, b.z / 40);
+    // Squash & stretch: impacts squash the ball, easing back to round.
+    this.ballSquash = Math.min(1, this.ballSquash + 0.08);
     this.ballSprite.setPosition(Math.round(b.pos.x), Math.round(b.pos.y - b.z * 0.5));
-    this.ballSprite.setScale(zScale);
+    this.ballSprite.setScale(zScale * (2 - this.ballSquash), zScale * this.ballSquash);
     this.ballShadow.setPosition(Math.round(b.pos.x), Math.round(b.pos.y + 2));
     this.ballShadow.setScale(Math.max(0.5, 1 - b.z / 60));
 
@@ -241,70 +364,122 @@ export class MatchScene extends Phaser.Scene {
   // ---- events → feel (docs/03 §6 matrix) ---------------------------------
 
   private onEvent(e: MatchEvent): void {
-    const reduced = loadSettings().reducedMotion;
-    const shakeScale = loadSettings().screenShake;
+    const settings = loadSettings();
+    const reduced = settings.reducedMotion;
     const shake = (ms: number, intensity: number): void => {
-      if (!reduced && shakeScale > 0) this.cameras.main.shake(ms, intensity * shakeScale);
+      if (!reduced && settings.screenShake > 0) {
+        this.cameras.main.shake(ms, intensity * settings.screenShake);
+      }
     };
     switch (e.type) {
       case 'pass':
-      case 'loftedPass':
       case 'oneTouchPass':
-        sfx.pass(Math.random() * 2 - 1);
+        this.sfxp.play('pass', 0.7);
+        if (e.playerId) this.flashPlayer(e.playerId);
         if (e.pos) this.dust.emitParticleAt(e.pos.x, e.pos.y, 3);
         break;
+      case 'loftedPass':
+        this.sfxp.play('pass', 0.9, 250);
+        if (e.playerId) this.flashPlayer(e.playerId);
+        if (e.pos) this.dust.emitParticleAt(e.pos.x, e.pos.y, 4);
+        break;
       case 'firstTouch':
+        this.ballSquash = 0.75;
         break;
-      case 'shotFired':
-        sfx.kick(Math.min(1, (e.speed ?? 300) / 420));
-        shake(60, 0.002);
-        if (e.pos) this.dust.emitParticleAt(e.pos.x, e.pos.y, 5);
+      case 'shotFired': {
+        const power = Math.min(1, (e.speed ?? 300) / 420);
+        this.sfxp.play('shot', 0.5 + power * 0.5);
+        if (e.playerId) this.flashPlayer(e.playerId);
+        if (power > 0.85) this.hitStop(25); // full-charge release lands with weight
+        shake(60, 0.002 + power * 0.002);
+        this.ballSquash = 0.6;
+        if (e.pos) this.dust.emitParticleAt(e.pos.x, e.pos.y, 6);
         break;
-      case 'wallBounce':
-        sfx.wall(e.speed ?? 100);
-        if (e.pos) this.spark.emitParticleAt(e.pos.x, e.pos.y, Math.min(8, (e.speed ?? 100) / 40));
+      }
+      case 'wallBounce': {
+        const v = Math.min(1, (e.speed ?? 100) / 420);
+        this.sfxp.play('wall', 0.25 + v * 0.6);
+        this.ballSquash = 1 - v * 0.45;
+        if (e.pos) {
+          this.spark.emitParticleAt(e.pos.x, e.pos.y, Math.round(2 + v * 8));
+          if (v > 0.5) this.shockwave(e.pos.x, e.pos.y, 0x8a8f98);
+        }
+        if (v > 0.6) shake(40, 0.0015);
         break;
+      }
       case 'postHit':
-        sfx.post();
+        this.sfxp.play('post', 0.9);
+        this.hitStop(50);
+        this.slowMo(0.85, 250); // near-miss dilation (docs/03 §6)
         shake(80, 0.003);
+        if (reduced) this.flash(0.15, 120);
+        if (e.pos) this.spark.emitParticleAt(e.pos.x, e.pos.y, 10);
         this.toast('OFF THE FRAME!');
         break;
       case 'bell': {
-        sfx.bell();
-        shake(120, 0.006);
-        const snap = this.core.snapshot();
-        this.confetti.emitParticleAt(e.pos?.x ?? GAME_WIDTH / 2, e.pos?.y ?? GAME_HEIGHT / 2, 40);
-        this.toast(e.team === 0 ? 'BELL! THE CREW RINGS ONE IN!' : 'BELL FOR THE GULLS.');
+        // The signature moment: hit stop → flash → shockwave → slow-mo settle.
+        this.sfxp.play('bell', 1);
+        this.sfxp.play('uiConfirm', 0.5);
+        this.hitStop(90);
+        this.slowMo(0.35, 700);
+        this.flash(reduced ? 0.2 : 0.35, 180);
+        shake(150, 0.007);
+        const px = e.pos?.x ?? GAME_WIDTH / 2;
+        const py = e.pos?.y ?? GAME_HEIGHT / 2;
+        this.shockwave(px, py);
+        this.time.delayedCall(80, () => this.shockwave(px, py, 0xe8e3d0));
+        this.confetti.emitParticleAt(px, py, 40);
+        this.bellText
+          .setText(e.team === 0 ? 'BELL!' : 'CONCEDED')
+          .setColor(e.team === 0 ? '#f2c14e' : '#c2643a')
+          .setAlpha(1)
+          .setScale(2.4);
+        this.tweens.add({
+          targets: this.bellText,
+          scale: 1,
+          duration: 260,
+          ease: 'Back.easeOut',
+        });
+        this.tweens.add({ targets: this.bellText, alpha: 0, delay: 900, duration: 300 });
+        this.toast(e.team === 0 ? 'THE CREW RINGS ONE IN!' : 'THE GULLS ANSWER.');
         this.scoreSlam();
-        void snap;
         break;
       }
       case 'tackleWon':
-        sfx.tackle();
+        this.sfxp.play('tackle', 0.8);
+        this.hitStop(30);
         shake(40, 0.0015);
+        if (e.playerId) this.flashPlayer(e.playerId);
+        if (e.pos) this.dust.emitParticleAt(e.pos.x, e.pos.y, 5);
         break;
       case 'tackleMissed':
+        this.sfxp.play('step', 0.3, 400);
+        break;
       case 'rearContact':
-        sfx.stumble();
+        this.sfxp.play('tackle', 0.4, 300);
         break;
       case 'shoulderWon':
-        sfx.tackle();
+        this.sfxp.play('shoulder', 0.9);
+        this.hitStop(40);
         shake(60, 0.002);
         break;
       case 'switch':
-        sfx.switch();
+        this.sfxp.play('uiSelect', 0.35);
         break;
       case 'kickoff':
+        this.sfxp.play('uiClick', 0.4);
         break;
       case 'goldenGoalStart':
-        sfx.whistle();
+        this.sfxp.play('bell', 0.6, 400);
+        this.flash(0.15, 200);
         this.toast('GOLDEN GOAL — NEXT BELL WINS');
         break;
       case 'fullTime':
-        sfx.whistle();
+        this.sfxp.play('uiConfirm', 0.8);
         this.showResults();
         break;
       case 'heavyTouch':
+        this.sfxp.play('step', 0.25, 500);
         break;
     }
   }
@@ -377,11 +552,11 @@ export class MatchScene extends Phaser.Scene {
       .setDepth(31)
       .setInteractive({ useHandCursor: true });
     retry.on('pointerdown', () => {
-      sfx.ui();
+      this.sfxp.play('uiClick', 0.6);
       this.scene.restart({});
     });
     toTitle.on('pointerdown', () => {
-      sfx.ui();
+      this.sfxp.play('uiClick', 0.6);
       this.scene.start('Title');
     });
     this.input.keyboard?.once('keydown-J', () => this.scene.restart({}));
@@ -483,6 +658,16 @@ export class MatchScene extends Phaser.Scene {
       emitting: false,
     });
     this.confetti.setDepth(7);
+    this.trail = this.add.particles(0, 0, 'px-confetti', {
+      speed: 0,
+      lifespan: 180,
+      quantity: 0,
+      alpha: { start: 0.5, end: 0 },
+      scale: { start: 1, end: 0.4 },
+      tint: 0xf5f1e3,
+      emitting: false,
+    });
+    this.trail.setDepth(5);
   }
 }
 
