@@ -136,7 +136,19 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > choice → Kettle challenge), Spice Runners team (tiki-fast profile), arena
 > dressing system (Netyard/Kettle cards, colours, away labels), scorer-named
 > bell callouts, debt-book fragment (undertide.ch2, initials only), hub
-> footsteps + gulls + lantern flicker polish. Next: Old Cobble (Ch.3), Ivy.
+> footsteps + gulls + lantern flicker polish. **Set-dressing density pass
+> (2026-08-04):** new `presentation/props.ts` drawn-prop library (crates,
+> barrels, rope coils, net piles, gleaming puddles, flickering lampposts,
+> bench, sacks, rugs, posters, chalk marks, prowling cat, pecking pigeons,
+> ambient walkers, swaying laundry). Harbor + Spicegate dressed with them
+> (incl. story-reactive chalk: the Gulls' tag gets crossed out in Crew teal
+> after ch1.complete; Juno's faded delivery cart parked in Spicegate). Match
+> arenas: advertising hoardings below the bottom wall — Mabel's Bait / Radio
+> Solport / Spice Market / "KEEP A LIGHT ON" (Sol's phrase hidden in plain
+> sight) — plus floodlight cones and corner kit clutter. Title key art:
+> moored boats, buoy, quay crates, lamppost, Nino perched watching. Flashback:
+> sepia crowd ring that fades out on the conceded goal ("the crowd goes
+> quiet — and then it goes away"). Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

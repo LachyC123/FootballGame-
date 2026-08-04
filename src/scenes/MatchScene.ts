@@ -816,6 +816,45 @@ export class MatchScene extends Phaser.Scene {
       },
     });
 
+    // Advertising hoardings along the bottom band (street-final fiction).
+    g.fillStyle(0x11141a);
+    g.fillRect(0, maxY + 2, GAME_WIDTH, GAME_HEIGHT - maxY - 2);
+    const ads: Array<[string, number, string]> = [
+      ["MABEL'S BAIT", 0x2e9e8f, '#7fd4c8'],
+      ['RADIO SOLPORT', 0xf2c14e, '#f2c14e'],
+      ['SPICE MARKET', 0xb03535, '#e08a8a'],
+      ['KEEP A LIGHT ON', 0x8a94a2, '#aab2bd'],
+    ];
+    ads.forEach(([label, color, textColor], i) => {
+      const bx = 8 + i * 118;
+      g.fillStyle(0x1b1f27);
+      g.fillRect(bx, maxY + 4, 110, 11);
+      g.lineStyle(1, color, 0.7);
+      g.strokeRect(bx, maxY + 4, 110, 11);
+      this.add
+        .text(bx + 55, maxY + 10, label, {
+          fontFamily: FONT_BODY,
+          fontSize: FS_BODY,
+          color: textColor,
+        })
+        .setOrigin(0.5)
+        .setDepth(1);
+    });
+    // Floodlight cones from the top corners — the cage is lit for the night.
+    g.fillStyle(0xfff4d6, 0.035);
+    g.fillTriangle(minX + 4, minY, minX + 120, maxY, minX + 4, maxY);
+    g.fillTriangle(maxX - 4, minY, maxX - 120, maxY, maxX - 4, maxY);
+    // Kit clutter in the dead corners: bags, cones, a spare ball.
+    g.fillStyle(0x2b303a);
+    g.fillRect(2, minY + 24, 10, 7);
+    g.fillStyle(0xc2643a);
+    g.fillTriangle(468, maxY - 30, 471, maxY - 24, 465, maxY - 24);
+    g.fillTriangle(470, maxY - 42, 473, maxY - 36, 467, maxY - 36);
+    g.fillStyle(0xf5f1e3);
+    g.fillCircle(7, maxY - 38, 3);
+    g.fillStyle(0x9c9784);
+    g.fillRect(6, maxY - 39, 1, 1);
+
     // Vignette.
     g.fillStyle(0x0a0b10, 0.16);
     g.fillRect(0, 0, GAME_WIDTH, 8);

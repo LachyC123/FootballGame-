@@ -10,6 +10,7 @@ import { commitSave } from '../platform/saveStore';
 import { fadeIn, transitionTo, UI } from '../presentation/ui';
 import { defaultMatchConfig, KETTLE, type ArenaDress, type DrillSpec } from './MatchScene';
 import type { MatchConfig, PlayerState } from '../domain/match/types';
+import * as props from '../presentation/props';
 
 /**
  * District hubs — the chapters' stages (docs/04 §2). Every chapter plays IN
@@ -659,12 +660,36 @@ export class HubScene extends Phaser.Scene {
     g.fillRect(70, 118, 18, 30);
     g.lineStyle(1, 0x5b6472, 0.7);
     for (let x = 44; x < 126; x += 8) g.lineBetween(x, 100, x - 4, 146);
-    g.fillStyle(0x4a4030);
-    g.fillRect(340, 100, 22, 16);
-    g.fillRect(352, 88, 18, 14);
-    g.lineStyle(1, 0x2f2b28);
-    g.strokeRect(340, 100, 22, 16);
-    g.strokeRect(352, 88, 18, 14);
+    props.crate(g, 340, 100, 22);
+    props.crate(g, 352, 88, 18);
+    props.crate(g, 332, 112, 12);
+    // Set dressing: the harbor is a working dock, not a stage.
+    props.lamppost(this, g, 168, 132);
+    props.lamppost(this, g, 300, 190);
+    props.barrel(g, 138, 158);
+    props.barrel(g, 148, 160);
+    props.ropeCoil(g, 160, 172);
+    props.netPile(g, 52, 162);
+    props.netPile(g, 260, 100);
+    props.puddle(this, g, 250, 175, 30);
+    props.puddle(this, g, 120, 232, 22);
+    props.bench(g, 214, 106);
+    props.poster(g, 44, 104, 0xf2c14e);
+    props.poster(g, 56, 106, 0xc2643a);
+    props.chalkCrescent(g, 240, 210, 14);
+    // Gulls tag by the cage — crossed out in teal once the pin comes home.
+    props.chalkScrawl(g, 386, 226, this.has('ch1.complete'));
+    props.laundry(this, g, 132, 208, 94);
+    props.cat(this, 150, 320, 236);
+    props.pigeon(this, 210, 130);
+    props.pigeon(this, 230, 136);
+    props.ambientWalker(this, 'char_oldkid_a', 260, 400, 226, 9000);
+    // A dinghy and mooring ropes on the water line.
+    g.fillStyle(0x2b303a);
+    g.fillRect(150, 66, 26, 6);
+    g.lineStyle(1, 0x8a7a5c, 0.6);
+    g.lineBetween(110, 81, 118, 70);
+    g.lineBetween(290, 81, 296, 71);
     g.lineStyle(2, 0x5b6472);
     g.strokeRect(408, 110, 64, 80);
     g.lineStyle(1, 0x39525a, 0.7);
@@ -719,6 +744,35 @@ export class HubScene extends Phaser.Scene {
     stall(160, 84, 64, 0xd08f2e);
     stall(300, 96, 88, 0xb03535); // Nadia's stall
     stall(64, 196, 56, 0xd08f2e);
+    stall(160, 210, 72, 0xb03535);
+    stall(280, 218, 60, 0xd08f2e);
+    // Market floor life: rugs, sacks of spice, produce, the working mess.
+    props.rug(g, 140, 150, 44, 22, 0x7c2424, 0xd08f2e);
+    props.rug(g, 246, 168, 36, 18, 0x5e4826, 0xb03535);
+    props.sack(g, 96, 130, 0xc2643a);
+    props.sack(g, 108, 132, 0xd08f2e);
+    props.sack(g, 102, 140, 0xb03535);
+    props.sack(g, 236, 116, 0xd08f2e);
+    props.sack(g, 178, 116, 0xb03535);
+    props.barrel(g, 132, 120);
+    props.crate(g, 200, 122, 14);
+    props.crate(g, 212, 128, 12);
+    props.puddle(this, g, 200, 246, 26);
+    props.chalkCrescent(g, 90, 176, 10, 0.1);
+    props.pigeon(this, 150, 180);
+    props.pigeon(this, 168, 186);
+    props.pigeon(this, 260, 210);
+    props.cat(this, 300, 120, 244);
+    props.ambientWalker(this, 'char_gull_b', 90, 250, 170, 8000);
+    props.ambientWalker(this, 'char_oldkid_b', 320, 140, 236, 11000);
+    // Juno's old delivery cart, parked and fading (she walks past it daily).
+    g.fillStyle(0x54432f);
+    g.fillRect(36, 226, 26, 10);
+    g.fillStyle(0x2f2b28);
+    g.fillCircle(42, 238, 4);
+    g.fillCircle(56, 238, 4);
+    g.fillStyle(0xd08f2e, 0.35);
+    g.fillRect(40, 228, 18, 3);
     // Nadia's debt book on the counter (fragment 2 — it glints).
     g.fillStyle(0x5e4826);
     g.fillRect(352, 114, 10, 6);

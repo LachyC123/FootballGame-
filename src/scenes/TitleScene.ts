@@ -245,6 +245,35 @@ export class TitleScene extends Phaser.Scene {
     g.lineStyle(1, 0x39424e, 0.6);
     for (let x = 398; x < 466; x += 8) g.lineBetween(x, 186, x - 4, 248);
 
+    // Moored boats + buoy on the water.
+    g.fillStyle(0x131722);
+    g.fillRect(70, 128, 38, 7);
+    g.fillRect(84, 118, 2, 10);
+    g.fillRect(150, 148, 24, 5);
+    g.fillStyle(0xc2643a);
+    g.fillCircle(330, 150, 3);
+    // Quay clutter: crates, barrel, rope, lamppost glow.
+    g.fillStyle(0x4a4030);
+    g.fillRect(30, 214, 16, 12);
+    g.fillRect(42, 206, 13, 10);
+    g.lineStyle(1, 0x2f2b28);
+    g.strokeRect(30, 214, 16, 12);
+    g.strokeRect(42, 206, 13, 10);
+    g.fillStyle(0x54432f);
+    g.fillRect(120, 220, 10, 12);
+    g.lineStyle(2, 0x8a7a5c);
+    g.strokeCircle(146, 240, 5);
+    g.fillStyle(0xf2c14e, 0.07);
+    g.fillEllipse(340, 236, 60, 22);
+    g.fillStyle(0x2f333c);
+    g.fillRect(339, 204, 3, 32);
+    g.fillStyle(0xf2c14e, 0.95);
+    g.fillRect(337, 202, 7, 4);
+    // Nino perched on the crates, watching his heroes.
+    if (this.textures.exists('char_nino')) {
+      this.castSprites.push(this.add.sprite(38, 206, 'char_nino', 0));
+    }
+
     // The crew, idling on the quay with a ball.
     const lineup: Array<[string, number, number]> = [
       ['char_juno', 205, 232],

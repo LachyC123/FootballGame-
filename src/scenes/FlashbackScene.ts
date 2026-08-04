@@ -31,6 +31,7 @@ export class FlashbackScene extends Phaser.Scene {
   private ball!: Phaser.GameObjects.Ellipse;
   private card!: Phaser.GameObjects.Text;
   private overlay!: Phaser.GameObjects.Rectangle;
+  private crowd!: Phaser.GameObjects.Graphics;
 
   constructor() {
     super('Flashback');
@@ -169,6 +170,8 @@ export class FlashbackScene extends Phaser.Scene {
                 this.sfxp.play('bell', 0.5, -400);
                 this.overlay.setFillStyle(0x1a1520, 0.45); // the colour drains
                 this.card.setText('');
+                // The crowd goes quiet — and then it goes away.
+                this.tweens.add({ targets: this.crowd, alpha: 0.12, duration: 1800 });
               },
             });
           },
@@ -223,6 +226,16 @@ export class FlashbackScene extends Phaser.Scene {
     g.strokeRect(16, 16, 448, 238);
     g.lineBetween(240, 16, 240, 254);
     g.strokeCircle(240, 135, 30);
+    // The whole harbor came to watch (they fade when the silence lands).
+    this.crowd = this.add.graphics().setDepth(2);
+    const crowdColors = [0x8a7a5c, 0x6e6248, 0xa08d68];
+    for (let i = 0; i < 40; i++) {
+      const cxp = 22 + ((i * 47) % 436);
+      const cyp = i % 2 === 0 ? 8 : 262;
+      this.crowd.fillStyle(crowdColors[(i * 7) % 3]!, 0.8);
+      this.crowd.fillCircle(cxp, cyp, 3);
+      this.crowd.fillRect(cxp - 2, cyp + 2, 4, 4);
+    }
     g.lineStyle(2, 0x8a7a5c, 0.9);
     g.strokeRect(4, 115, 12, 40);
     g.strokeRect(464, 115, 12, 40);
