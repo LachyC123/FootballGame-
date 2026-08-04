@@ -126,7 +126,12 @@ Npc { id, characterId, mapId, spawn, patrol?, interactions:
 // matchconfigs.json
 MatchConfig { id, homeTeamId, awayTeamId(orPLAYER), arenaId, rules: {bells, timeS,
               golden, halftime}, scriptedEvents?: ScriptedEvent[],  // flashback only
-              aiAdaptation?: 'vey' }
+              aiAdaptation?: 'vey', allowedPromises?: string[],
+              lossContinues?: boolean }  // finale only
+
+// promises.json
+Promise { id, askerId, dialogueId, trackedEvents: string[], keepCondition: CounterExpr,
+          keptEffects: FlagEffect[], brokenEffects: FlagEffect[] }
 ```
 
 `FlagExpr`: flat AND-list of `flag` / `!flag` strings. Flags are the entire story state:
@@ -139,7 +144,8 @@ MatchConfig { id, homeTeamId, awayTeamId(orPLAYER), arenaId, rules: {bells, time
   atomic write, keep previous version until commit), `settings` in localStorage for
   pre-boot read (mute/reduced-motion needed before IDB opens).
 - `SaveV1 { schemaVersion:1, buildVersion, updatedAt, flags: string[], counters:
-  Record<string,number>, stats, lineup, inventory, equipped, shells, chapter,
+  Record<string,number>, trust: Record<string,number>, promises:
+  Record<string,'kept'|'broken'>, stats, lineup, inventory, equipped, shells, chapter,
   matchCheckpoint? }`
 - Migrations: pure functions `migrateV1toV2` etc. with fixtures under `tests/`; forward
   one version at a time (Master Plan). Corrupt save → keep diagnostic copy, offer
@@ -169,6 +175,7 @@ Key specialisations:
 |---|---|
 | Vitest unit | Match FSM transitions; goal/tackle/possession resolution incl. edge cases (simultaneous touch, goal-line, corner wedges); stamina; charge curves; AI utility scoring per profile (property tests: parked-bus profile never leaves own third, etc.); quest engine; flag expressions; Ledger; save migrations; reward idempotency; content validation of ALL shipped JSON |
 | Determinism test | Same seed + recorded input script ⇒ byte-identical match result & counters (run in CI) |
+| Deterministic debug scenarios (adopted from THREEFOLD; run in CI + `dev/` launcher) | `possession_duel` (mirrored contest of a free ball resolves consistently), `wall_pass` (fixed-angle pass into each wall verifies rebound path), `goal_post_edges` (shots grazing posts/line corners; no duplicate score), `worst_press` (all 6 players + max VFX + crowd), `result_resume` (background during result commit, resume twice, no double reward), `scene_churn` (hub→match→retry×30, memory settles), `tutorial_idle` (20 s no input at every tutorial beat) |
 | Playwright journeys | Cold load → title → new game → flashback → first drill; full drill run; win a match; lose → retry ≤1 s; pause/resume; backgrounding mid-match; settings persistence; save/continue |
 | Visual regression | Title, hub (each district), match kickoff, results, dialogue box — at 3 aspect ratios |
 | Device (manual, logged) | Master Plan matrix tiers A/B every candidate build |

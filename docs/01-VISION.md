@@ -22,7 +22,7 @@ winning matches with pure skill, and winning people with your story.**
 | **Tone** | Earnest sports drama with warmth and humour. Blue Lock's *intensity of ego and rivalry*, but grounded: no powers, no glowing auras as mechanics (VFX flourish is fine), no dialogue longer than the player's patience. |
 | **Platform** | Mobile browser (landscape) first; desktop browser keyboard second. Installable PWA at beta. |
 
-## 3. Five polish pillars (from the Master Plan, made specific)
+## 3. Six polish pillars (from the Master Plan, made specific)
 
 1. **Immediate** — the ball obeys the player's thumb. Touch-to-action ≤100 ms P95. No
    input ever feels eaten: input buffering on passes/shots, generous tackle windows.
@@ -36,6 +36,9 @@ winning matches with pure skill, and winning people with your story.**
    doc 03.
 5. **Trustworthy** — saves after every story beat and match; resume from backgrounding
    mid-match without lost inputs or duplicated goals; offline-capable once loaded.
+6. **Ball truth** (adopted from the THREEFOLD bible) — the ball is a separate physical
+   object, never glued to feet or teleported by canned animations. A slow-motion capture
+   must show every touch, pass, tackle and rebound has a readable physical cause.
 
 ## 4. What makes it "its own world" (the Blue Lock lesson, minus abilities)
 
@@ -73,9 +76,10 @@ identity all express through the game. We copy that structure, not the powers:
 2. **No special abilities, meters, or power shots.** Skill expression only. (A charged
    shot is charging a normal shot, not a fireball.)
 3. **No open-world scale hub.** Districts are small stages, not a continuous city.
-4. **No dialogue trees with branching story outcomes.** Choices flavour responses and
-   feed "The Ledger" (doc 04), but the chapter spine is linear. (Cheap to write, cheap
-   to test.)
+4. **No branching plot machinery.** Choices flavour responses and feed relationship
+   values, tactical promises and the Ledger (doc 04 §7) — which select ending states and
+   dialogue variants — but the chapter spine is linear. No choice may be a fake branch:
+   every choice changes at least one line, flag or value.
 5. **No 11v11, 5v5 or variable team sizes.** 3v3 only, forever, in v1.
 6. **No player-created characters/customisation** beyond name entry and boot equipment.
 7. **No weather/day-night simulation.** Each district has one fixed, authored time-of-day

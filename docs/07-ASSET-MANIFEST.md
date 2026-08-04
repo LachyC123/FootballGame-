@@ -41,6 +41,68 @@ images do not ship as sprites: pixel-perfect sheets need consistent pivots, pale
 tags that generation doesn't produce. Any AI-assisted asset that IS repainted into
 compliance must record tool + prompt + editor per the Master Plan provenance table.
 
+## 2b. Concrete shopping list (specific packs & creators)
+
+> Prices, availability and licence terms change — **verify each item's current licence
+> text at purchase time** and add a row to §5 before it ships. Everything below is a
+> well-established pack/creator as of this document's writing.
+
+### Free / CC0 — get these first (near-zero risk)
+
+| Item | Where | Use here |
+|---|---|---|
+| **Kenney asset packs** (all CC0) — *UI Pack*, *Game Icons*, *Interface Sounds*, *Impact Sounds* | kenney.nl (also on itch.io) | UI-sound foundation, icon references, menu SFX. Kenney's visual style is too clean-vector for our sprites, but audio + icon sources are excellent |
+| **Juhani Junkala — "The Essential Retro Video Game Sound Effects Collection"** (CC0) | OpenGameArt / itch.io | Huge SFX base to edit into kick/whistle/UI variant pools |
+| **Daniel Linssen bitmap fonts — m5x7, m3x6, m6x11** (free) | managore.itch.io | The dialogue/HUD font family this doc set assumes; check each font's readme for its (very permissive) terms |
+| **monogram** by datagoblin (free) | datagoblin.itch.io | Alternative dialogue font with big character coverage |
+| **BDragon1727 effect packs** (free/cheap, credit required) | bdragon1727.itch.io | Pixel smoke/impact/particle sheets to recolour into our VFX grammar (doc 06 §7) |
+| **jsfxr / ChipTone** (free tools) | sfxr.me / sfbgames.itch.io | Self-generate UI blips and placeholder SFX; recipes committed for reproducibility |
+
+### Paid — high value for this specific game
+
+| Item | Where / rough price | Use here |
+|---|---|---|
+| **Aseprite** | aseprite.org, itch.io or Steam, ~US$20 | The pipeline's assumed sprite tool (tags, pivots, deterministic export). Buy this regardless of art path |
+| **LimeZu — "Modern Exteriors" (+ "Modern Interiors" if you want interior scenes)** | limezu.itch.io, ~US$10–20 each | The best-known 16×16 modern-city tileset on itch; a very strong repaint base for Solport's district hubs (harbour, market, rooftops). Licence allows commercial use with modification; no redistribution of raw assets |
+| **Seliel the Shaper — "Mana Seed Character Base"** | seliel-the-shaper.itch.io, ~US$15–30 | A layered, heavily-animated top-down character base with a big animation library and clear commercial licence. Good starting rig for **hub** walk/idle sprites and NPCs. It does NOT include football actions — kick/tackle/celebrate frames are still custom work on top |
+| **A chiptune/hybrid music pack with game licence** (e.g. Ovani Sound packs, or itch "royalty-free chiptune music pack" listings with commercial terms) | ovanisound.com / itch.io, ~US$20–60 per pack | Interim or final music. Check: loopable files, web-game use allowed, no per-title fee |
+
+### What money CANNOT buy off the shelf (both source documents agree)
+
+These must be commissioned or authored — no pack exists with our exact specs:
+
+1. **The football animation set** — 24×24, 4-direction `kick/tackle/stumble/celebrate/
+   dejected` frames matching doc 06 §3. This is the single unavoidable custom cost.
+2. **Named-character identity** — Ash, the crew, the six captains (heads/hair/kits on
+   shared bases keep this affordable).
+3. **Portraits** (32×32 busts, doc 07 §3.3).
+4. **Cage arena landmark dressing** — the Netyard nets, Kettle steam, Crucible scrap,
+   Grid neon, Royal Cage — the shared cage structure can be built once in-house.
+5. **Crew crests/pins + title art.**
+
+### Commissioning guide (if you hire a pixel artist)
+
+- Brief = doc 06 (art bible) + doc 07 §3 tables. Ask for **Aseprite source files with
+  the exact tag names in doc 06 §3**, not just PNGs.
+- Realistic indie ranges (vary widely by region/experience): full match rig for one
+  character ~US$40–120; a portrait ~US$10–30; an arena composition ~US$60–150; the
+  whole v1 sprite manifest roughly **US$800–2,000** total, or 3–5 weeks of one artist.
+- Order of purchase: 1 character rig + Netyard arena first (unblocks the Phase 2
+  vertical slice, doc 08), everything else can land during Phase 4.
+- Contract must state: commercial use, modification rights, and that source files are
+  deliverables. Record it all in §5.
+
+### Buying rules (apply to every purchase)
+
+- One pixel density: 16 px tile world — reject 32×32-native packs unless downscaling is
+  actually redrawn, and never mix densities on screen (doc 06).
+- Licence must permit commercial use AND modification; "no redistribution" is fine
+  (we ship atlases, not source packs).
+- Buy ONE base world tileset first and prove it repaints into Brine Harbor before
+  buying anything else (THREEFOLD's purchase rule, adopted).
+- Every purchase gets a §5 provenance row and its licence file saved into
+  `assets-src/licenses/`.
+
 ## 3. Sprite manifest
 
 Status values: `TODO` → `PLACEHOLDER` (in build, labelled) → `FINAL` (bible-compliant,

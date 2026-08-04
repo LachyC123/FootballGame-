@@ -10,6 +10,13 @@ who matters.
 Built to the standards of the **Mobile Browser Game Polish Master Plan** (Phaser 4 +
 TypeScript strict + Vite + PWA, phase-gated quality, physical-device-first testing).
 
+**v2 — merged bible.** This doc set is the canonical merge of two source documents:
+the original Solport Cages design (mobile-first chassis, single-screen pitch, compact
+art, district Gauntlet world) upgraded with the strongest systems from the THREEFOLD
+production bible: the independent **ball-truth** match model (doc 03 §4.2), **tactical
+promises** and per-teammate **relationship values** with four endings (doc 04 §7), and
+the **agent operating rules + ready-to-use prompts** (doc 09).
+
 ---
 
 ## Document map — read in this order
@@ -24,6 +31,7 @@ TypeScript strict + Vite + PWA, phase-gated quality, physical-device-first testi
 | [docs/06-ART-AUDIO-BIBLE.md](docs/06-ART-AUDIO-BIBLE.md) | Art direction, sprite/tile specs, UI, audio palette | Making/judging every asset |
 | [docs/07-ASSET-MANIFEST.md](docs/07-ASSET-MANIFEST.md) | Every asset the game needs + where to get it + licensing rules | Sourcing assets |
 | [docs/08-BUILD-PLAN.md](docs/08-BUILD-PLAN.md) | Phased implementation plan with acceptance gates | Executing the build, in order |
+| [docs/09-CLAUDE-OPERATIONS.md](docs/09-CLAUDE-OPERATIONS.md) | Agent contract, task report format, ready-to-use prompts, naming conventions | Running Claude Code day-to-day |
 
 ## How Claude Code should use this repo
 

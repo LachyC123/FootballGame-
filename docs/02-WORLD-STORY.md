@@ -98,7 +98,8 @@ Structure per chapter (the **Chapter Loop**, identical skeleton, authored conten
 2. **Earn the challenge** — 2–3 hub quests (talk/fetch/train/mini-match) that introduce
    the district's people and the crew's philosophy. One quest recruits/develops a
    teammate.
-3. **The match** — full 3v3 vs the crew. Loss = retry freely; story continues only on win.
+3. **The match** — full 3v3 vs the crew. Loss = retry freely; story continues only on
+   win. (Exception: the Ch.6 finale can be lost with the story continuing — see Ch.6.)
 4. **Aftermath** — pin ceremony, captain's real face shown, district NPC pools flip,
    next gate opens, Ledger scene (doc 04 §7).
 
@@ -178,11 +179,18 @@ Structure per chapter (the **Chapter Loop**, identical skeleton, authored conten
   90 s), Vey's AI profile switches to counter your most-used pattern this match
   (doc 03 §10.6 — the game's single "boss mechanic", built from existing AI parameters,
   not abilities).
-- Ending: the pin ceremony reversed — Ash offers the Monarchs' pin *back* to Tero. Two
-  endings by Ledger balance (doc 04 §7): **"King of the Cage"** (ego-heavy: crowned
-  alone, respected, a little apart — Kairo's old path) or **"The Sixth Man"** (team-heavy:
-  the crown is hung on the Netyard fence for the next kids). Both are wins; the flavour
-  differs. Post-game unlocks Endless Gauntlet with Rui/Kairo cameo opponents.
+- Ending: the pin ceremony reversed — Ash offers the Monarchs' pin *back* to Tero. Four
+  ending states selected by finale result + relationship values (rules in doc 04 §7.4):
+  - **The Sixth Man** (won, high trust + Harbor Bond): the crown is hung on the Netyard
+    fence for the next kids; the crew stays together for the next Gauntlet.
+  - **King of the Cage** (won, high Self-Image): crowned alone, respected, a little
+    apart — Kairo's old path, and he says so.
+  - **Empty Crown** (won, low crew trust): the cage is saved but the crew fractures;
+    optional post-game scenes can repair each relationship.
+  - **Next Season** (lost — the finale is the one match the story survives losing):
+    Vey keeps the crown but publicly names the crew her next challengers; the district
+    rallies; a "run it back" rematch unlocks. Hopeful, never a failure screen.
+  All four unlock Endless Gauntlet with Rui/Kairo cameo opponents.
 
 ## 4. Dialogue system requirements (narrative side; tech in doc 05 §6)
 

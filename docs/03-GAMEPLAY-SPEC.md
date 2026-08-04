@@ -40,7 +40,7 @@ doc 01 and makes instant retry painless.
 | Entity | Body | Notes |
 |---|---|---|
 | Player (×6) | Circle r=5 px, arcade body | Max speed varies by stats; facing = last non-zero move vector (8-way for sprites, 360° for physics). |
-| Ball | Circle r=3 px | Bounce 0.82 vs walls, linear drag 0.985/frame when free; "stuck to feet" state when possessed (see §4.2). |
+| Ball | Circle r=3 px | Bounce 0.82 vs walls, linear drag 0.985/frame when free; **never parented to a player** — possession is a controlled sequence of dribble touches (see §4.2). |
 | Goal sensors | Static zones | Overlap → goal resolution in domain layer (single authority; never resolve in a sprite callback). |
 | Ball shadow | Visual only | Offset by ball "height" (see §4.5). |
 
@@ -52,15 +52,39 @@ doc 01 and makes instant retry painless.
 - Base max speed 85 px/s (stat-scaled ±20%). Acceleration 600 px/s², friction 800 px/s²
   (snappy stop — arcade feel, no ice).
 - **Sprint** (hold): ×1.45 speed, drains stamina (see §5). While sprinting, turn rate is
-  limited (heavy touch): the ball is nudged 8 px ahead per touch instead of stuck — sprint
-  dribbling risks losing the ball, on purpose.
+  limited and dribble touches push the ball farther ahead (~10 px instead of ~6 px) —
+  sprint dribbling risks losing the ball, on purpose.
 
-### 4.2 Possession & dribbling
+### 4.2 Ball truth: possession & dribbling (adopted from the THREEFOLD bible)
 
-- Ball within 8 px of a player's feet and no possessor → that player gains possession
-  (0.15 s immunity from tackles on first touch = "controlled first touch").
-- While possessed at normal speed, ball is kinematically glued 6 px ahead of facing with
-  a tiny sine bobble (feel). While sprinting, knock-on model (above).
+The ball is an **independent simulated object at all times** — never parented to a
+player sprite, never teleported by an animation. Possession is a controlled sequence of
+small touches toward a dribble point. This produces visible looseness while staying
+playable, and it is the game's deepest feel investment. Non-negotiable.
+
+**Ball state machine (domain-owned):**
+
+| State | Entry | Update | Exit |
+|---|---|---|---|
+| `Free` | Kickoff, rebound, deflection, heavy touch, failed control | Velocity, drag, wall restitution every fixed tick | Valid control candidate → `FirstTouch` |
+| `FirstTouch` | Player reaches ball inside control radius (8 px) at acceptable relative speed | Velocity damped toward a reception direction over ~0.15 s; under pressure a first touch can miscontrol (Touch stat reduces the chance) | Stable → `Controlled`; intercepted or too fast → `Free` |
+| `Controlled` | Possession token assigned by domain | Periodic dribble impulses place the ball ~6 px ahead of movement (+ tiny bobble); sprint lengthens the offset to ~10 px | Pass, shot, tackle, collision, goal or heavy touch |
+| `PassFlight` | Pass released with target point + receiver hint | Ground drag; the receiver hint adds control utility but **never magnetises** the ball | `FirstTouch`, `Free`, rebound or goal |
+| `ShotFlight` | Shot released | Higher speed; stronger wall/post restitution (0.88); brief control ineligibility | Goal, rebound, or `Free` after speed decays |
+| `DeadBall` | Goal beat, pause, restart | Frozen; excluded from possession queries | Kickoff creates a fresh `Controlled` ball |
+
+**Possession resolution rules:**
+
+- **One authority:** only the domain (`MatchCore`) assigns the possession owner.
+  Animation callbacks never decide possession, goals or tackles.
+- **Candidate score:** distance, facing, relative speed, approach angle, pressure and
+  touch immunity. Two qualifiers in the same tick resolve by score; a genuine tie
+  produces a loose ball, never arbitrary ownership.
+- **Touch immunity:** the kicker cannot reclaim their own pass/shot for ~120 ms unless
+  it rebounds off a wall (wall self-passes are intended play).
+- **No teleport receive:** the ball must physically enter the receiver's control radius.
+  Pass assist only chooses the direction.
+- A clean first touch grants 0.15 s tackle immunity ("controlled first touch").
 - **No dribbling "moves" or skill buttons** in v1 — beating players is done with angle
   changes, speed changes (sprint toggling) and wall-passes. This is the "no abilities"
   doctrine expressed mechanically.
@@ -71,6 +95,15 @@ doc 01 and makes instant retry painless.
   direction, or facing if neutral). Pass speed 240 px/s + leads the receiver's movement
   (0.25 s prediction). If no teammate in cone → pass goes to nearest teammate (forgiving;
   never "no-op" on a deliberate press).
+- **Contextual through pass (no third button):** if the aimed teammate is sprinting into
+  open space, the ground pass automatically becomes a lead pass projected 0.3–0.6 s
+  ahead of their run — riskier (may run to a wall or opponent) but attack-creating.
+- **Manual aim override:** holding the stick clearly away from every auto-target passes
+  to a point on the pitch instead — maximum control, no forgiveness. Wall passes are
+  simply manual passes into a wall; there is no special wall-pass state.
+- **One-touch pass:** pressing A during the `FirstTouch` window releases the pass off
+  the reception frame without settling into control — fast combination play with higher
+  aim error under pressure. Free depth on the same two buttons.
 - Hold A ≥0.25 s with ball: **lofted pass** — ball gains "height" (see §4.5), travels over
   intervening players, cannot be intercepted mid-flight, worse first touch for receiver
   (0.3 s control delay). Risk/reward vs ground pass.
@@ -93,6 +126,9 @@ doc 01 and makes instant retry painless.
   active window. Success (contact with ball, or possessor's ball-side) → clean ball win +
   0.15 s possession immunity. Miss → 0.5 s recovery stumble (beaten). Tackling is
   positional skill, not a stat check.
+- **Rear contact never steals cleanly:** a lunge from directly behind the carrier makes
+  the tackler stumble and gives the carrier a small protection impulse — fairness
+  without a foul/referee system. AI obeys the same rule.
 - Shoulder charge: sprint + tackle within 6 px of possessor = body contest; higher
   Strength wins the ball but costs 25 stamina. (Ferra's crew uses this constantly.)
 

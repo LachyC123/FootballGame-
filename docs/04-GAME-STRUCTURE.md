@@ -118,17 +118,65 @@ Everything skippable with one press. Total non-interactive time ≤3 s.
   pure story tokens that NPCs comment on. That's the whole economy; no upgrades tree,
   no currencies beyond shells (no-go list).
 
-## 7. "The Ledger" (story-reactivity system — cheap, high-flavour)
+## 7. Story reactivity: the Ledger, relationships & tactical promises
+
+*(This section merges the THREEFOLD bible's relationship model and tactical-promise
+system into Solport's diegetic Ledger wrapper. It is the game's entire reactivity
+machinery — nothing else branches.)*
+
+### 7.1 The Ledger (diegetic wrapper)
 
 Nino keeps a notebook ("the Ledger") tracking play-pattern totals the match already
-counts: solo bells, assisted bells, wall bells, tackles, passes. Chapter-end scenes read
-the balance:
+counts: solo bells, assisted bells, wall bells, tackles, passes, promises kept. All
+reactivity below is *presented* through the Ledger — Nino reading it aloud, teammates
+arguing with it — never through HUD meters or "+1" popups.
 
-- `soloBells > assistedBells` → ego-flavoured scene variants (Tero warns, Kairo respects).
-- otherwise → team-flavoured variants (Tero softens, crew banter grows).
-- The finale ending (doc 02 Ch.6) picks **King of the Cage** vs **The Sixth Man** from
-  the whole-story balance. Implementation: one integer comparison + dialogue variant
-  keys. No branching plot machinery.
+### 7.2 Relationship values (stored in save; never shown as numbers)
+
+| Value | Range | Increases when | Decreases when | Visible consequences |
+|---|---|---|---|---|
+| **Juno Trust** | −3..+5 | Return her passes, keep promises to feed her runs, back her without indulging her ego (Ch.2 beat) | Take every shot after promising combination play; dismiss her "delivery girl" wound | Celebration variants, optional night-market scene, ending state |
+| **Bram Trust** | −3..+5 | Let him defend his way, support the Foundry reunion scene, calm responses after errors | Blame him for conceding; mock his gentleness | More honest scenes, stronger defensive call-outs, ending state |
+| **Ivy Trust** | −3..+5 | Follow her lane pings, acknowledge her reads, respect her Saints history | Ignore three pings in a match she flagged; trivialise her notebook | Better ping quality (authored, not stat), ending state |
+| **Harbor Bond** | 0..6 | Help district NPCs, complete kids' drills, choose community language in choices | Treat Solport as a stepping stone in choices | Hub decorations, crowd density at finals, epilogue state |
+| **Self-Image** | −2..+4 | Ambition statements, accepting Kairo's framing, chasing records | Collective language, admitting uncertainty | Not good/bad — changes finale narration and Kairo scenes |
+
+Rules (adopted verbatim from THREEFOLD): teammates never sabotage the player and low
+trust never degrades core control responsiveness — it changes dialogue candour, optional
+scenes and endings only. No fake branches: every choice changes at least one line, flag
+or value. Values move through authored scene effects, not farmable conversation loops.
+
+### 7.3 Tactical promises
+
+Before selected story matches, a teammate asks for a concrete behaviour. The promise is
+tracked through semantic match events the domain already emits, reported in the results
+stat strip and the post-match scene, and moves that teammate's trust. Promises encourage
+varied play but must never require throwing the match.
+
+| Promise (asker) | Tracked events | Kept when |
+|---|---|---|
+| "Feed my runs" (Juno) | `throughPassAttempted`, `passReceivedBy:juno`, `shotAfterPass` | Create 2 real Juno chances, regardless of goals |
+| "Hold the middle with me" (Bram) | `distanceFromAnchor`, `centralTurnover`, `successfulRecycle` | Stay in shape for 60% of settled possessions + 2 recycles |
+| "Use the sixth man" (Ivy) | `wallPassCompleted`, `wallBell` | Complete 3 wall passes |
+| "Take responsibility" (Tero, finale) | `playerShots`, `finalThirdTouches` | Attempt 3+ sensible shots (blocked desperation shots don't count) |
+
+Promise progress appears on the pause screen only — never a permanent objective panel
+during play. Max one active promise per match.
+
+### 7.4 Ending selection (doc 02 Ch.6 has the scene content)
+
+The finale is the ONE match that can be lost with the story continuing. Ending state is
+selected from: finale result + average crew Trust + Harbor Bond + Self-Image:
+
+| Ending | Conditions |
+|---|---|
+| **The Sixth Man** | Won; high crew Trust; high Harbor Bond |
+| **King of the Cage** | Won; high Self-Image; lower Harbor Bond |
+| **Empty Crown** | Won; low crew Trust — the cage is saved, the crew fractures; post-game scenes can repair it |
+| **Next Season** | Lost; any values — the district rallies, the crew rebuilds; hopeful, not a failure screen. Unlocks a "run it back" finale rematch |
+
+Implementation: a handful of integer comparisons + dialogue variant keys. Still no
+branching plot machinery.
 
 ## 8. Modes
 

@@ -32,10 +32,16 @@ correct safe areas and rotate overlay; docs 01–07 exist (done); repo pushes cl
 
 The riskiest thing in this game = **3v3 feel on touch**. Build ONLY the match.
 
-- [ ] Domain `MatchCore`: fixed-step sim, ball physics (drag/bounce/height z), pitch +
-      corner wedges, possession/first-touch, pass (ground/loft/lead), shot (charge/
-      assist cone), tackle/stumble, shoulder charge, stamina, goals, clock, match FSM
-      (doc 03 §11) — pure, unit-tested, deterministic (seed test in CI).
+- [ ] Domain `MatchCore`: fixed-step sim, **ball-truth state machine** (doc 03 §4.2 —
+      independent ball, Free/FirstTouch/Controlled/PassFlight/ShotFlight/DeadBall, never
+      parented to a player), pitch + corner wedges, possession candidate scoring + touch
+      immunity, pass (ground/loft/contextual-through/one-touch/manual aim), shot
+      (charge/assist cone), tackle/stumble + rear-contact rule, shoulder charge,
+      stamina, goals, clock, match FSM (doc 03 §11) — pure, unit-tested, deterministic
+      (seed test in CI).
+- [ ] Deterministic debug scenarios wired into CI + dev launcher: `possession_duel`,
+      `wall_pass`, `goal_post_edges` (doc 05 §9). Debug overlay for ball velocity,
+      control radius and owner.
 - [ ] Gameplay binding: MatchScene renders domain state with placeholder kit
       (doc 07 §6); input pipeline (touch stick + 2 buttons + keyboard) → semantic
       actions with 120 ms buffer; pointercancel clears state.
@@ -48,7 +54,12 @@ The riskiest thing in this game = **3v3 feel on touch**. Build ONLY the match.
 **Acceptance (test on a real phone — document device + notes):** a full 3v3 match is
 playable start→finish on iPhone-class Safari AND mid Android Chrome at stable frame
 rate; touch controls pass the "eyes stay on the pitch" check; suspend/resume mid-match
-is safe; determinism test green. **This phase decides tuning values — expect iteration.**
+is safe; determinism + debug scenarios green; a slow-motion capture shows every touch,
+pass, tackle and rebound has a readable physical cause — no glue, no teleport ("ball
+truth" pillar). **This phase decides tuning values — expect iteration.**
+
+> **MANDATORY PAUSE** — stop here. The user reviews the playable build on a physical
+> device and accepts the feel evidence before Phase 2 begins.
 
 ## Phase 2 — Vertical slice (G2: one polished minute proves the whole game)
 
@@ -72,6 +83,9 @@ meet Tero/Nino (dialogue) → match vs Gulls → results/pin → Ledger stinger.
 role/goal/threat; completes flashback→first win without help; budgets hold (initial JS,
 first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pass.
 
+> **MANDATORY PAUSE** — stop here. External playtest + user review of the slice on a
+> physical device gates entry into Phase 3.
+
 ## Phase 3 — Systems complete (G3: content can be added without engineering)
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller
@@ -80,6 +94,10 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 - [ ] Quest engine: all five step types data-driven; chapter advancement; Nino
       quest-restate behaviour.
 - [ ] Shop, inventory/equip (+1 stat boots), shells economy, results-reward idempotency.
+- [ ] Story-reactivity engine (doc 04 §7): relationship values + effects, tactical
+      promise tracking from semantic match events, Ledger presentation, ending
+      evaluation function — all with unit tests (every choice changes ≥1 flag/value/line;
+      promise completion deterministic; result commit cannot double-apply story effects).
 - [ ] Training minigames ×3 as MatchScene variants with target scores.
 - [ ] Remaining AI profiles implemented + dev AI visualiser; difficulty reaction-time
       scaling; showboat + physicality behaviours; Vey adaptation hook (behind flag).
@@ -101,13 +119,17 @@ crew + dialogue + tests before the next chapter starts:
 - [ ] Ch.3 Old Cobble (Saints, Ivy recruitment, shooting gallery)
 - [ ] Ch.4 Foundry (Ironworks, gauntlet shift, Bram beat)
 - [ ] Ch.5 Voltside (Volt FC, Kairo scenes, hidden Rui quest)
-- [ ] Ch.6 Crown Point (Monarchs, Vey adaptation ON, dual endings via Ledger, credits)
+- [ ] Ch.6 Crown Point (Monarchs, Vey adaptation ON, four endings via doc 04 §7.4
+      incl. losable finale, credits)
 - [ ] Endless Gauntlet mode; local streak records; cameo teams.
 - [ ] Ambient NPC pools ×6 districts (pre/post win); barks for all captains; DJ Tide
       lines; landmark interactions.
 
 **Acceptance per chapter:** completable start→finish on device; content validation
 green; visual baseline screenshots approved; chapter's district NPC pools flip on win.
+
+> **MANDATORY PAUSE** — stop after Ch.6 lands. Full-campaign review on a physical
+> device before hardening begins.
 
 ## Phase 5 — Alpha → Beta hardening (G4)
 
@@ -138,6 +160,9 @@ green; visual baseline screenshots approved; chapter's district NPC pools flip o
 
 ## Standing rules for every phase (Master Plan AI contract)
 
+0. **Operate per doc 09** — the agent operating rules, task report format and
+   ready-to-use prompts. Every phase ends with the doc 09 report and a PASS/FAIL gate
+   status; never continue past a FAIL or a MANDATORY PAUSE.
 1. **Task packet discipline:** one player-visible outcome per task; include tests +
    evidence; note budget deltas.
 2. **Never** add a dependency, change input grammar, alter save schema, or expand scope
