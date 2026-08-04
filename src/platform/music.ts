@@ -18,6 +18,27 @@ interface Track {
 }
 
 const TRACKS: Record<string, Track> = {
+  // Spicegate: D-phrygian sway — the flat second reads as market haze; busier
+  // hats stand in for hand drums.
+  market: {
+    bpm: 96,
+    steps: 64,
+    bassVol: 0.10,
+    leadVol: 0.042,
+    bass: [
+      [0, 38, 6], [8, 38, 3], [12, 41, 3],
+      [16, 39, 6], [24, 38, 3], [28, 36, 3],
+      [32, 38, 6], [40, 43, 3], [44, 41, 3],
+      [48, 39, 6], [56, 38, 6],
+    ],
+    lead: [
+      [0, 62, 3], [4, 63, 2], [8, 65, 4],
+      [16, 67, 3], [20, 65, 2], [24, 63, 4],
+      [32, 70, 3], [36, 69, 2], [40, 67, 4],
+      [48, 63, 3], [52, 62, 8],
+    ],
+    hats: [0, 6, 8, 14, 16, 22, 24, 30, 32, 38, 40, 46, 48, 54, 56, 62],
+  },
   // "Lowline Dawn" energy: sparse D-minor lull for title/story.
   harbor: {
     bpm: 84,

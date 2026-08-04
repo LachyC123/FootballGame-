@@ -90,6 +90,8 @@ export class HubScene extends Phaser.Scene {
   private sequence: SeqStep[] = [];
   private sequenceIndex = -1;
   private stepClock = 0;
+  private stepDust!: Phaser.GameObjects.Particles.ParticleEmitter;
+  private lastObjective: string | null = null;
 
   constructor() {
     super('Hub');
@@ -124,13 +126,31 @@ export class HubScene extends Phaser.Scene {
     this.inDialogue = false;
     this.prevInteract = true;
     this.stepClock = 0;
+    this.lastObjective = null;
 
     if (this.district === 'harbor') this.drawHarbor();
     else this.drawSpicegate();
 
     this.sfxp = new SfxPlayer(this);
-    music.play('harbor');
+    music.play(this.district === 'spicegate' ? 'market' : 'harbor');
     fadeIn(this);
+
+    // Footstep dust puffs (shared pixel texture with MatchScene).
+    if (!this.textures.exists('px-dust')) {
+      const dg = this.make.graphics({ x: 0, y: 0 }, false);
+      dg.fillStyle(0x8a8f98);
+      dg.fillRect(0, 0, 2, 2);
+      dg.generateTexture('px-dust', 2, 2);
+      dg.destroy();
+    }
+    this.stepDust = this.add.particles(0, 0, 'px-dust', {
+      speed: { min: 6, max: 22 },
+      lifespan: 320,
+      quantity: 0,
+      alpha: { start: 0.5, end: 0 },
+      emitting: false,
+    });
+    this.stepDust.setDepth(3);
 
     const spawn = this.district === 'harbor' ? { x: 90, y: 210 } : { x: 40, y: 190 };
     this.player = {
@@ -510,9 +530,29 @@ export class HubScene extends Phaser.Scene {
   // ---- per-frame ----------------------------------------------------------
 
   override update(_time: number, deltaMs: number): void {
-    this.objectiveText.setText(this.objective()).setVisible(this.objective() !== '');
+    const objective = this.objective();
+    if (objective !== this.lastObjective) {
+      // New marching orders: the chip slides in and glints gold for a beat.
+      this.lastObjective = objective;
+      this.objectiveText.setText(objective).setVisible(objective !== '');
+      if (objective !== '') {
+        this.objectiveText.setX(-this.objectiveText.width).setAlpha(0.4);
+        this.objectiveText.setColor('#f2c14e');
+        this.tweens.add({
+          targets: this.objectiveText,
+          x: 6,
+          alpha: 1,
+          duration: 320,
+          ease: 'Cubic.easeOut',
+          onComplete: () => this.objectiveText.setColor('#e8e3d0'),
+        });
+      }
+    }
     if (this.inDialogue || this.sequenceIndex >= 0) return;
-    const dt = Math.min(deltaMs / 1000, 0.05);
+    // Generous dt cap: hub movement is a clamped box, not physics, so honour
+    // real elapsed time even on slow devices — a tight cap silently eats walk
+    // distance at low fps and makes gates unreachable.
+    const dt = Math.min(deltaMs / 1000, 0.25);
     const cmd = this.inputSvc.sample();
     const state = this.player.state;
 
@@ -526,6 +566,7 @@ export class HubScene extends Phaser.Scene {
       if (this.stepClock > 0.34) {
         this.stepClock = 0;
         this.sfxp.play('step', 0.08, 350);
+        this.stepDust.emitParticleAt(state.pos.x, state.pos.y + 8, 2);
       }
     } else {
       state.vel.x = 0;
@@ -600,6 +641,19 @@ export class HubScene extends Phaser.Scene {
     g.fillRect(0, 40, GAME_WIDTH, 40);
     g.fillStyle(0xf2c14e, 0.08);
     for (let i = 0; i < 8; i++) g.fillRect(30 + i * 60, 48 + (i % 3) * 9, 26, 1);
+    // Living water: glints that drift with an unseen swell.
+    for (let i = 0; i < 4; i++) {
+      const glintLine = this.add.rectangle(50 + i * 110, 52 + (i % 3) * 8, 18, 1, 0xf2c14e, 0.16);
+      this.tweens.add({
+        targets: glintLine,
+        x: glintLine.x + 26,
+        alpha: 0.04,
+        duration: 2600 + i * 700,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
     g.fillStyle(0x39424e);
     g.fillRect(0, 78, GAME_WIDTH, 6);
     g.fillStyle(0x23262d);
@@ -817,6 +871,22 @@ export class HubScene extends Phaser.Scene {
       frequency: 260,
     });
     steam.setDepth(2);
+    // Spice haze: gold motes drifting up through the lantern light.
+    for (let i = 0; i < 8; i++) {
+      const mote = this.add
+        .rectangle(50 + i * 52, 110 + (i % 4) * 34, 1, 1, 0xf2c14e, 0.5)
+        .setDepth(6);
+      this.tweens.add({
+        targets: mote,
+        y: mote.y - 26,
+        x: mote.x + (i % 2 === 0 ? 10 : -10),
+        alpha: 0,
+        duration: 5200 + i * 640,
+        repeat: -1,
+        delay: i * 800,
+        ease: 'Sine.easeInOut',
+      });
+    }
     // West road back to the harbor.
     g.fillStyle(0x2d2622);
     g.fillRect(0, 176, 36, 28);

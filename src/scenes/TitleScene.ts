@@ -172,19 +172,19 @@ export class TitleScene extends Phaser.Scene {
     });
 
     entries.forEach((entry, i) => {
-      this.buttons.push(
-        makeButton(
-          this,
-          cx,
-          130 + i * 24,
-          entry.label,
-          () => {
-            this.sfxp.play('uiConfirm', 0.6);
-            entry.action();
-          },
-          { primary: entry.primary ?? false, width: 190 },
-        ),
+      const button = makeButton(
+        this,
+        cx,
+        130 + i * 24,
+        entry.label,
+        () => {
+          this.sfxp.play('uiConfirm', 0.6);
+          entry.action();
+        },
+        { primary: entry.primary ?? false, width: 190 },
       );
+      button.appear(i * 70);
+      this.buttons.push(button);
     });
     const first = entries[0];
     if (first) {
@@ -244,6 +244,21 @@ export class TitleScene extends Phaser.Scene {
     g.strokeRect(392, 186, 76, 62);
     g.lineStyle(1, 0x39424e, 0.6);
     for (let x = 398; x < 466; x += 8) g.lineBetween(x, 186, x - 4, 248);
+
+    // A gull crossing the sunset, over and over, because it lives here.
+    const gullBird = this.add
+      .text(-16, 72, '⌄', { fontFamily: 'monospace', fontSize: '10px', color: '#131722' })
+      .setAlpha(0.85);
+    this.tweens.add({
+      targets: gullBird,
+      x: GAME_WIDTH + 16,
+      duration: 16000,
+      repeat: -1,
+      repeatDelay: 5000,
+      onUpdate: () => {
+        gullBird.y = 72 + Math.sin(gullBird.x / 30) * 5;
+      },
+    });
 
     // Moored boats + buoy on the water.
     g.fillStyle(0x131722);

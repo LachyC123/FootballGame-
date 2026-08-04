@@ -43,6 +43,7 @@ export class DialogueScene extends Phaser.Scene {
   private typing = false;
   private typeTimer: Phaser.Time.TimerEvent | null = null;
   private nodeFlagsApplied = false;
+  private lastSpeaker = '';
 
   constructor() {
     super('Dialogue');
@@ -54,17 +55,18 @@ export class DialogueScene extends Phaser.Scene {
     if (!graph) throw new Error(`Unknown dialogue: ${data.dialogueId}`);
     this.graph = graph;
     this.flags = [];
+    this.lastSpeaker = '';
     this.sfxp = new SfxPlayer(this);
 
     const px = 10;
     const pw = GAME_WIDTH - 20;
     const ph = 78;
     const py = GAME_HEIGHT - ph - 8;
-    this.add.rectangle(px + pw / 2 + 2, py + ph / 2 + 3, pw, ph, 0x000000, 0.45);
+    const shadow = this.add.rectangle(px + pw / 2 + 2, py + ph / 2 + 3, pw, ph, 0x000000, 0.45);
     this.panel = this.add
       .rectangle(px + pw / 2, py + ph / 2, pw, ph, 0x131118, 0.96)
       .setStrokeStyle(1, 0xf2c14e, 0.85);
-    this.add.rectangle(px + pw / 2, py + 1, pw - 2, 1, 0x2a2433, 1);
+    const topEdge = this.add.rectangle(px + pw / 2, py + 1, pw - 2, 1, 0x2a2433, 1);
     this.portraitImg = this.add.image(px + 26, py + ph / 2, '__DEFAULT').setScale(2);
     this.nameText = this.add.text(px + 50, py + 4, '', {
       fontFamily: FONT_BODY,
@@ -89,6 +91,19 @@ export class DialogueScene extends Phaser.Scene {
       repeat: -1,
     });
 
+    // The panel arrives — slides up and settles instead of blinking on.
+    const root = this.add.container(0, 0, [
+      shadow,
+      this.panel,
+      topEdge,
+      this.portraitImg,
+      this.nameText,
+      this.bodyText,
+      this.promptTri,
+    ]);
+    root.setY(16).setAlpha(0);
+    this.tweens.add({ targets: root, y: 0, alpha: 1, duration: 180, ease: 'Cubic.easeOut' });
+
     this.input.on('pointerdown', this.advance, this);
     this.input.keyboard?.on('keydown-J', this.advance, this);
     this.input.keyboard?.on('keydown-SPACE', this.advance, this);
@@ -106,9 +121,18 @@ export class DialogueScene extends Phaser.Scene {
     this.clearChoices();
 
     const meta = SPEAKERS[node.speaker] ?? SPEAKERS['system']!;
+    const speakerChanged = node.speaker !== this.lastSpeaker;
+    this.lastSpeaker = node.speaker;
     this.nameText.setText(meta.name);
     if (meta.portrait && this.textures.exists(meta.portrait)) {
       this.portraitImg.setTexture(meta.portrait).setVisible(true);
+      if (speakerChanged) {
+        // New voice in the conversation: portrait pops, name glints.
+        this.portraitImg.setScale(1.4);
+        this.tweens.add({ targets: this.portraitImg, scale: 2, duration: 170, ease: 'Back.easeOut' });
+        this.nameText.setAlpha(0.3);
+        this.tweens.add({ targets: this.nameText, alpha: 1, duration: 200 });
+      }
     } else {
       this.portraitImg.setVisible(false);
     }

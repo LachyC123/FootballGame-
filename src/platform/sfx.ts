@@ -67,6 +67,7 @@ export function resumeAllAudio(): void {
 
 let crowdSrc: AudioBufferSourceNode | null = null;
 let crowdGain: GainNode | null = null;
+let crowdBase = 0.05;
 
 /** Looping filtered-noise crowd bed (docs/07 §6 allows a generated crowd loop). */
 export const crowd = {
@@ -74,6 +75,7 @@ export const crowd = {
     if (loadSettings().muted) return;
     const ac = audio();
     if (!ac || crowdSrc) return;
+    crowdBase = volume;
     const len = Math.floor(ac.sampleRate * 2);
     const buffer = ac.createBuffer(1, len, ac.sampleRate);
     const data = buffer.getChannelData(0);
@@ -100,6 +102,16 @@ export const crowd = {
     crowdGain?.disconnect();
     crowdSrc = null;
     crowdGain = null;
+  },
+  /** Roar: the bed surges (goal = big, near-miss = short gasp) then settles. */
+  swell(mult = 4, fallS = 1.8): void {
+    const ac = audio();
+    if (!ac || !crowdGain) return;
+    const t = ac.currentTime;
+    crowdGain.gain.cancelScheduledValues(t);
+    crowdGain.gain.setValueAtTime(crowdGain.gain.value, t);
+    crowdGain.gain.linearRampToValueAtTime(crowdBase * mult, t + 0.1);
+    crowdGain.gain.linearRampToValueAtTime(crowdBase, t + fallS);
   },
 };
 

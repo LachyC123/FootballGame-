@@ -148,7 +148,20 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > sight) — plus floodlight cones and corner kit clutter. Title key art:
 > moored boats, buoy, quay crates, lamppost, Nino perched watching. Flashback:
 > sepia crowd ring that fades out on the conceded goal ("the crowd goes
-> quiet — and then it goes away"). Next: Old Cobble (Ch.3), Ivy.
+> quiet — and then it goes away"). **Presentation polish pass (2026-08-04):**
+> third music track 'market' (D-phrygian, 96bpm) plays in Spicegate; crowd
+> bed now SWELLS — full roar on goals, a shorter gasp off the post, a long
+> settle over the win screen; on a bell the crowd band physically jumps and
+> confetti drops from the stands, and a second ring blooms off the scorer;
+> win screen rains confetti. Hub: footstep dust puffs, harbor water glints
+> drift with the swell, Spicegate air carries gold spice motes, the
+> objective chip slides in and glints gold whenever the orders change.
+> Title menu buttons stagger in; a gull crosses the sunset on loop.
+> Dialogue panel slides up and settles; portraits pop when a new speaker
+> takes over. Bugfix caught by e2e: hub walk dt cap (0.05s) silently ate
+> walk distance at low fps, making gates unreachable on slow devices —
+> raised to 0.25s; journeys now run serial workers with failure
+> screenshots. Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

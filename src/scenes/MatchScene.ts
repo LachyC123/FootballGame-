@@ -532,6 +532,7 @@ export class MatchScene extends Phaser.Scene {
       }
       case 'postHit':
         this.sfxp.play('post', 0.9);
+        crowd.swell(2.5, 1); // the gasp
         this.hitStop(50);
         this.slowMo(0.85, 250); // near-miss dilation (docs/03 §6)
         shake(80, 0.003);
@@ -552,6 +553,33 @@ export class MatchScene extends Phaser.Scene {
         this.shockwave(px, py);
         this.time.delayedCall(80, () => this.shockwave(px, py, 0xe8e3d0));
         this.confetti.emitParticleAt(px, py, 40);
+        // The stands answer: roar swell, crowd band jumps, confetti from above.
+        crowd.swell(e.team === 0 ? 4.5 : 2.5, e.team === 0 ? 2 : 1.2);
+        if (this.crowdA && this.crowdB && !reduced) {
+          this.tweens.add({
+            targets: [this.crowdA, this.crowdB],
+            y: -2,
+            duration: 110,
+            yoyo: true,
+            repeat: 9,
+          });
+        }
+        if (e.team === 0 && !reduced) {
+          this.time.addEvent({
+            delay: 70,
+            repeat: 12,
+            callback: () => {
+              const rx = 30 + ((Math.random() * (GAME_WIDTH - 60)) | 0);
+              this.confetti.emitParticleAt(rx, 14, 2);
+            },
+          });
+        }
+        // Scorer spotlight: a second ring blooms off whoever rang it.
+        if (e.playerId) {
+          this.flashPlayer(e.playerId);
+          const sp = this.core.snapshot().players.find((p) => p.id === e.playerId);
+          if (sp) this.time.delayedCall(160, () => this.shockwave(sp.pos.x, sp.pos.y, 0x7bd88f));
+        }
         this.bellText
           .setText(e.team === 0 ? 'BELL!' : 'CONCEDED')
           .setColor(e.team === 0 ? '#f2c14e' : '#c2643a')
@@ -656,6 +684,18 @@ export class MatchScene extends Phaser.Scene {
     const dim = this.add
       .rectangle(cx, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x0e0e14, 0.75)
       .setDepth(30);
+    if (won && !loadSettings().reducedMotion) {
+      crowd.swell(3.5, 3);
+      this.confetti.setDepth(33);
+      this.time.addEvent({
+        delay: 110,
+        repeat: 24,
+        callback: () => {
+          const rx = 20 + ((Math.random() * (GAME_WIDTH - 40)) | 0);
+          this.confetti.emitParticleAt(rx, 8 + ((Math.random() * 30) | 0), 2);
+        },
+      });
+    }
     const panel = drawPanel(this, cx - 110, 56, 220, 158, 30);
     const title = this.add
       .text(cx, 74, won ? 'FULL TIME — CREW WIN' : h < a ? `FULL TIME — ${this.arena.awayLabel} WIN` : 'FULL TIME', {

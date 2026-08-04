@@ -48,6 +48,8 @@ export function drawPanel(
 export interface UiButton {
   destroy(): void;
   setLabel(label: string): void;
+  /** Entrance animation: fade + settle from a few pixels below. */
+  appear(delayMs: number): void;
 }
 
 export function makeButton(
@@ -95,6 +97,20 @@ export function makeButton(
       text.destroy();
     },
     setLabel: (l: string) => text.setText(l),
+    appear: (delayMs: number) => {
+      bg.setAlpha(0);
+      text.setAlpha(0);
+      bg.y += 6;
+      text.y += 6;
+      scene.tweens.add({
+        targets: [bg, text],
+        alpha: 1,
+        y: '-=6',
+        duration: 220,
+        delay: delayMs,
+        ease: 'Cubic.easeOut',
+      });
+    },
   };
 }
 
