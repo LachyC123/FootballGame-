@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BootScene } from '../scenes/BootScene';
 import { PreloadScene } from '../scenes/PreloadScene';
 import { TitleScene } from '../scenes/TitleScene';
+import { MatchScene } from '../scenes/MatchScene';
 import { installLifecycle } from '../platform/lifecycle';
 import { GAME_HEIGHT, GAME_WIDTH } from './constants';
 
@@ -17,7 +18,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, TitleScene],
+  scene: [BootScene, PreloadScene, TitleScene, MatchScene],
 });
 
 installLifecycle(game);

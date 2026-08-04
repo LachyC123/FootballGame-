@@ -57,12 +57,22 @@ export class TitleScene extends Phaser.Scene {
       })
       .setOrigin(1, 1);
 
-    this.input.once('pointerdown', () => {
-      unlockAudio(this);
-      this.unlocked = true;
-      prompt.setText('MENU: coming in Phase 2').setAlpha(1);
-      this.tweens.killTweensOf(prompt);
-    });
+    let stage: 0 | 1 = 0;
+    const onPress = (): void => {
+      if (stage === 0) {
+        stage = 1;
+        unlockAudio(this);
+        this.unlocked = true;
+        this.tweens.killTweensOf(prompt);
+        prompt.setText('AGAIN — FRIENDLY VS THE GULLS').setAlpha(1);
+        return;
+      }
+      this.input.off('pointerdown', onPress);
+      this.input.keyboard?.off('keydown', onPress);
+      this.scene.start('Match', {});
+    };
+    this.input.on('pointerdown', onPress);
+    this.input.keyboard?.on('keydown', onPress);
 
     if (window.__SOLPORT__) {
       window.__SOLPORT__.scene = 'Title';

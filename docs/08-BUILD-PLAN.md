@@ -65,6 +65,17 @@ is safe; determinism + debug scenarios green; a slow-motion capture shows every 
 pass, tackle and rebound has a readable physical cause — no glue, no teleport ("ball
 truth" pillar). **This phase decides tuning values — expect iteration.**
 
+> **Phase 1 implementation status (2026-08-04): code complete, awaiting the device
+> gate.** MatchCore (ball-truth FSM, pass/loft/one-touch/through, charge shot, tackle +
+> rear-contact + shoulder, stamina, goals/clock/golden-goal), SimpleAi (CHASE/CARRY/
+> SUPPORT/GUARD, press-commit), touch+keyboard input pipeline, HUD v0, placeholder feel
+> layer (SFX synth, shake, particles, toasts), results + retry. 42 unit tests incl.
+> `wall_pass`, `possession_duel`, `goal_post_edges`, determinism; 4 Chromium journeys.
+> The reflect() tangential-damping bug was caught by the wall_pass scenario. Remaining
+> to close the gate: the user plays it on a physical phone (GitHub Pages deploy
+> workflow added — enable Pages → Source: GitHub Actions) and the feel-tuning pass
+> reacts to that evidence.
+
 > **MANDATORY PAUSE** — stop here. The user reviews the playable build on a physical
 > device and accepts the feel evidence before Phase 2 begins.
 

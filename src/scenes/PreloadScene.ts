@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import { getStartOverride } from '../dev/launcher';
 
 /**
  * Preload: loads only the next playable route. Phase 0 has no assets yet;
@@ -18,6 +19,7 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('Title');
+    const override = getStartOverride();
+    this.scene.start(override?.scene ?? 'Title');
   }
 }

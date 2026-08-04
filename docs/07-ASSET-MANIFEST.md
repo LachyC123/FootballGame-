@@ -169,7 +169,10 @@ Singles: Mabel, Nino, Salt, Nadia, Ossian, Ferra, Oro, Sable, DJ Tide badge. —
 
 | Asset keys | Source (URL/author) | Licence | Proof/terms saved at | Modifications | Approved by |
 |---|---|---|---|---|---|
-| *(empty — every row added before the asset's first FINAL merge)* | | | | | |
+| `sfx-*` (impact family sources) | Kenney — "Impact Sounds 1.0", kenney.nl | CC0 1.0 | `assets-src/licenses/kenney-impact-sounds-LICENSE.txt` | trim/layer/pitch per doc 06 §8 | user (uploaded 2026-08) |
+| `sfx-*` (UI family sources) | Kenney — "Interface Sounds 1.0", kenney.nl | CC0 1.0 | `assets-src/licenses/kenney-interface-sounds-LICENSE.txt` | trim/layer/pitch per doc 06 §8 | user (uploaded 2026-08) |
+| `fonts` (dialogue/HUD) | Daniel Linssen — m5x7, managore.itch.io/m5x7 | Free per itch page ("use however you like"; attribution appreciated — credit in Credits) | itch page terms; TTF at `assets-src/fonts/m5x7.ttf` | bitmap-font conversion | user (uploaded 2026-08) |
+| `fonts` (display/score) | Daniel Linssen — m6x11plus, managore.itch.io/m6x11 | Free per itch page (as above — credit in Credits) | itch page terms; TTF at `assets-src/fonts/m6x11plus.ttf` | bitmap-font conversion | user (uploaded 2026-08) |
 
 Rules (Master Plan §9): no asset ships without a row here; example/demo media from any
 engine or tutorial repo never ships; fonts need their licence text bundled in Credits;
