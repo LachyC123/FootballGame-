@@ -120,6 +120,18 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 
 ## Phase 3 — Systems complete (G3: content can be added without engineering)
 
+> **Phase 3 progress (2026-08-04): Chapter 1 restructured to play IN PLACE
+> (purposeful placement pass).** The StoryScene slideshow is gone. New Game now
+> runs: flashback → arrive in walkable Brine Harbor → objective chip ("Find
+> Coach Tero") → intro dialogue AT Tero → crew appears in the hub → gate reads
+> "CHALLENGE THE GULLS" → drills + match + aftermath run through the cage gate
+> → pin ceremony on the quay → Kairo stinger cutscene (Voltside, he watched it
+> twice) → free roam with post-win NPC states. Flag-driven NPC presence
+> (Juno/Bram appear after the intro; Salt only after losing the pin), dynamic
+> per-NPC dialogue, 3-state gate. Journey test walks the entire flow with real
+> movement input. Next: quest-step engine generalization + Spicegate (Ch.2).
+
+
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller
       (patrols, interaction prompts, condition-matched dialogue), triggers, gates,
       fast-travel signposts, quest HUD line.

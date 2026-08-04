@@ -239,7 +239,7 @@ export class MatchScene extends Phaser.Scene {
         { width: 150 },
       );
       const quit = makeButton(this, cx, 178, 'QUIT TO TITLE', () => {
-        this.scene.stop('Story');
+        if (this.scene.isSleeping('Hub')) this.scene.stop('Hub');
         music.stop(300);
         transitionTo(this, 'Title');
       }, { width: 150 });

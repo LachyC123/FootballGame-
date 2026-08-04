@@ -264,7 +264,60 @@
       },
       "a5": {
         "speaker": "system",
-        "text": "PIN EARNED — THE BRINE GULLS\nChapter 1 (vertical slice) complete. Spicegate arrives in the next build.",
+        "text": "PIN EARNED — THE BRINE GULLS\nSpicegate is next on the ladder. (Arrives in the next build.)",
+        "end": true
+      }
+    }
+  },
+  "hub_juno": {
+    "start": "j1",
+    "nodes": {
+      "j1": {
+        "speaker": "juno",
+        "text": "warmups done. done TWICE.\nare we doing this or are we doing this?",
+        "next": "j2"
+      },
+      "j2": {
+        "speaker": "juno",
+        "text": "(she nods at the cage gate)\nGulls first. History after.",
+        "end": true
+      }
+    }
+  },
+  "hub_bram": {
+    "start": "b1",
+    "nodes": {
+      "b1": {
+        "speaker": "bram",
+        "text": "...I checked the nets on the goals.\nThey'll hold. Probably.",
+        "next": "b2"
+      },
+      "b2": {
+        "speaker": "bram",
+        "text": "If I knock someone over,\ntell them I said sorry in advance.",
+        "end": true
+      }
+    }
+  },
+  "hub_nino_early": {
+    "start": "e1",
+    "nodes": {
+      "e1": {
+        "speaker": "nino",
+        "text": "The Ledger is READY. Page one: ASH RETURNS.\nPage two is blank. That's where the Gulls go.",
+        "next": "e2"
+      },
+      "e2": {
+        "speaker": "nino",
+        "text": "Also — why is it called SOLPORT? Nobody will tell me.\nAdults get so WEIRD about it.",
+        "next": "e3",
+        "setFlags": [
+          "undertide.question"
+        ]
+      },
+      "e3": {
+        "speaker": "nino",
+        "text": "New Ledger page: THE BIG QUESTION.\nI drew empty boxes and everything.",
         "end": true
       }
     }

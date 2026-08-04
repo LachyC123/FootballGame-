@@ -141,14 +141,14 @@ export class TitleScene extends Phaser.Scene {
         primary: true,
         action: () => {
           this.registry.set('flags', []);
-          transitionTo(this, 'Story');
+          transitionTo(this, 'Flashback');
         },
       },
     ];
     if (hasSave) {
       entries.push({
         label: chapterDone ? 'CONTINUE — BRINE HARBOR' : 'CONTINUE',
-        action: () => transitionTo(this, chapterDone ? 'Hub' : 'Story'),
+        action: () => transitionTo(this, 'Hub'),
       });
     }
     entries.push({

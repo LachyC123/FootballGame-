@@ -10,6 +10,7 @@ import {
 import { SfxPlayer } from '../platform/sfxPlayer';
 import { music } from '../platform/music';
 import { loadSettings } from '../platform/settings';
+import { transitionTo } from '../presentation/ui';
 
 /**
  * Ch.1 cold open (docs/02, docs/04 §3.1): the Netyard final, three years ago.
@@ -205,9 +206,7 @@ export class FlashbackScene extends Phaser.Scene {
   }
 
   private done(): void {
-    if (window.__SOLPORT__) window.__SOLPORT__.scene = 'Story';
-    this.scene.stop();
-    this.game.events.emit('flashback-done');
+    transitionTo(this, 'Hub', undefined, 500);
   }
 
   private drawSepiaNetyard(): void {
