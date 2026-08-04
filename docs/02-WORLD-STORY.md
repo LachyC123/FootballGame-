@@ -41,6 +41,116 @@ Each district hub map contains: the cage (match entry), 2–4 story NPCs, 3–6 
 NPCs, one landmark interaction (flavour), and a connection gate to the next district
 (locked until that chapter unlocks).
 
+## 1b. THE UNDERTIDE — the hidden story (the game's soul; spoilers for everything)
+
+> Design intent: an Outer Wilds-shaped secret — a quiet, personal truth that has been
+> **hiding in plain sight since the title screen**, assembled by the player from
+> optional fragments, which recontextualizes every name, colour and ritual in the game
+> without changing a single match or chapter. The surface story (beat the districts,
+> face the Monarchs) is complete on its own; the Undertide is what makes it ache.
+
+### The truth
+
+**Solport is Sol's port.** Not sun — a person. **Sol Marrow**: dockworker, striker,
+the first King of the Cage, the reason there are cages at all. Three more truths nest
+inside that one, revealed in this order:
+
+1. **The rituals are her.** Goals are "bells" because her crew rang the harbor bell
+   when she scored. The chalk crescent on every pitch is half of her crest — the
+   eclipse mark. The gold that accents every cage is "Sol's colour." "The wall is the
+   sixth man" is her line — she said the cage itself was the crewmate who never left.
+   DJ Tide's sign-off — *"keep a light on the water"* — is how she ended every match.
+2. **Tero and Vey were her crew.** The famous lost final 19 years ago: Tero and Vey
+   didn't lose to the Monarchs — they played the Royal Cage **the week Sol died**,
+   two where there should have been three. Vey didn't "freeze." She walked to the spot
+   where Sol always stood, and stood there, and would not play it as a duo. The city
+   called it choking. It was grief. Tero has hated her for 19 years for telling the
+   truth with her feet.
+3. **Ash is a Marrow.** Sol was Ash's grandmother — "gran," who taught a small kid
+   wall-passes at dusk and never once mentioned she was the person the city is named
+   for. Ash never knew; Kairo did (dock families talk), and never said — one more pass
+   he never gave. Ash's full name is spoken aloud exactly once, by Vey, before the
+   final: *"Say your whole name, kid."*
+
+**The pins:** the six crew pins, held together, assemble into Sol's full crest —
+sun, crescent, bell. The Gauntlet is not a tournament; it's **Sol's will**. She
+designed it so the crown could only be reached by someone who had made a crew of the
+whole city — her answer, in advance, to every soloist who would come after her,
+including the one she knew best: herself.
+
+**The crown** at the Royal Cage is not a trophy. It is the clapper of the original
+harbor bell, hung on a chain. The Monarchs have kept it ringable and unrung for 19
+years. Whoever wins may ring it. Vey has spent two decades making sure nobody
+unworthy ever did — that is her stewardship, the mirror of Tero's netshed.
+
+### How it's discovered (fragment system — all optional, never quest-marked)
+
+One quiet interactable per district ("landmark interaction", already budgeted in
+doc 04 §2.2). Each sets a hidden `undertide.*` flag. No UI counter, no checklist —
+Nino's Ledger gains a hand-drawn page per fragment, which is the only tracking the
+player ever sees.
+
+| Ch | Fragment | What it shows |
+|---|---|---|
+| 1 | **The harbor bell** (Brine Harbor quay) | Green with salt, clapper still polished. Scratched into the rim: *"RING IT FOR ME WHEN I CAN'T — S."* |
+| 2 | **Nadia's debt book** (Spicegate) | A page of old stall debts, one crossed out generations deep: *"S. Marrow — paid in full, forever"* — Sol bought the market's first cage nets |
+| 3 | **The monastery bell** (Old Cobble) | Inscription: *"FOR S., WHO RANG FIRST"* — the Saints' silence is mourning that never ended |
+| 4 | **The first pin mould** (Foundry) | Ferra's grandmother cast the original six pins; the mould's six recesses form one crest. Initials in the corner: S.M. |
+| 5 | **The degraded clip** (Voltside screens) | 8 seconds of scratchy footage on loop between ads: a striker ringing a bell at dusk, face unreadable, celebration identical to one of Ash's own |
+| 6 | **The sixth locker** (Crown Point museum) | Five lockers labelled with legendary crews. The sixth: unlabelled, unlocked, empty except a chalk stick and a folded net. Vey's line if asked: "It's not empty. It's *kept*." |
+
+**Hiding in plain sight from minute one** (no flags, pure recontextualization): the
+title "SOLPORT," the sun on the title screen, the gold rule under the logo, the
+crescent in the centre circle, "bells," Tero's boat (named *MARROW*, visible in the
+hub, never remarked on), the netshed sign whose rust hides an "& SOL'S," DJ Tide's
+sign-off. On a second playthrough, the title screen is a memorial.
+
+### What it changes (and refuses to change)
+
+- **Chapter spine: unchanged.** Same matches, same order, same win conditions. The
+  Undertide is carried in fragments, one mid-story scene, and the finale.
+- **Ch.4 aftermath +1 beat:** Ferra, hammering the four pins into a brace, pauses at
+  the mould: "You know what these are, harbor kid? No? …Ask your coach whose crest
+  he's been renting." First time the surface story acknowledges the Undertide.
+- **Ch.5 Kairo scene +1 line:** the honest night conversation now contains the second
+  betrayal, said almost too quietly: *"You really don't know. …Ash, why do you think
+  the city has your name in it?"* (Wrong way round — the city has HER name; Kairo's
+  error is the tell that he learned it secondhand too.)
+- **Ch.6 rewritten around the truth:** Crown Point's museum walk becomes Tero's
+  confession — not that he lost, but who they lost. Vey's pre-match question stays
+  but lands differently: *"Did you come to watch, or to finish it?"* means Sol's
+  final, the one that was never really played. If the player found ≥4 fragments,
+  Vey adds the name: "Say your whole name, kid." → the one time "Ash Marrow" is heard.
+- **The finale's halftime adaptation** (Vey reading your patterns) gains its true
+  text: she is checking, pattern by pattern, whether Sol's game survived two
+  generations. Her barks quote Sol's lines back at you.
+- **Endings, recontextualized (same four states, doc 04 §7.4):**
+  - *The Sixth Man*: Ash rings the bell, then hangs the clapper on the Netyard fence
+    — exactly what Sol did the one time she won her own Gauntlet. Tero and Vey stand
+    at the same fence, not reconciled, but adjacent. Final shot: the harbor bell,
+    a new scratch beside the old one: *"RANG IT FOR YOU — A.M."*
+  - *King of the Cage*: Ash rings the bell alone. The city cheers. The last line is
+    Vey's, quiet, not cruel: "She'd have loved the noise. She'd have asked where your
+    crew went." The crown travels with Ash; the fence stays bare.
+  - *Empty Crown*: the bell rings; nobody Ash loves is close enough to hear it well.
+  - *Next Season*: the clapper stays unrung one more year — and Vey, for the first
+    time in 19 years, is the one who says "come back." Because now she wants it rung.
+- **Post-game (all 6 fragments + any win): "The Whole Bell"** — a two-minute
+  epilogue scene at dawn: Nino reads the finished Ledger aloud on the quay while the
+  crew, Tero, Vey, Salt, Nadia — everyone — plays a no-stakes, no-HUD kickabout in
+  the Netyard behind him. The game's last line is Sol's, finally heard complete, as
+  the sun comes up over her port: *"Keep a light on the water. Keep a crew on the
+  cage. The rest is just the score."*
+
+### Voice rules for the Undertide (restraint is the whole trick)
+
+- Nobody monologues about Sol. Fragments are ≤3 lines. Grief speaks in objects.
+- Tero never says her name until Ch.6. He says "we," catches it, says "I."
+- Vey's love is procedural: 19 years of maintenance. Show the polish, not tears.
+- The game NEVER explains the title. No character ever says "Solport means Sol's
+  port." The bell rim scratch and the museum locker do it, or the player's own
+  realization does. Trust the player — that's the Outer Wilds contract.
+
 ## 2. Main cast
 
 ### The player — **ASH** (name re-enterable at new game; "Ash" is default)

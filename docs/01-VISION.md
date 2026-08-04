@@ -50,6 +50,11 @@ identity all express through the game. We copy that structure, not the powers:
 - **Every rival has a philosophy, expressed mechanically.** No abilities — instead each
   crew plays a *distinct legal style* (pressing, possession, park-the-bus, physicality,
   counters) driven by AI parameters. You beat their *idea*, not their stat bar.
+- **A hidden story under the surface story ("the Undertide", doc 02 §1b).** The city's
+  own name is the buried truth; optional fragments in each district assemble a quiet,
+  personal grief-and-inheritance mystery that recontextualizes every ritual, colour
+  and name the player has seen since the title screen — without altering the chapter
+  spine. Restraint rules: nobody explains it; objects carry it; the player finishes it.
 - **Ego vs. team is the story's spine.** The player character's arc is learning when to be
   selfish (shoot) and when to trust (pass) — mirrored literally in gameplay choices the
   story reacts to (see doc 04 §7, "The Ledger").

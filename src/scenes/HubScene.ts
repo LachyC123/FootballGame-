@@ -18,6 +18,7 @@ interface HubNpc {
   x: number;
   y: number;
   dialogueId: string;
+  prompt?: string;
   view?: CharacterView;
 }
 
@@ -25,6 +26,8 @@ const NPCS: HubNpc[] = [
   { id: 'tero', spriteKey: 'char_tero', x: 96, y: 150, dialogueId: 'hub_tero' },
   { id: 'nino', spriteKey: 'char_nino', x: 320, y: 120, dialogueId: 'hub_nino' },
   { id: 'salt', spriteKey: 'char_salt', x: 220, y: 208, dialogueId: 'hub_salt' },
+  // Undertide fragment 1 (docs/02 §1b): the harbor bell. Never quest-marked.
+  { id: 'bell', spriteKey: '', x: 196, y: 96, dialogueId: 'hub_bell', prompt: 'LOOK [A]' },
 ];
 
 const WALK_SPEED = 70;
@@ -149,7 +152,7 @@ export class HubScene extends Phaser.Scene {
     } else if (this.promptTarget) {
       this.prompt
         .setVisible(true)
-        .setText('TALK [A]')
+        .setText(this.promptTarget.prompt ?? 'TALK [A]')
         .setPosition(this.promptTarget.x, this.promptTarget.y - 18);
     } else {
       this.prompt.setVisible(false);
@@ -198,6 +201,26 @@ export class HubScene extends Phaser.Scene {
       g.fillStyle(0x39424e);
       g.fillCircle(x, 81, 3);
     }
+    // The harbor bell — green with salt, clapper still polished.
+    g.fillStyle(0x39424e);
+    g.fillRect(193, 84, 2, 10);
+    g.fillRect(189, 82, 10, 2);
+    g.fillStyle(0x5a7a5e);
+    g.fillRect(191, 86, 6, 5);
+    g.fillRect(190, 90, 8, 2);
+    g.fillStyle(0xf2c14e);
+    g.fillRect(193, 92, 2, 2);
+    // Tero's boat, moored on the water. Nobody remarks on the name.
+    g.fillStyle(0x2b303a);
+    g.fillRect(288, 62, 46, 9);
+    g.fillTriangle(334, 62, 334, 71, 344, 66);
+    g.fillStyle(0x39424e);
+    g.fillRect(296, 56, 3, 6);
+    this.add
+      .text(311, 68, 'MARROW', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#6b7482' })
+      .setOrigin(0.5, 0.5)
+      .setScale(0.5)
+      .setAlpha(0.8);
     // Tero's netshed (west).
     g.fillStyle(0x2b303a);
     g.fillRect(40, 96, 90, 52);

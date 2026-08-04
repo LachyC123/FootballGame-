@@ -64,6 +64,14 @@
       "n2": { "speaker": "nino", "text": "The Ledger says you're ONE win into history.\nOnly like... forty more to go!", "end": true }
     }
   },
+  "hub_bell": {
+    "start": "b1",
+    "nodes": {
+      "b1": { "speaker": "system", "text": "An old harbor bell, green with salt.\nSomeone still polishes the clapper.", "next": "b2" },
+      "b2": { "speaker": "system", "text": "Scratched into the rim, almost worn away:\n\"RING IT FOR ME WHEN I CAN'T — S.\"", "next": "b3", "setFlags": ["undertide.ch1"] },
+      "b3": { "speaker": "ash", "text": "(...who rings it now?)", "end": true }
+    }
+  },
   "hub_salt": {
     "start": "s1",
     "nodes": {
