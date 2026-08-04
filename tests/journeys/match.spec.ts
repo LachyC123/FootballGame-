@@ -94,7 +94,10 @@ test('new game: flashback → hub → find Tero → intro → cage sequence → 
       await clickWorld(page, 40, 260); // skip drill ›
       await page.waitForTimeout(900);
     } else {
-      await page.waitForTimeout(200);
+      // Idle in the hub: press A again like a player would — recovers a
+      // missed gate press or advances a ceremony card.
+      await holdKey(page, 'j', 120);
+      await page.waitForTimeout(300);
     }
   }
   expect(await atRealMatch()).toBe(true);

@@ -161,7 +161,23 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > takes over. Bugfix caught by e2e: hub walk dt cap (0.05s) silently ate
 > walk distance at low fps, making gates unreachable on slow devices —
 > raised to 0.25s; journeys now run serial workers with failure
-> screenshots. Next: Old Cobble (Ch.3), Ivy.
+> screenshots. **Architecture pass (2026-08-04):** new
+> `presentation/buildings.ts` — buildings now commit to roof plane, wall
+> material, framed openings, and contact shadow. Tero's shop is a real
+> shack (corrugated tin roof with a rust patch, weathered plank wall,
+> framed door + stone step, warm cross-paned window with flickering glow,
+> drying nets, hung buoys); cages (Netyard, Kettle, title quay) are real
+> street cages (concrete kerb, capped posts with base plates, diamond
+> chain-link in both diagonals, sagging top cable, framed gate with
+> hinges + latch); market stalls have legs, planked counters, spice
+> mounds, and scallop-hem awnings that cast shade; Spicegate backs onto a
+> brick shopfront street (courses, shutters, lit lattice windows, arched
+> doorways with lamps, drainpipe); Brine Harbor gains a far-shore
+> skyline (warehouse rooflines, crane, lit windows across the water);
+> floating district labels replaced by physical nailed signboards; road
+> exits framed by stone pillars. Chapter-gate radius widened to 34 (the
+> walkable corner sat outside the old 26px trigger — flake source).
+> Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

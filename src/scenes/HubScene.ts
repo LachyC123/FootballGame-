@@ -11,6 +11,7 @@ import { fadeIn, transitionTo, UI } from '../presentation/ui';
 import { defaultMatchConfig, KETTLE, type ArenaDress, type DrillSpec } from './MatchScene';
 import type { MatchConfig, PlayerState } from '../domain/match/types';
 import * as props from '../presentation/props';
+import * as buildings from '../presentation/buildings';
 
 /**
  * District hubs — the chapters' stages (docs/04 §2). Every chapter plays IN
@@ -254,7 +255,8 @@ export class HubScene extends Phaser.Scene {
       {
         x: 430,
         y: 150,
-        r: 26,
+        // Generous radius: the walkable corner by the cage must stay inside it.
+        r: 34,
         label: () =>
           !this.has('ch1.metTero')
             ? 'THE NETYARD — chained. Find Coach Tero.'
@@ -348,7 +350,7 @@ export class HubScene extends Phaser.Scene {
       {
         x: 430,
         y: 200,
-        r: 26,
+        r: 34,
         label: () =>
           this.has('ch2.complete')
             ? 'PLAY A FRIENDLY [A]'
@@ -654,6 +656,8 @@ export class HubScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
     }
+    // Far shore across the water: warehouse rooflines, a crane, lit windows.
+    buildings.farShore(g, 46);
     g.fillStyle(0x39424e);
     g.fillRect(0, 78, GAME_WIDTH, 6);
     g.fillStyle(0x23262d);
@@ -705,15 +709,28 @@ export class HubScene extends Phaser.Scene {
       .setOrigin(0.5, 0.5)
       .setScale(0.5)
       .setAlpha(0.8);
-    // Netshed, crates, cage gate.
-    g.fillStyle(0x2b303a);
-    g.fillRect(40, 96, 90, 52);
-    g.fillStyle(0x39424e);
-    g.fillRect(40, 88, 90, 12);
-    g.fillStyle(0x11141a);
-    g.fillRect(70, 118, 18, 30);
-    g.lineStyle(1, 0x5b6472, 0.7);
-    for (let x = 44; x < 126; x += 8) g.lineBetween(x, 100, x - 4, 146);
+    // Tero's net shop: tin roof, plank walls, a lit window, the door he
+    // stands in front of all day.
+    buildings.shack(g, 40, 104, {
+      w: 90,
+      h: 44,
+      roofH: 14,
+      door: 47,
+      windows: [10],
+      scene: this,
+    });
+    // Nets drying against the wall between window and door.
+    g.lineStyle(1, 0x39525a, 0.8);
+    for (let nx = 32; nx < 46; nx += 5) g.lineBetween(40 + nx, 108, 40 + nx - 3, 140);
+    for (let ny = 112; ny < 140; ny += 7) g.lineBetween(70, ny, 86, ny + 2);
+    // Buoys hung on the planks.
+    g.fillStyle(0xc2643a);
+    g.fillCircle(116, 116, 3);
+    g.fillStyle(0x2e9e8f);
+    g.fillCircle(123, 120, 3);
+    g.lineStyle(1, 0x191621, 0.7);
+    g.lineBetween(116, 108, 116, 113);
+    g.lineBetween(123, 108, 123, 117);
     props.crate(g, 340, 100, 22);
     props.crate(g, 352, 88, 18);
     props.crate(g, 332, 112, 12);
@@ -744,23 +761,14 @@ export class HubScene extends Phaser.Scene {
     g.lineStyle(1, 0x8a7a5c, 0.6);
     g.lineBetween(110, 81, 118, 70);
     g.lineBetween(290, 81, 296, 71);
-    g.lineStyle(2, 0x5b6472);
-    g.strokeRect(408, 110, 64, 80);
-    g.lineStyle(1, 0x39525a, 0.7);
-    for (let x = 412; x < 470; x += 8) g.lineBetween(x, 110, x - 4, 190);
-    g.fillStyle(0xf2c14e, 0.12);
-    g.fillRect(408, 110, 64, 80);
-    // East road to Spicegate.
+    // The Netyard: a real street cage — kerb, capped posts, diamond mesh.
+    buildings.cage(g, 408, 110, 64, 80, { tint: 0xf2c14e, tintAlpha: 0.1 });
+    // East road to Spicegate, framed by stone pillars.
     g.fillStyle(0x2d2622, 1);
     g.fillRect(440, 208, 40, 26);
-    this.add
-      .text(85, 92, "TERO'S NETS", { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#9a968a' })
-      .setOrigin(0.5, 1)
-      .setAlpha(0.85);
-    this.add
-      .text(440, 106, 'THE NETYARD', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: UI.gold })
-      .setOrigin(0.5, 1)
-      .setAlpha(0.9);
+    buildings.roadPillars(g, 466, 184, 234);
+    buildings.signboard(this, g, 85, 92, "TERO'S NETS", { color: '#d9d3c0' });
+    buildings.signboard(this, g, 440, 100, 'THE NETYARD', { color: UI.gold, hang: true });
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'BRINE HARBOR', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#4a4a55' })
       .setOrigin(0.5)
@@ -783,23 +791,15 @@ export class HubScene extends Phaser.Scene {
         g.fillRect(x, y, 16, 16);
       }
     }
-    // Stall rows with awnings (alternating red/gold stripes).
-    const stall = (x: number, y: number, w: number, primary: number): void => {
-      g.fillStyle(0x4a3a2a);
-      g.fillRect(x, y + 10, w, 18);
-      for (let i = 0; i < w; i += 8) {
-        g.fillStyle(i % 16 === 0 ? primary : 0xe8d9b8);
-        g.fillRect(x + i, y, 8, 8);
-      }
-      g.fillStyle(0x241f2b);
-      g.fillRect(x, y + 8, w, 2);
-    };
-    stall(60, 96, 72, 0xb03535);
-    stall(160, 84, 64, 0xd08f2e);
-    stall(300, 96, 88, 0xb03535); // Nadia's stall
-    stall(64, 196, 56, 0xd08f2e);
-    stall(160, 210, 72, 0xb03535);
-    stall(280, 218, 60, 0xd08f2e);
+    // The street the market leans against: brick shopfronts, shutters, arches.
+    buildings.shopfrontRow(g, 0, 50, GAME_WIDTH, 40);
+    // Stall rows: legs, planked counters, spice mounds, scalloped awnings.
+    buildings.marketStall(g, 60, 96, 72, 0xb03535);
+    buildings.marketStall(g, 160, 84, 64, 0xd08f2e);
+    buildings.marketStall(g, 300, 96, 88, 0xb03535); // Nadia's stall
+    buildings.marketStall(g, 64, 196, 56, 0xd08f2e);
+    buildings.marketStall(g, 160, 210, 72, 0xb03535);
+    buildings.marketStall(g, 280, 218, 60, 0xd08f2e);
     // Market floor life: rugs, sacks of spice, produce, the working mess.
     props.rug(g, 140, 150, 44, 22, 0x7c2424, 0xd08f2e);
     props.rug(g, 246, 168, 36, 18, 0x5e4826, 0xb03535);
@@ -848,12 +848,7 @@ export class HubScene extends Phaser.Scene {
       });
     }
     // The Kettle — cage in the courtyard, always steaming.
-    g.lineStyle(2, 0x5b6472);
-    g.strokeRect(404, 150, 68, 84);
-    g.lineStyle(1, 0x7c4a2a, 0.8);
-    for (let x = 408; x < 468; x += 8) g.lineBetween(x, 150, x - 4, 234);
-    g.fillStyle(0xb03535, 0.1);
-    g.fillRect(404, 150, 68, 84);
+    buildings.cage(g, 404, 150, 68, 84, { tint: 0xb03535, tintAlpha: 0.12, accent: 0xb03535 });
     const steamTex = 'px-steam';
     if (!this.textures.exists(steamTex)) {
       const sg = this.make.graphics({ x: 0, y: 0 }, false);
@@ -887,17 +882,12 @@ export class HubScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
     }
-    // West road back to the harbor.
+    // West road back to the harbor, framed by stone pillars.
     g.fillStyle(0x2d2622);
     g.fillRect(0, 176, 36, 28);
-    this.add
-      .text(346, 92, "NADIA'S", { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#e8d9b8' })
-      .setOrigin(0.5, 1)
-      .setAlpha(0.9);
-    this.add
-      .text(438, 146, 'THE KETTLE', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: UI.gold })
-      .setOrigin(0.5, 1)
-      .setAlpha(0.9);
+    buildings.roadPillars(g, 6, 152, 204);
+    buildings.signboard(this, g, 346, 86, "NADIA'S", { bg: 0x7c2424 });
+    buildings.signboard(this, g, 438, 140, 'THE KETTLE', { color: UI.gold, hang: true });
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'SPICEGATE MARKET', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#5e4a45' })
       .setOrigin(0.5)

@@ -15,6 +15,7 @@ import { music } from '../platform/music';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import { fadeIn, makeButton, transitionTo, UI, type UiButton } from '../presentation/ui';
 import { loadSettings, saveSettings } from '../platform/settings';
+import * as buildings from '../presentation/buildings';
 
 /**
  * Title v2: sunset harbor key art (all drawn), animated water + idle cast,
@@ -239,11 +240,8 @@ export class TitleScene extends Phaser.Scene {
         g.fillRect(x, y, 16, 16);
       }
     }
-    // Cage silhouette right.
-    g.lineStyle(2, 0x39424e);
-    g.strokeRect(392, 186, 76, 62);
-    g.lineStyle(1, 0x39424e, 0.6);
-    for (let x = 398; x < 466; x += 8) g.lineBetween(x, 186, x - 4, 248);
+    // The cage on the quay, catching the last of the light.
+    buildings.cage(g, 392, 186, 76, 62, { tint: 0xf2c14e, tintAlpha: 0.05 });
 
     // A gull crossing the sunset, over and over, because it lives here.
     const gullBird = this.add
