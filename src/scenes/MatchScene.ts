@@ -5,8 +5,10 @@ import { GOAL_BOTTOM, GOAL_TOP, PITCH } from '../domain/match/geometry';
 import { TUNING as T } from '../domain/match/tuning';
 import type { MatchConfig, MatchEvent, MatchSnapshot } from '../domain/match/types';
 import { InputService } from '../platform/input/inputService';
-import { loadSettings } from '../platform/settings';
+import { loadSettings, saveSettings } from '../platform/settings';
 import { crowd, resumeSfx } from '../platform/sfx';
+import { music } from '../platform/music';
+import { drawPanel, fadeIn, makeButton, transitionTo, UI } from '../presentation/ui';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import { CharacterView } from '../presentation/characterView';
 
@@ -25,6 +27,7 @@ interface SceneData {
   config?: MatchConfig;
   story?: boolean;
   drill?: DrillSpec;
+  returnTo?: string;
 }
 
 const BALL_COLOR = 0xf5f1e3;
@@ -39,6 +42,11 @@ export class MatchScene extends Phaser.Scene {
   private storyMode = false;
   private drill: DrillSpec | null = null;
   private lastDeltaS = 1 / 60;
+  private sceneData: SceneData = {};
+  private prevPhase = '';
+  private pauseGroup: Array<{ destroy(): void }> = [];
+  private crowdA: Phaser.GameObjects.Graphics | null = null;
+  private crowdB: Phaser.GameObjects.Graphics | null = null;
   private ballSprite!: Phaser.GameObjects.Ellipse;
   private ballShadow!: Phaser.GameObjects.Ellipse;
   private controlRing!: Phaser.GameObjects.Arc;
@@ -76,6 +84,11 @@ export class MatchScene extends Phaser.Scene {
     this.core = new MatchCore(config);
     this.storyMode = data.story ?? false;
     this.drill = data.drill ?? null;
+    this.sceneData = data;
+    this.prevPhase = '';
+    this.pauseGroup = [];
+    music.play(this.drill ? 'harbor' : 'match');
+    fadeIn(this);
     this.accumulator = 0;
     this.paused = false;
     this.matchOver = false;
@@ -97,7 +110,11 @@ export class MatchScene extends Phaser.Scene {
     this.controlRing.setStrokeStyle(1, 0xf2c14e, 0.9);
     this.controlRing.setFillStyle(0, 0);
 
-    // HUD.
+    // HUD (score chip keeps text readable over the crowd band).
+    this.add
+      .rectangle(GAME_WIDTH / 2, 20, 148, 36, 0x0e0e14, 0.72)
+      .setDepth(19)
+      .setStrokeStyle(1, 0x39424e, 0.8);
     this.scoreText = this.add
       .text(GAME_WIDTH / 2, 6, '', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#e8e3d0' })
       .setOrigin(0.5, 0)
@@ -164,8 +181,8 @@ export class MatchScene extends Phaser.Scene {
       this.input.keyboard?.on('keydown-ESC', () => this.completeDrill());
     }
 
-    // Pause.
-    this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
+    // Pause (ESC skips drills instead — see drill block above).
+    if (!this.drill) this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
     this.input.keyboard?.on('keydown-P', () => this.togglePause());
     this.game.events.on('solport-suspend', this.onSuspend, this);
     this.events.once('shutdown', () => {
@@ -189,11 +206,47 @@ export class MatchScene extends Phaser.Scene {
     if (this.matchOver) return;
     this.paused = !this.paused;
     this.inputSvc.reset();
-    this.toast(this.paused ? 'PAUSED — tap/press ESC to resume' : '');
     if (this.paused) {
-      this.input.once('pointerdown', () => {
-        if (this.paused) this.togglePause();
+      const cx = GAME_WIDTH / 2;
+      const dim = this.add
+        .rectangle(cx, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x0e0e14, 0.7)
+        .setDepth(29);
+      const panel = drawPanel(this, cx - 90, 62, 180, 146, 30);
+      const title = this.add
+        .text(cx, 78, 'PAUSED', { fontFamily: FONT_DISPLAY, fontSize: FS_DISPLAY, color: UI.textMain })
+        .setOrigin(0.5)
+        .setDepth(31);
+      const resume = makeButton(this, cx, 106, 'RESUME', () => this.togglePause(), {
+        primary: true,
+        width: 150,
       });
+      const restart = makeButton(this, cx, 130, 'RESTART MATCH', () => {
+        this.scene.restart({ ...this.sceneData });
+      }, { width: 150 });
+      const sound = makeButton(
+        this,
+        cx,
+        154,
+        loadSettings().muted ? 'SOUND: OFF' : 'SOUND: ON',
+        () => {
+          const settings = loadSettings();
+          settings.muted = !settings.muted;
+          saveSettings(settings);
+          sound.setLabel(settings.muted ? 'SOUND: OFF' : 'SOUND: ON');
+          if (settings.muted) music.stop(150);
+          else music.play(this.drill ? 'harbor' : 'match');
+        },
+        { width: 150 },
+      );
+      const quit = makeButton(this, cx, 178, 'QUIT TO TITLE', () => {
+        this.scene.stop('Story');
+        music.stop(300);
+        transitionTo(this, 'Title');
+      }, { width: 150 });
+      this.pauseGroup = [dim, panel, title, resume, restart, sound, quit];
+    } else {
+      for (const item of this.pauseGroup) item.destroy();
+      this.pauseGroup = [];
     }
   }
 
@@ -339,6 +392,16 @@ export class MatchScene extends Phaser.Scene {
       }
     }
 
+    // Phase-transition presentation: KICK OFF card + whistle.
+    if (snap.phase !== this.prevPhase) {
+      if (snap.phase === 'play' && this.prevPhase === 'kickoff' && !this.drill) {
+        this.sfxp.play('post', 0.15, 800); // short sharp whistle-ish ping
+        this.bellText.setText('KICK OFF').setColor('#e8e3d0').setAlpha(1).setScale(1.6);
+        this.tweens.add({ targets: this.bellText, scale: 1, duration: 200 });
+        this.tweens.add({ targets: this.bellText, alpha: 0, delay: 500, duration: 250 });
+      }
+      this.prevPhase = snap.phase;
+    }
     if (this.drill) {
       const progress = this.drill.type === 'pass' ? (snap.counters['passes'] ?? 0) : snap.score[0];
       this.clockText.setText(`${Math.min(progress, this.drill.target)} / ${this.drill.target}`);
@@ -543,72 +606,63 @@ export class MatchScene extends Phaser.Scene {
     this.matchOver = true;
     const snap = this.core.snapshot();
     const [h, a] = snap.score;
+    const won = h > a;
+    const cx = GAME_WIDTH / 2;
     const dim = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x0e0e14, 0.75)
+      .rectangle(cx, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x0e0e14, 0.75)
       .setDepth(30);
+    const panel = drawPanel(this, cx - 110, 56, 220, 158, 30);
     const title = this.add
-      .text(GAME_WIDTH / 2, 86, h > a ? 'FULL TIME — CREW WIN' : h < a ? 'FULL TIME — GULLS WIN' : 'FULL TIME', {
+      .text(cx, 74, won ? 'FULL TIME — CREW WIN' : h < a ? 'FULL TIME — GULLS WIN' : 'FULL TIME', {
         fontFamily: FONT_BODY,
-        fontSize: FS_DISPLAY,
-        color: h >= a ? '#f2c14e' : '#e8e3d0',
+        fontSize: FS_BODY,
+        color: won ? UI.gold : UI.textMain,
       })
       .setOrigin(0.5)
       .setDepth(31);
     const score = this.add
-      .text(GAME_WIDTH / 2, 112, `${h} — ${a}`, {
-        fontFamily: FONT_BODY,
+      .text(cx, 100, `${h} — ${a}`, {
+        fontFamily: FONT_DISPLAY,
         fontSize: FS_DISPLAY_2X,
-        color: '#e8e3d0',
-      })
-      .setOrigin(0.5)
-      .setDepth(31);
-    const stats = this.add
-      .text(
-        GAME_WIDTH / 2,
-        140,
-        `passes ${snap.counters['passes'] ?? 0} · shots ${snap.counters['shots'] ?? 0} · tackles ${snap.counters['tackles'] ?? 0}`,
-        { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#9a968a' },
-      )
-      .setOrigin(0.5)
-      .setDepth(31);
-    const won = h > a;
-    const primaryLabel = this.storyMode ? (won ? '[ CONTINUE ]' : '[ RETRY ]') : '[ RETRY ]';
-    const primary = this.add
-      .text(GAME_WIDTH / 2, 172, primaryLabel, {
-        fontFamily: FONT_BODY,
-        fontSize: FS_BODY,
-        color: '#f2c14e',
+        color: UI.textMain,
       })
       .setOrigin(0.5)
       .setDepth(31)
-      .setInteractive({ useHandCursor: true });
+      .setScale(1.5);
+    this.tweens.add({ targets: score, scale: 1, duration: 300, ease: 'Back.easeOut' });
+    const stats = this.add
+      .text(
+        cx,
+        126,
+        `passes ${snap.counters['passes'] ?? 0}  ·  shots ${snap.counters['shots'] ?? 0}  ·  tackles ${snap.counters['tackles'] ?? 0}`,
+        { fontFamily: FONT_BODY, fontSize: FS_BODY, color: UI.textDim },
+      )
+      .setOrigin(0.5)
+      .setDepth(31);
+    const primaryLabel = this.storyMode ? (won ? 'CONTINUE' : 'RETRY') : 'RETRY';
     const primaryAction = (): void => {
       this.sfxp.play('uiClick', 0.6);
       if (this.storyMode) {
         this.game.events.emit('story-match-result', { homeWon: won });
         this.scene.stop();
       } else {
-        this.scene.restart({});
+        this.scene.restart({ ...this.sceneData });
       }
     };
-    primary.on('pointerdown', primaryAction);
+    const primary = makeButton(this, cx, 154, primaryLabel, primaryAction, {
+      primary: true,
+      width: 170,
+    });
     this.input.keyboard?.once('keydown-J', primaryAction);
-    this.resultsGroup = [dim, title, score, stats, primary];
+    this.resultsGroup = [dim, panel, title, score, stats, primary] as unknown as Phaser.GameObjects.GameObject[];
     if (!this.storyMode) {
-      const toTitle = this.add
-        .text(GAME_WIDTH / 2, 192, 'title screen', {
-          fontFamily: FONT_BODY,
-          fontSize: FS_BODY,
-          color: '#9a968a',
-        })
-        .setOrigin(0.5)
-        .setDepth(31)
-        .setInteractive({ useHandCursor: true });
-      toTitle.on('pointerdown', () => {
+      const dest = this.sceneData.returnTo ?? 'Title';
+      const back = makeButton(this, cx, 180, dest === 'Hub' ? 'BACK TO THE HARBOR' : 'TITLE SCREEN', () => {
         this.sfxp.play('uiClick', 0.6);
-        this.scene.start('Title');
-      });
-      this.resultsGroup.push(toTitle);
+        music.stop(300);
+        transitionTo(this, dest);
+      }, { width: 170 });
+      (this.resultsGroup as unknown as Array<{ destroy(): void }>).push(back);
     }
   }
 
@@ -616,7 +670,9 @@ export class MatchScene extends Phaser.Scene {
 
   private drawPitch(): void {
     const g = this.add.graphics().setDepth(0);
-    // Asphalt floor.
+    const { minX, maxX, minY, maxY, wedge, goalDepth } = PITCH;
+
+    // Asphalt floor with worn patches.
     g.fillStyle(0x23262d);
     g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     g.fillStyle(0x272b33);
@@ -625,19 +681,35 @@ export class MatchScene extends Phaser.Scene {
         g.fillRect(x, y, 16, 16);
       }
     }
-    const { minX, maxX, minY, maxY, wedge, goalDepth } = PITCH;
-    // Pitch lines.
-    g.lineStyle(1, 0x4a5568, 1);
+    g.fillStyle(0x2e9e8f, 0.04);
+    g.fillRect(minX, 150, 90, 60);
+    g.fillRect(320, 40, 110, 70);
+
+    // Chalk lines + centre crescent (Brine Harbor motif).
+    g.lineStyle(1, 0x9aa3ad, 0.55);
     g.strokeRect(minX, minY, maxX - minX, maxY - minY);
     g.lineBetween(PITCH.centerX, minY, PITCH.centerX, maxY);
     g.strokeCircle(PITCH.centerX, PITCH.centerY, 30);
-    // Corner wedges.
-    g.lineStyle(3, 0x39424e, 1);
+    g.lineStyle(2, 0xf2c14e, 0.14);
+    g.beginPath();
+    g.arc(PITCH.centerX, PITCH.centerY, 20, Math.PI * 0.25, Math.PI * 1.25);
+    g.strokePath();
+
+    // Corner wedge plates (match the physics).
+    g.fillStyle(0x2c313a, 1);
+    g.fillTriangle(minX, minY, minX + wedge, minY, minX, minY + wedge);
+    g.fillTriangle(maxX, minY, maxX - wedge, minY, maxX, minY + wedge);
+    g.fillTriangle(minX, maxY, minX + wedge, maxY, minX, maxY - wedge);
+    g.fillTriangle(maxX, maxY, maxX - wedge, maxY, maxX, maxY - wedge);
+    g.lineStyle(2, 0x4a5462, 1);
     g.lineBetween(minX, minY + wedge, minX + wedge, minY);
     g.lineBetween(maxX - wedge, minY, maxX, minY + wedge);
     g.lineBetween(minX, maxY - wedge, minX + wedge, maxY);
     g.lineBetween(maxX - wedge, maxY, maxX, maxY - wedge);
-    // Walls (leave the mouths open).
+
+    // Walls: steel with a lit top edge + inner drop shadow for depth.
+    g.fillStyle(0x000000, 0.22);
+    g.fillRect(minX, minY, maxX - minX, 5);
     g.lineStyle(3, 0x5b6472, 1);
     g.lineBetween(minX, minY, minX, GOAL_TOP);
     g.lineBetween(minX, GOAL_BOTTOM, minX, maxY);
@@ -645,27 +717,72 @@ export class MatchScene extends Phaser.Scene {
     g.lineBetween(maxX, GOAL_BOTTOM, maxX, maxY);
     g.lineBetween(minX, minY, maxX, minY);
     g.lineBetween(minX, maxY, maxX, maxY);
-    // Goal recesses.
-    g.lineStyle(2, 0xf2c14e, 0.9);
-    g.strokeRect(minX - goalDepth, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
-    g.strokeRect(maxX, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
-    // Netyard dressing: draped nets over the top wall band + crowd silhouettes.
-    g.fillStyle(0x1a1c22);
-    g.fillRect(0, 0, GAME_WIDTH, minY - 4);
-    g.fillStyle(0x2e9e8f, 0.15);
-    for (let x = 8; x < GAME_WIDTH; x += 10) {
-      g.fillCircle(x, 7, 3);
+    g.lineStyle(1, 0x8a94a2, 0.8);
+    g.lineBetween(minX, minY - 1, maxX, minY - 1);
+
+    // Goal recesses: frame glow + net cross-hatch.
+    for (const [gx, flip] of [
+      [minX - goalDepth, 1],
+      [maxX, 1],
+    ] as const) {
+      void flip;
+      g.fillStyle(0xf2c14e, 0.06);
+      g.fillRect(gx - 2, GOAL_TOP - 2, goalDepth + 4, GOAL_BOTTOM - GOAL_TOP + 4);
+      g.fillStyle(0x11141a, 0.85);
+      g.fillRect(gx, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
+      g.lineStyle(1, 0x6b7482, 0.5);
+      for (let i = 0; i <= goalDepth; i += 4) {
+        g.lineBetween(gx + i, GOAL_TOP, gx + i, GOAL_BOTTOM);
+      }
+      for (let y = GOAL_TOP; y <= GOAL_BOTTOM; y += 5) {
+        g.lineBetween(gx, y, gx + goalDepth, y);
+      }
+      g.lineStyle(2, 0xf2c14e, 0.9);
+      g.strokeRect(gx, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
     }
+
+    // Netyard dressing: nets draped over the top band.
     g.lineStyle(1, 0x39525a, 0.5);
     for (let x = minX; x < maxX; x += 12) {
       g.lineBetween(x, minY, x + 6, minY + 5);
       g.lineBetween(x + 6, minY, x, minY + 5);
     }
+
+    // Skyline + animated crowd band above the cage.
+    g.fillStyle(0x14171e);
+    g.fillRect(0, 0, GAME_WIDTH, minY - 4);
+    g.fillStyle(0x1b2029, 1);
+    for (let x = 6; x < GAME_WIDTH; x += 60) {
+      g.fillRect(x, 2, 3, 10);
+      g.fillRect(x, 2, 10, 2);
+    }
+    this.crowdA?.destroy();
+    this.crowdB?.destroy();
+    this.crowdA = this.makeCrowd(0);
+    this.crowdB = this.makeCrowd(1).setVisible(false);
+    this.time.addEvent({
+      delay: 420,
+      loop: true,
+      callback: () => {
+        if (!this.crowdA || !this.crowdB) return;
+        const showA = !this.crowdA.visible;
+        this.crowdA.setVisible(showA);
+        this.crowdB.setVisible(!showA);
+      },
+    });
+
+    // Vignette.
+    g.fillStyle(0x0a0b10, 0.16);
+    g.fillRect(0, 0, GAME_WIDTH, 8);
+    g.fillRect(0, GAME_HEIGHT - 8, GAME_WIDTH, 8);
+    g.fillRect(0, 0, 8, GAME_HEIGHT);
+    g.fillRect(GAME_WIDTH - 8, 0, 8, GAME_HEIGHT);
+
     // Intro card (skippable by being brief). Drills skip the broadcast fiction.
     if (this.drill) return;
     const card = this.add
       .text(GAME_WIDTH / 2, 100, 'THE NETYARD', {
-        fontFamily: FONT_BODY,
+        fontFamily: FONT_DISPLAY,
         fontSize: FS_DISPLAY,
         color: '#e8e3d0',
         stroke: '#0e0e14',
@@ -683,6 +800,21 @@ export class MatchScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(26);
     this.tweens.add({ targets: [card, sub], alpha: 0, delay: 1400, duration: 400 });
+  }
+
+  /** One crowd frame: bobbing heads with scarf colours (deterministic layout). */
+  private makeCrowd(frame: number): Phaser.GameObjects.Graphics {
+    const g = this.add.graphics().setDepth(1);
+    const colors = [0x2e9e8f, 0xc2643a, 0xd9d3c0, 0x8a94a2];
+    for (let i = 0; i < 56; i++) {
+      const x = 8 + i * 8.4;
+      const row = i % 2;
+      const bob = (i * 7 + frame * 3) % 2;
+      const y = 4 + row * 5 + bob;
+      g.fillStyle(colors[(i * 13) % colors.length]!, 0.75);
+      g.fillCircle(x, y, 2);
+    }
+    return g;
   }
 
   private createParticles(): void {

@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import { resumeAllAudio, suspendAllAudio } from './sfx';
 
 /**
  * Lifecycle contract (Master Plan §4): on hide — pause simulation and audio.
@@ -11,10 +12,12 @@ export function installLifecycle(game: Phaser.Game): void {
     if (document.hidden) {
       game.loop.sleep();
       game.sound.mute = true;
+      suspendAllAudio();
       game.events.emit('solport-suspend');
     } else {
       game.loop.wake();
       game.sound.mute = false;
+      resumeAllAudio();
       game.events.emit('solport-resume');
     }
   });

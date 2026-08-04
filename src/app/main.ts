@@ -6,6 +6,7 @@ import { MatchScene } from '../scenes/MatchScene';
 import { DialogueScene } from '../scenes/DialogueScene';
 import { StoryScene } from '../scenes/StoryScene';
 import { FlashbackScene } from '../scenes/FlashbackScene';
+import { HubScene } from '../scenes/HubScene';
 import { installLifecycle } from '../platform/lifecycle';
 import { GAME_HEIGHT, GAME_WIDTH } from './constants';
 
@@ -21,7 +22,7 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, TitleScene, StoryScene, FlashbackScene, MatchScene, DialogueScene],
+  scene: [BootScene, PreloadScene, TitleScene, StoryScene, FlashbackScene, HubScene, MatchScene, DialogueScene],
 });
 
 installLifecycle(game);

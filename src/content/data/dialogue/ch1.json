@@ -50,6 +50,27 @@
       "r2": { "speaker": "tero", "text": "Again. The Gulls swarm the ball —\nso the space is always BEHIND them. Pass. Move. Ring it.", "end": true }
     }
   },
+  "hub_tero": {
+    "start": "t1",
+    "nodes": {
+      "t1": { "speaker": "tero", "text": "One pin doesn't make a crew.\nKeep your touch sharp — Spicegate won't wait.", "next": "t2" },
+      "t2": { "speaker": "tero", "text": "The Netyard's open. Use it.", "end": true }
+    }
+  },
+  "hub_nino": {
+    "start": "n1",
+    "nodes": {
+      "n1": { "speaker": "nino", "text": "I started a chant. Listen: A-SH! A-SH!\n...it works better with more people.", "next": "n2" },
+      "n2": { "speaker": "nino", "text": "The Ledger says you're ONE win into history.\nOnly like... forty more to go!", "end": true }
+    }
+  },
+  "hub_salt": {
+    "start": "s1",
+    "nodes": {
+      "s1": { "speaker": "salt", "text": "Don't look at me like that. We WANT you to win now.\nNobody brags about losing to losers.", "next": "s2" },
+      "s2": { "speaker": "salt", "text": "Fancy a rematch sometime? The cage is right there.", "end": true }
+    }
+  },
   "ch1_aftermath": {
     "start": "a1",
     "nodes": {

@@ -2,7 +2,7 @@
  * Dev scene launcher (docs/05 §10): ?scene=<key>&seed=<n> jumps straight to a
  * scene in dev builds. Stripped from production by the DEV guard.
  */
-const KNOWN_SCENES = new Set(['Boot', 'Preload', 'Title', 'Match']);
+const KNOWN_SCENES = new Set(['Boot', 'Preload', 'Title', 'Match', 'Hub']);
 
 export function getStartOverride(): { scene: string; seed: number } | null {
   if (!import.meta.env.DEV) return null;

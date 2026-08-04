@@ -52,6 +52,19 @@ export function resumeSfx(): void {
   if (ac && ac.state === 'suspended') void ac.resume().catch(() => undefined);
 }
 
+export function getAudioContext(): AudioContext | null {
+  return audio();
+}
+
+/** Lifecycle hooks: hard-suspend ALL game audio (sfx, crowd, music) on hide. */
+export function suspendAllAudio(): void {
+  if (ctx && ctx.state === 'running') void ctx.suspend().catch(() => undefined);
+}
+
+export function resumeAllAudio(): void {
+  if (ctx && ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
+}
+
 let crowdSrc: AudioBufferSourceNode | null = null;
 let crowdGain: GainNode | null = null;
 

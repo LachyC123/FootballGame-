@@ -4,6 +4,8 @@ import { BUILD_VERSION } from '../app/buildInfo';
 import { createDefaultSave } from '../domain/progress/save';
 import { commitSave } from '../platform/saveStore';
 import { SfxPlayer } from '../platform/sfxPlayer';
+import { music } from '../platform/music';
+import { fadeIn, transitionTo } from '../presentation/ui';
 import { defaultMatchConfig, type DrillSpec } from './MatchScene';
 import type { MatchConfig } from '../domain/match/types';
 
@@ -44,6 +46,7 @@ export class StoryScene extends Phaser.Scene {
   private stepIndex = 0;
   private flags = new Set<string>();
   private sfxp!: SfxPlayer;
+  private castSprites: Array<{ sprite: Phaser.GameObjects.Sprite; base: number }> = [];
 
   constructor() {
     super('Story');
@@ -53,7 +56,19 @@ export class StoryScene extends Phaser.Scene {
     this.stepIndex = 0;
     this.flags = new Set(this.registry.get('flags') as string[] | undefined);
     this.sfxp = new SfxPlayer(this);
+    this.castSprites = [];
     this.drawBackdrop();
+    music.play('harbor');
+    fadeIn(this);
+    this.time.addEvent({
+      delay: 520,
+      loop: true,
+      callback: () => {
+        for (const { sprite, base } of this.castSprites) {
+          sprite.setFrame(Number(sprite.frame.name) === base ? base + 1 : base);
+        }
+      },
+    });
 
     this.game.events.on('dialogue-done', this.onDialogueDone, this);
     this.game.events.on('story-match-result', this.onMatchResult, this);
@@ -172,8 +187,8 @@ export class StoryScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(31);
     this.time.delayedCall(600, () => {
-      this.input.once('pointerdown', () => this.scene.start('Title'));
-      this.input.keyboard?.once('keydown', () => this.scene.start('Title'));
+      this.input.once('pointerdown', () => transitionTo(this, 'Title'));
+      this.input.keyboard?.once('keydown', () => transitionTo(this, 'Title'));
     });
   }
 
@@ -209,7 +224,8 @@ export class StoryScene extends Phaser.Scene {
     const place = (key: string, x: number, y: number, frame = 0, flip = false): void => {
       if (!this.textures.exists(key)) return;
       this.add.ellipse(x, y + 9, 12, 4, 0x000000, 0.3);
-      this.add.sprite(x, y, key, frame).setFlipX(flip);
+      const sprite = this.add.sprite(x, y, key, frame).setFlipX(flip);
+      this.castSprites.push({ sprite, base: frame });
     };
     place('char_tero', 120, 150);
     place('char_nino', 142, 158);

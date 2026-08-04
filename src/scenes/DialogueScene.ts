@@ -59,9 +59,11 @@ export class DialogueScene extends Phaser.Scene {
     const pw = GAME_WIDTH - 20;
     const ph = 78;
     const py = GAME_HEIGHT - ph - 8;
+    this.add.rectangle(px + pw / 2 + 2, py + ph / 2 + 3, pw, ph, 0x000000, 0.45);
     this.panel = this.add
-      .rectangle(px + pw / 2, py + ph / 2, pw, ph, 0x141218, 0.94)
-      .setStrokeStyle(1, 0xf2c14e, 0.8);
+      .rectangle(px + pw / 2, py + ph / 2, pw, ph, 0x131118, 0.96)
+      .setStrokeStyle(1, 0xf2c14e, 0.85);
+    this.add.rectangle(px + pw / 2, py + 1, pw - 2, 1, 0x2a2433, 1);
     this.portraitImg = this.add.image(px + 26, py + ph / 2, '__DEFAULT').setScale(2);
     this.nameText = this.add.text(px + 50, py + 4, '', {
       fontFamily: FONT_BODY,
@@ -212,7 +214,6 @@ export class DialogueScene extends Phaser.Scene {
     const payload = { dialogueId: this.dialogueId, flags: [...this.flags] };
     // Stop BEFORE emitting: the listener may relaunch this scene for the next
     // conversation, and launching a still-active scene is a silent no-op.
-    if (window.__SOLPORT__) window.__SOLPORT__.scene = 'Story';
     this.scene.stop();
     this.game.events.emit('dialogue-done', payload);
   }

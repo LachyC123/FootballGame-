@@ -1,18 +1,31 @@
 import Phaser from 'phaser';
-import { FONT_BODY, FONT_DISPLAY, FS_BODY, FS_DISPLAY_2X, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
+import {
+  FONT_BODY,
+  FONT_DISPLAY,
+  FS_BODY,
+  FS_DISPLAY_2X,
+  GAME_HEIGHT,
+  GAME_WIDTH,
+} from '../app/constants';
 import { BUILD_VERSION } from '../app/buildInfo';
 import { loadSave } from '../platform/saveStore';
 import { unlockAudio } from '../platform/audio';
 import { resumeSfx } from '../platform/sfx';
+import { music } from '../platform/music';
 import { SfxPlayer } from '../platform/sfxPlayer';
+import { fadeIn, makeButton, transitionTo, UI, type UiButton } from '../presentation/ui';
+import { loadSettings, saveSettings } from '../platform/settings';
 
 /**
- * Title: first tap unlocks audio (Master Plan P7), then a small menu.
- * PH- note: system-font text is placeholder UI until the bitmap fonts land.
+ * Title v2: sunset harbor key art (all drawn), animated water + idle cast,
+ * panel menu, music. First tap unlocks audio (Master Plan P7).
  */
 export class TitleScene extends Phaser.Scene {
   private unlocked = false;
   private sfxp!: SfxPlayer;
+  private buttons: UiButton[] = [];
+  private castSprites: Phaser.GameObjects.Sprite[] = [];
+  private waterLines: Phaser.GameObjects.Rectangle[] = [];
 
   constructor() {
     super('Title');
@@ -21,46 +34,43 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     this.unlocked = false;
     this.sfxp = new SfxPlayer(this);
+    this.buttons = [];
+    this.castSprites = [];
+    this.waterLines = [];
     const cx = GAME_WIDTH / 2;
 
-    // Backdrop: cast lineup on the harbor.
-    const g = this.add.graphics();
-    g.fillStyle(0x141821);
-    g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    g.fillStyle(0xc2643a, 0.12);
-    g.fillRect(0, 40, GAME_WIDTH, 4);
-    g.fillStyle(0x1b2027);
-    g.fillRect(0, 44, GAME_WIDTH, GAME_HEIGHT - 44);
-    const lineup = ['char_juno', 'char_ash', 'char_bram'];
-    lineup.forEach((key, i) => {
-      if (this.textures.exists(key)) {
-        this.add.ellipse(cx - 30 + i * 30, 208, 12, 4, 0x000000, 0.3);
-        this.add.sprite(cx - 30 + i * 30, 199, key, 0);
-      }
-    });
+    this.drawHarbor();
 
+    // Logo with drop shadow + gold rule.
     this.add
-      .text(cx, 70, 'SOLPORT CAGES', {
+      .text(cx + 2, 62, 'SOLPORT CAGES', {
         fontFamily: FONT_DISPLAY,
         fontSize: FS_DISPLAY_2X,
-        color: '#e8e3d0',
-        stroke: '#0e0e14',
-        strokeThickness: 4,
+        color: '#0e0e14',
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.6);
+    this.add
+      .text(cx, 60, 'SOLPORT CAGES', {
+        fontFamily: FONT_DISPLAY,
+        fontSize: FS_DISPLAY_2X,
+        color: UI.textMain,
       })
       .setOrigin(0.5);
+    this.add.rectangle(cx, 78, 168, 2, 0xf2c14e, 0.9);
     this.add
-      .text(cx, 92, 'working title • vertical slice build', {
+      .text(cx, 88, 'a 3v3 street football story', {
         fontFamily: FONT_BODY,
         fontSize: FS_BODY,
-        color: '#7d7a6e',
+        color: '#9a968a',
       })
       .setOrigin(0.5);
 
     const prompt = this.add
-      .text(cx, 140, 'TAP TO START', {
+      .text(cx, 150, 'TAP TO START', {
         fontFamily: FONT_BODY,
         fontSize: FS_BODY,
-        color: '#f2c14e',
+        color: UI.gold,
       })
       .setOrigin(0.5);
     this.tweens.add({ targets: prompt, alpha: 0.35, duration: 700, yoyo: true, repeat: -1 });
@@ -71,13 +81,15 @@ export class TitleScene extends Phaser.Scene {
         fontSize: FS_BODY,
         color: '#4a4a55',
       })
-      .setOrigin(1, 1);
+      .setOrigin(1, 1)
+      .setAlpha(0.7);
 
     const onFirst = (): void => {
       if (this.unlocked) return;
       this.unlocked = true;
       unlockAudio(this);
       resumeSfx();
+      music.play('harbor');
       this.tweens.killTweensOf(prompt);
       prompt.destroy();
       void this.showMenu();
@@ -85,6 +97,28 @@ export class TitleScene extends Phaser.Scene {
     this.input.once('pointerdown', onFirst);
     this.input.keyboard?.once('keydown', onFirst);
 
+    // Ambient animation: cast idle bob + water shimmer.
+    this.time.addEvent({
+      delay: 480,
+      loop: true,
+      callback: () => {
+        for (const s of this.castSprites) {
+          s.setFrame(Number(s.frame.name) === 0 ? 1 : 0);
+        }
+      },
+    });
+    this.time.addEvent({
+      delay: 700,
+      loop: true,
+      callback: () => {
+        for (const line of this.waterLines) {
+          line.setAlpha(0.08 + Math.random() * 0.18);
+          line.x = (line.getData('baseX') as number) + (Math.random() * 10 - 5);
+        }
+      },
+    });
+
+    fadeIn(this);
     if (window.__SOLPORT__) window.__SOLPORT__.scene = 'Title';
   }
 
@@ -101,46 +135,129 @@ export class TitleScene extends Phaser.Scene {
       // Storage unavailable — menu still works, just no Continue.
     }
 
-    const entries: Array<{ label: string; action: () => void }> = [];
-    entries.push({
-      label: 'NEW GAME',
-      action: () => {
-        this.registry.set('flags', []);
-        this.scene.start('Story');
+    const entries: Array<{ label: string; primary?: boolean; action: () => void }> = [
+      {
+        label: 'NEW GAME',
+        primary: true,
+        action: () => {
+          this.registry.set('flags', []);
+          transitionTo(this, 'Story');
+        },
       },
-    });
+    ];
     if (hasSave) {
       entries.push({
-        label: chapterDone ? 'CONTINUE (friendly match)' : 'CONTINUE',
-        action: () => {
-          this.scene.start(chapterDone ? 'Match' : 'Story', {});
-        },
+        label: chapterDone ? 'CONTINUE — BRINE HARBOR' : 'CONTINUE',
+        action: () => transitionTo(this, chapterDone ? 'Hub' : 'Story'),
       });
     }
-    entries.push({ label: 'FRIENDLY VS THE GULLS', action: () => this.scene.start('Match', {}) });
+    entries.push({
+      label: 'FRIENDLY VS THE GULLS',
+      action: () => transitionTo(this, 'Match', {}),
+    });
+    const soundIndex = entries.length;
+    entries.push({
+      label: loadSettings().muted ? 'SOUND: OFF' : 'SOUND: ON',
+      action: () => {
+        const settings = loadSettings();
+        settings.muted = !settings.muted;
+        saveSettings(settings);
+        this.buttons[soundIndex]?.setLabel(settings.muted ? 'SOUND: OFF' : 'SOUND: ON');
+        if (settings.muted) {
+          music.stop(200);
+        } else {
+          music.play('harbor');
+        }
+      },
+    });
 
     entries.forEach((entry, i) => {
-      const t = this.add
-        .text(cx, 132 + i * 18, entry.label, {
-          fontFamily: FONT_BODY,
-          fontSize: FS_BODY,
-          color: i === 0 ? '#f2c14e' : '#e8e3d0',
-        })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      t.on('pointerover', () => t.setColor('#f2c14e'));
-      t.on('pointerout', () => t.setColor(i === 0 ? '#f2c14e' : '#e8e3d0'));
-      t.on('pointerdown', () => {
-        this.sfxp.play('uiConfirm', 0.6);
-        entry.action();
-      });
+      this.buttons.push(
+        makeButton(
+          this,
+          cx,
+          130 + i * 24,
+          entry.label,
+          () => {
+            this.sfxp.play('uiConfirm', 0.6);
+            entry.action();
+          },
+          { primary: entry.primary ?? false, width: 190 },
+        ),
+      );
     });
-    // Keyboard: Enter/J starts the first entry.
     const first = entries[0];
     if (first) {
       this.input.keyboard?.once('keydown-ENTER', first.action);
       this.input.keyboard?.once('keydown-J', first.action);
     }
+  }
+
+  /** Sunset over Brine Harbor — drawn, no assets. */
+  private drawHarbor(): void {
+    const g = this.add.graphics();
+    const bands = [0x1b2233, 0x2a3040, 0x4a3a44, 0x7a4a44, 0xa85c42];
+    bands.forEach((color, i) => {
+      g.fillStyle(color);
+      g.fillRect(0, i * 22, GAME_WIDTH, 22);
+    });
+    g.fillStyle(0xf2c14e, 0.9);
+    g.fillCircle(360, 96, 14);
+    g.fillStyle(0xf2c14e, 0.18);
+    g.fillCircle(360, 96, 24);
+    // Skyline: cranes, masts, containers.
+    g.fillStyle(0x131722);
+    g.fillRect(0, 100, GAME_WIDTH, 14);
+    for (let x = 10; x < GAME_WIDTH; x += 46) {
+      g.fillRect(x, 84, 3, 18);
+      g.fillRect(x, 84, 14, 2);
+    }
+    g.fillRect(40, 92, 26, 10);
+    g.fillRect(300, 90, 30, 12);
+    // Water with shimmer lines (animated in create).
+    g.fillStyle(0x1a2732);
+    g.fillRect(0, 114, GAME_WIDTH, 60);
+    for (let i = 0; i < 12; i++) {
+      const y = 118 + i * 4.5;
+      const line = this.add.rectangle(
+        40 + ((i * 83) % 400),
+        y,
+        30 + ((i * 37) % 50),
+        1,
+        0xf2c14e,
+        0.12,
+      );
+      line.setData('baseX', line.x);
+      this.waterLines.push(line);
+    }
+    // Quay.
+    g.fillStyle(0x23262d);
+    g.fillRect(0, 174, GAME_WIDTH, GAME_HEIGHT - 174);
+    g.fillStyle(0x272b33);
+    for (let x = 0; x < GAME_WIDTH; x += 32) {
+      for (let y = 174 + ((x / 32) % 2 === 0 ? 0 : 16); y < GAME_HEIGHT; y += 32) {
+        g.fillRect(x, y, 16, 16);
+      }
+    }
+    // Cage silhouette right.
+    g.lineStyle(2, 0x39424e);
+    g.strokeRect(392, 186, 76, 62);
+    g.lineStyle(1, 0x39424e, 0.6);
+    for (let x = 398; x < 466; x += 8) g.lineBetween(x, 186, x - 4, 248);
+
+    // The crew, idling on the quay with a ball.
+    const lineup: Array<[string, number, number]> = [
+      ['char_juno', 205, 232],
+      ['char_ash', 240, 236],
+      ['char_bram', 275, 230],
+    ];
+    for (const [key, x, y] of lineup) {
+      if (!this.textures.exists(key)) continue;
+      this.add.ellipse(x, y + 9, 12, 4, 0x000000, 0.3);
+      this.castSprites.push(this.add.sprite(x, y, key, 0));
+    }
+    this.add.ellipse(252, 246, 7, 4, 0x000000, 0.3);
+    this.add.ellipse(252, 244, 6, 6, 0xf5f1e3).setStrokeStyle(1, 0x9c9784);
   }
 
   isAudioUnlockAttempted(): boolean {

@@ -153,26 +153,31 @@ const RUN = [
 
 /**
  * Draw one 24×24 frame. dir: 's'|'e'|'n'. pose: 'idle0','idle1','run0'..'run3','kick0','kick1','slide','stumble'.
+ * v2 rig: chibi proportions (8px head), visible faces, arm swing, kick anticipation.
  */
 function drawFrame(char, dir, pose) {
   const c = new Canvas(24, 24);
   const kit = KITS[char.kit];
   const wide = char.build === 'big' ? 1 : 0;
   const slim = char.build === 'slim' ? 1 : 0;
-  const cx = 12; // center
+  const cx = 12;
 
   let bob = 0;
   let legL = 0;
   let legR = 0;
   let lean = 0;
+  let armL = 0;
+  let armR = 0;
   if (pose === 'idle1') bob = 1;
   if (pose.startsWith('run')) {
     const r = RUN[Number(pose[3])];
     bob = r.bob;
     legL = r.l;
     legR = r.r;
+    armL = r.armL;
+    armR = r.armR;
   }
-  if (pose === 'kick0') lean = -1;
+  if (pose === 'kick0') lean = dir === 'e' ? -1 : 0;
   if (pose === 'kick1') lean = 1;
   if (pose === 'stumble') {
     lean = 1;
@@ -181,35 +186,40 @@ function drawFrame(char, dir, pose) {
 
   const groundY = 21;
   const legH = 4;
-  const bodyTop = 10 + bob;
-  const bodyH = groundY - legH - bodyTop; // torso rows
-  const bodyW = 8 + wide * 2 - slim;
+  const shortsH = 2;
+  const torsoH = 4;
+  const bodyTop = groundY - legH - shortsH - torsoH + bob; // 11 + bob
+  const bodyW = 7 + wide * 2 - slim;
   const bx = cx - Math.floor(bodyW / 2) + lean;
 
   if (pose === 'slide') {
-    // Sliding low: body horizontal-ish, one leg extended.
-    const dirSign = dir === 'e' ? 1 : 0;
     c.rect(cx - 5, groundY - 4, 10, 3, kit.shirt);
-    c.rect(cx - 5, groundY - 1, 4, 1, kit.shorts);
-    c.rect(cx + (dirSign ? 3 : -1), groundY - 1, 5, 1, kit.socks);
-    c.rect(cx + (dirSign ? 7 : -3), groundY - 1, 2, 1, kit.boots);
-    drawHead(c, char, dir, cx + (dirSign ? -4 : 0), groundY - 9);
+    c.rect(cx - 5, groundY - 2, 3, 1, kit.shade);
+    c.rect(cx - 1, groundY - 1, 4, 1, kit.shorts);
+    c.rect(cx + 3, groundY - 1, 4, 1, kit.socks);
+    c.rect(cx + 7, groundY - 1, 2, 1, kit.boots);
+    drawHead(c, char, dir, cx - 8, groundY - 11);
     c.outline(OUTLINE);
     return c;
   }
 
-  // Legs (socks + boots).
+  // Legs.
   const legW = 2;
   const legGap = char.build === 'big' ? 3 : 2;
   const lx = cx - legGap + lean;
   const rx = cx + legGap - legW + lean;
-  if (pose === 'kick1' && (dir === 'e' || dir === 's')) {
-    // Contact frame: kicking leg extended forward.
-    const kx = dir === 'e' ? cx + 4 : cx + 3;
-    c.rect(lx, groundY - legH - legL, legW, legH + legL, kit.socks);
+  if (pose === 'kick1' && dir !== 'n') {
+    const kx = cx + 3;
+    c.rect(lx, groundY - legH, legW, legH, kit.socks);
     c.rect(lx, groundY - 1, legW, 2, kit.boots);
-    c.rect(kx, groundY - legH - 1, legW + 1, 2, kit.socks);
-    c.rect(kx + 2, groundY - legH - 1, 2, 2, kit.boots);
+    c.rect(kx, groundY - legH - 1, 3, 2, kit.socks);
+    c.rect(kx + 3, groundY - legH - 1, 2, 2, kit.boots);
+  } else if (pose === 'kick0' && dir !== 'n') {
+    // Anticipation: kicking leg drawn back.
+    c.rect(lx, groundY - legH, legW, legH, kit.socks);
+    c.rect(lx, groundY - 1, legW, 2, kit.boots);
+    c.rect(cx - 5, groundY - 2, 2, 2, kit.socks);
+    c.rect(cx - 7, groundY - 2, 2, 2, kit.boots);
   } else {
     c.rect(lx, groundY - legH - legL, legW, legH + legL, kit.socks);
     c.rect(rx, groundY - legH - legR, legW, legH + legR, kit.socks);
@@ -218,76 +228,87 @@ function drawFrame(char, dir, pose) {
   }
 
   // Shorts.
-  c.rect(bx, groundY - legH - 2, bodyW, 2, kit.shorts);
+  c.rect(bx, groundY - legH - shortsH, bodyW, shortsH, kit.shorts);
 
-  // Torso.
-  c.rect(bx, bodyTop, bodyW, bodyH, kit.shirt);
-  if (dir === 's') c.rect(bx + bodyW - 2, bodyTop + 1, 2, bodyH - 1, kit.shade); // key light upper-left → shade right
-  if (dir === 'e') c.rect(bx + bodyW - 2, bodyTop, 2, bodyH, kit.shade);
-  if (dir === 'n') c.rect(bx + bodyW - 3, bodyTop + 1, 2, bodyH - 2, kit.shade);
-
-  // Arms.
-  const armY = bodyTop + 1;
-  const armH = 4;
-  if (dir !== 'e') {
-    c.rect(bx - 1, armY, 1, armH, char.skin);
-    c.rect(bx + bodyW, armY, 1, armH, char.skin);
-  } else {
-    const swing = pose.startsWith('run') ? RUN[Number(pose[3])].armL : 0;
-    c.rect(bx + bodyW - 1, armY + swing, 1, armH, char.skin);
+  // Torso + collar + shading + crest.
+  c.rect(bx, bodyTop, bodyW, torsoH, kit.shirt);
+  c.rect(bx + bodyW - 2, bodyTop, 2, torsoH, kit.shade);
+  if (dir === 's') {
+    c.rect(bx + Math.floor(bodyW / 2) - 1, bodyTop, 2, 1, kit.shade); // collar
+    if (char.kit === 'crew') c.set(bx + 1, bodyTop + 1, 0xf2c14e); // crest
   }
 
-  // Head.
-  drawHead(c, char, dir, cx - 3 + lean, bodyTop - 7);
+  // Arms (skin, swinging on runs).
+  const armH = 3;
+  if (dir === 'e') {
+    const swing = pose.startsWith('run') ? armL : 0;
+    c.rect(bx + bodyW - 1, bodyTop + 1 + swing, 1, armH, char.skin);
+  } else {
+    c.rect(bx - 1, bodyTop + 1 + armL, 1, armH, char.skin);
+    c.rect(bx + bodyW, bodyTop + 1 + armR, 1, armH, char.skin);
+  }
+
+  // Head — 8 wide, 8 tall, chibi.
+  drawHead(c, char, dir, cx - 4 + lean, bodyTop - 8);
 
   c.outline(OUTLINE);
   return c;
 }
 
 function drawHead(c, char, dir, hx, hy) {
-  // 7×7 head box at (hx, hy).
-  c.rect(hx, hy + 1, 7, 6, char.skin);
+  const skinShade = shade(char.skin);
+  // Face block: rows hy+2..hy+7 (6 rows), 8 wide.
+  c.rect(hx, hy + 2, 8, 6, char.skin);
+  c.rect(hx + 6, hy + 3, 2, 5, skinShade);
   const hair = char.hair;
   if (dir === 'n') {
-    // Back of head: hair covers most.
-    c.rect(hx, hy, 7, 5, hair);
+    c.rect(hx, hy, 8, 6, hair);
+    c.rect(hx, hy + 6, 1, 1, hair);
+    c.rect(hx + 7, hy + 6, 1, 1, hair);
     if (char.style === 'bandana') {
-      c.rect(hx, hy + 3, 7, 1, 0xdfe3e8);
-      c.rect(hx, hy, 7, 3, 0x8d939c);
+      c.rect(hx, hy + 4, 8, 1, 0xdfe3e8);
+      c.rect(hx, hy, 8, 4, 0x8d939c);
     }
     return;
   }
   switch (char.style) {
     case 'crop':
-      c.rect(hx, hy, 7, 2, hair);
+      c.rect(hx, hy, 8, 2, hair);
       c.rect(hx, hy + 2, 1, 2, hair);
-      c.rect(hx + 6, hy + 2, 1, 2, hair);
+      c.rect(hx + 7, hy + 2, 1, 2, hair);
       break;
     case 'spiky':
-      c.rect(hx, hy, 7, 2, hair);
+      c.rect(hx, hy, 8, 2, hair);
       c.set(hx + 1, hy - 1, hair);
-      c.set(hx + 3, hy - 1, hair);
-      c.set(hx + 5, hy - 1, hair);
-      c.rect(hx + 6, hy + 2, 1, 3, hair);
+      c.set(hx + 4, hy - 1, hair);
+      c.set(hx + 6, hy - 1, hair);
+      c.rect(hx + 7, hy + 2, 1, 3, hair);
       break;
     case 'buzz':
-      c.rect(hx, hy, 7, 1, hair);
-      c.rect(hx, hy + 1, 1, 1, hair);
-      c.rect(hx + 6, hy + 1, 1, 1, hair);
+      c.rect(hx, hy + 1, 8, 1, hair);
+      c.set(hx, hy + 2, hair);
+      c.set(hx + 7, hy + 2, hair);
       break;
     case 'bandana':
-      c.rect(hx, hy, 7, 2, 0xdfe3e8);
-      c.set(hx + 7, hy + 1, 0xdfe3e8); // knot
+      c.rect(hx, hy, 8, 2, 0xdfe3e8);
+      c.set(hx + 8, hy + 1, 0xdfe3e8);
+      c.rect(hx, hy, 8, 1, 0x8d939c);
       break;
   }
-  // Face.
   if (dir === 's') {
-    c.set(hx + 2, hy + 3, OUTLINE);
-    c.set(hx + 5, hy + 3, OUTLINE);
-  } else if (dir === 'e') {
-    c.set(hx + 5, hy + 3, OUTLINE);
-    c.rect(hx + 6, hy + 4, 1, 1, char.skin); // nose hint
+    c.set(hx + 2, hy + 4, OUTLINE);
+    c.set(hx + 5, hy + 4, OUTLINE);
+  } else {
+    c.set(hx + 5, hy + 4, OUTLINE);
+    c.set(hx + 7, hy + 5, char.skin); // nose
   }
+}
+
+function shade(hex) {
+  const r = Math.max(0, ((hex >> 16) & 0xff) - 38);
+  const g = Math.max(0, ((hex >> 8) & 0xff) - 34);
+  const b = Math.max(0, (hex & 0xff) - 26);
+  return (r << 16) | (g << 8) | b;
 }
 
 function drawPortrait(char) {

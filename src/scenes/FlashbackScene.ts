@@ -8,6 +8,7 @@ import {
   GAME_WIDTH,
 } from '../app/constants';
 import { SfxPlayer } from '../platform/sfxPlayer';
+import { music } from '../platform/music';
 import { loadSettings } from '../platform/settings';
 
 /**
@@ -37,6 +38,7 @@ export class FlashbackScene extends Phaser.Scene {
   create(): void {
     this.beat = 0;
     this.sfxp = new SfxPlayer(this);
+    music.stop(500);
     this.drawSepiaNetyard();
 
     const mk = (key: string, x: number, y: number, frame = 0): Phaser.GameObjects.Sprite => {
