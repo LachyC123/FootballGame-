@@ -20,6 +20,15 @@ export class PreloadScene extends Phaser.Scene {
     for (const { key, url } of allSfxEntries()) {
       this.load.audio(key, url);
     }
+    // Generated pixel-art rigs + portraits (scripts/generate-sprites.mjs).
+    const cast = ['ash', 'juno', 'bram', 'salt', 'gull_a', 'gull_b', 'tero', 'nino'];
+    for (const id of cast) {
+      this.load.spritesheet(`char_${id}`, `assets/sprites/char_${id}.png`, {
+        frameWidth: 24,
+        frameHeight: 24,
+      });
+      this.load.image(`portrait_${id}`, `assets/sprites/portrait_${id}.png`);
+    }
   }
 
   create(): void {

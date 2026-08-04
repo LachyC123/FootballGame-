@@ -1,0 +1,48 @@
+{
+  "ch1_intro": {
+    "start": "n1",
+    "nodes": {
+      "n1": { "speaker": "nino", "text": "You're back! You're REALLY back!\nCoach! COACH! Ash is back!", "next": "n2" },
+      "n2": { "speaker": "tero", "text": "...So the ferry still runs.", "next": "n3" },
+      "n3": { "speaker": "tero", "text": "Three years, Ash. The Netyard went quiet.\nThe Gulls hold our pin now. Salt's crew.", "next": "n4" },
+      "n4": {
+        "speaker": "ash",
+        "text": "…",
+        "choices": [
+          { "text": "I'm taking it back.", "next": "n5a", "flags": ["ledger.ego"] },
+          { "text": "We're taking it back.", "next": "n5b", "flags": ["ledger.team"] }
+        ]
+      },
+      "n5a": { "speaker": "tero", "text": "Hm. Still all 'I'.\nThe cage will teach you.", "next": "n6" },
+      "n5b": { "speaker": "tero", "text": "'We.' Good.\nJuno! Bram! Gate's open!", "next": "n6" },
+      "n6": { "speaker": "juno", "text": "okay okay okay — story time later\nGAME time now, yes? yes", "next": "n7" },
+      "n7": { "speaker": "bram", "text": "...I'll try not to break anyone.", "next": "n8" },
+      "n8": { "speaker": "nino", "text": "THE NETYARD OPENS ITS GATES!\n(I'm doing the announcements. Nobody asked. I don't care.)", "end": true }
+    }
+  },
+  "ch1_prematch": {
+    "start": "p1",
+    "nodes": {
+      "p1": { "speaker": "salt", "text": "Well, well. The ghost of Brine Harbor.", "next": "p2" },
+      "p2": { "speaker": "salt", "text": "Beat us and the pin's yours.\nLose — and you go back to being a rumour.", "next": "p3" },
+      "p3": { "speaker": "tero", "text": "First to three bells.\nThe wall is your sixth man. Trust it.", "end": true }
+    }
+  },
+  "ch1_retry": {
+    "start": "r1",
+    "nodes": {
+      "r1": { "speaker": "salt", "text": "That all you got, ghost?", "next": "r2" },
+      "r2": { "speaker": "tero", "text": "Again. The Gulls swarm the ball —\nso the space is always BEHIND them. Pass. Move. Ring it.", "end": true }
+    }
+  },
+  "ch1_aftermath": {
+    "start": "a1",
+    "nodes": {
+      "a1": { "speaker": "salt", "text": "...Take it. The pin.\nYou earned it — for real.", "next": "a2" },
+      "a2": { "speaker": "salt", "text": "But Spicegate's next on the ladder,\nand Nadia doesn't play nice like me.", "next": "a3" },
+      "a3": { "speaker": "nino", "text": "FIRST PIN! I'm writing it down!\nThe Ledger remembers EVERYTHING.", "next": "a4" },
+      "a4": { "speaker": "tero", "text": "One down.\nDon't smile yet.", "next": "a5", "setFlags": ["pin.gulls", "ch1.complete"] },
+      "a5": { "speaker": "system", "text": "PIN EARNED — THE BRINE GULLS\nChapter 1 (vertical slice) complete. Spicegate arrives in the next build.", "end": true }
+    }
+  }
+}

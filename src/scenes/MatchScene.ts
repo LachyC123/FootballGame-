@@ -8,6 +8,7 @@ import { InputService } from '../platform/input/inputService';
 import { loadSettings } from '../platform/settings';
 import { resumeSfx } from '../platform/sfx';
 import { SfxPlayer } from '../platform/sfxPlayer';
+import { CharacterView } from '../presentation/characterView';
 
 /**
  * MatchScene: renders MatchCore state; owns the fixed-step accumulator, HUD,
@@ -16,12 +17,9 @@ import { SfxPlayer } from '../platform/sfxPlayer';
  */
 interface SceneData {
   config?: MatchConfig;
+  story?: boolean;
 }
 
-const HOME_COLOR = 0x2e9e8f; // harbor teal
-const HOME_DARK = 0x1d6b60;
-const AWAY_COLOR = 0xc2643a; // gull rust
-const AWAY_DARK = 0x8a4527;
 const BALL_COLOR = 0xf5f1e3;
 
 export class MatchScene extends Phaser.Scene {
@@ -30,7 +28,9 @@ export class MatchScene extends Phaser.Scene {
   private accumulator = 0;
   private paused = false;
 
-  private playerSprites = new Map<string, Phaser.GameObjects.Container>();
+  private playerSprites = new Map<string, CharacterView>();
+  private storyMode = false;
+  private lastDeltaS = 1 / 60;
   private ballSprite!: Phaser.GameObjects.Ellipse;
   private ballShadow!: Phaser.GameObjects.Ellipse;
   private controlRing!: Phaser.GameObjects.Arc;
@@ -66,6 +66,7 @@ export class MatchScene extends Phaser.Scene {
   create(data: SceneData): void {
     const config = data.config ?? defaultMatchConfig(Math.floor(Math.random() * 1e9));
     this.core = new MatchCore(config);
+    this.storyMode = data.story ?? false;
     this.accumulator = 0;
     this.paused = false;
     this.matchOver = false;
@@ -75,10 +76,10 @@ export class MatchScene extends Phaser.Scene {
     this.drawPitch();
     this.createParticles();
 
-    // Entities.
+    // Entities — generated pixel-art rigs (docs/07 code-first art path).
     const snap = this.core.snapshot();
     for (const p of snap.players) {
-      this.playerSprites.set(p.id, this.makePlayerSprite(p.team));
+      this.playerSprites.set(p.id, new CharacterView(this, p.id));
     }
     this.ballShadow = this.add.ellipse(0, 0, 7, 4, 0x000000, 0.35).setDepth(4);
     this.ballSprite = this.add.ellipse(0, 0, 6, 6, BALL_COLOR).setDepth(6);
@@ -186,6 +187,7 @@ export class MatchScene extends Phaser.Scene {
       this.accumulator -= T.fixedDt;
       for (const event of this.core.drainEvents()) this.onEvent(event);
     }
+    this.lastDeltaS = deltaMs / 1000;
     this.emitAmbientFeel(deltaMs / 1000);
     this.render(this.core.snapshot());
   }
@@ -229,12 +231,7 @@ export class MatchScene extends Phaser.Scene {
   }
 
   private flashPlayer(playerId: string): void {
-    const sprite = this.playerSprites.get(playerId);
-    const body = sprite?.getByName('body') as Phaser.GameObjects.Ellipse | undefined;
-    if (!body) return;
-    const team = this.core.snapshot().players.find((p) => p.id === playerId)?.team ?? 0;
-    body.setFillStyle(0xffffff);
-    this.time.delayedCall(60, () => body.setFillStyle(team === 0 ? HOME_COLOR : AWAY_COLOR));
+    this.playerSprites.get(playerId)?.flashWhite(this);
   }
 
   /** Sprint footsteps + dust, ball trail — continuous feel, not event-driven. */
@@ -272,17 +269,7 @@ export class MatchScene extends Phaser.Scene {
 
   private render(snap: MatchSnapshot): void {
     for (const p of snap.players) {
-      const sprite = this.playerSprites.get(p.id);
-      if (!sprite) continue;
-      sprite.setPosition(Math.round(p.pos.x), Math.round(p.pos.y));
-      const wedge = sprite.getByName('wedge') as Phaser.GameObjects.Triangle | null;
-      if (wedge) wedge.setRotation(Math.atan2(p.facing.y, p.facing.x));
-      const body = sprite.getByName('body') as Phaser.GameObjects.Ellipse | null;
-      if (body) {
-        body.setAlpha(p.action === 'stumble' ? 0.55 : 1);
-        const squash = p.action === 'lunge' ? 0.8 : 1;
-        body.setScale(1, squash);
-      }
+      this.playerSprites.get(p.id)?.update(p, this.lastDeltaS);
     }
 
     const b = snap.ball;
@@ -533,8 +520,10 @@ export class MatchScene extends Phaser.Scene {
       )
       .setOrigin(0.5)
       .setDepth(31);
-    const retry = this.add
-      .text(GAME_WIDTH / 2, 172, '[ RETRY ]', {
+    const won = h > a;
+    const primaryLabel = this.storyMode ? (won ? '[ CONTINUE ]' : '[ RETRY ]') : '[ RETRY ]';
+    const primary = this.add
+      .text(GAME_WIDTH / 2, 172, primaryLabel, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#f2c14e',
@@ -542,39 +531,37 @@ export class MatchScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(31)
       .setInteractive({ useHandCursor: true });
-    const toTitle = this.add
-      .text(GAME_WIDTH / 2, 192, 'title screen', {
-        fontFamily: 'monospace',
-        fontSize: '9px',
-        color: '#9a968a',
-      })
-      .setOrigin(0.5)
-      .setDepth(31)
-      .setInteractive({ useHandCursor: true });
-    retry.on('pointerdown', () => {
+    const primaryAction = (): void => {
       this.sfxp.play('uiClick', 0.6);
-      this.scene.restart({});
-    });
-    toTitle.on('pointerdown', () => {
-      this.sfxp.play('uiClick', 0.6);
-      this.scene.start('Title');
-    });
-    this.input.keyboard?.once('keydown-J', () => this.scene.restart({}));
-    this.resultsGroup = [dim, title, score, stats, retry, toTitle];
+      if (this.storyMode) {
+        this.game.events.emit('story-match-result', { homeWon: won });
+        this.scene.stop();
+      } else {
+        this.scene.restart({});
+      }
+    };
+    primary.on('pointerdown', primaryAction);
+    this.input.keyboard?.once('keydown-J', primaryAction);
+    this.resultsGroup = [dim, title, score, stats, primary];
+    if (!this.storyMode) {
+      const toTitle = this.add
+        .text(GAME_WIDTH / 2, 192, 'title screen', {
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          color: '#9a968a',
+        })
+        .setOrigin(0.5)
+        .setDepth(31)
+        .setInteractive({ useHandCursor: true });
+      toTitle.on('pointerdown', () => {
+        this.sfxp.play('uiClick', 0.6);
+        this.scene.start('Title');
+      });
+      this.resultsGroup.push(toTitle);
+    }
   }
 
-  // ---- placeholder art (docs/07 §6) ---------------------------------------
-
-  private makePlayerSprite(team: 0 | 1): Phaser.GameObjects.Container {
-    const color = team === 0 ? HOME_COLOR : AWAY_COLOR;
-    const dark = team === 0 ? HOME_DARK : AWAY_DARK;
-    const shadow = this.add.ellipse(0, 4, 10, 4, 0x000000, 0.3);
-    const body = this.add.ellipse(0, 0, 10, 10, color).setName('body');
-    body.setStrokeStyle(1, dark);
-    const wedge = this.add.triangle(0, 0, 6, 0, 2, -3, 2, 3, dark).setName('wedge');
-    const container = this.add.container(0, 0, [shadow, body, wedge]).setDepth(5);
-    return container;
-  }
+  // ---- arena art (docs/07 code-first path) --------------------------------
 
   private drawPitch(): void {
     const g = this.add.graphics().setDepth(0);
@@ -611,13 +598,39 @@ export class MatchScene extends Phaser.Scene {
     g.lineStyle(2, 0xf2c14e, 0.9);
     g.strokeRect(minX - goalDepth, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
     g.strokeRect(maxX, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
-    // Crowd band (PH).
+    // Netyard dressing: draped nets over the top wall band + crowd silhouettes.
     g.fillStyle(0x1a1c22);
     g.fillRect(0, 0, GAME_WIDTH, minY - 4);
     g.fillStyle(0x2e9e8f, 0.15);
     for (let x = 8; x < GAME_WIDTH; x += 10) {
       g.fillCircle(x, 7, 3);
     }
+    g.lineStyle(1, 0x39525a, 0.5);
+    for (let x = minX; x < maxX; x += 12) {
+      g.lineBetween(x, minY, x + 6, minY + 5);
+      g.lineBetween(x + 6, minY, x, minY + 5);
+    }
+    // Intro card (skippable by being brief).
+    const card = this.add
+      .text(GAME_WIDTH / 2, 100, 'THE NETYARD', {
+        fontFamily: 'monospace',
+        fontSize: '18px',
+        color: '#e8e3d0',
+        stroke: '#0e0e14',
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(26)
+      .setAlpha(0.95);
+    const sub = this.add
+      .text(GAME_WIDTH / 2, 116, 'DJ TIDE: LIVE FROM BRINE HARBOR!', {
+        fontFamily: 'monospace',
+        fontSize: '8px',
+        color: '#f2c14e',
+      })
+      .setOrigin(0.5)
+      .setDepth(26);
+    this.tweens.add({ targets: [card, sub], alpha: 0, delay: 1400, duration: 400 });
   }
 
   private createParticles(): void {

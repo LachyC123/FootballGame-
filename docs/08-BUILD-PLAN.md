@@ -84,6 +84,17 @@ truth" pillar). **This phase decides tuning values — expect iteration.**
 Scope: **Chapter 1 only, condensed**: flashback → 2 tutorial drills (pass + shoot) →
 meet Tero/Nino (dialogue) → match vs Gulls → results/pin → Ledger stinger.
 
+> **Phase 2 progress (2026-08-04): first slice pass landed.** Done: code-authored
+> 24×24 pixel-art rigs + 32×32 portraits for the 8-person cast
+> (scripts/generate-sprites.mjs — deterministic, auto-outlined, bible-palette),
+> integrated into the match via CharacterView (frames as pure function of domain
+> state); dialogue engine (typewriter, portraits, per-speaker blips, 2-choice,
+> flags) with CI graph validation; condensed Ch.1 story flow (intro w/ ego/team
+> choice → prematch → Gulls match with loss-retry loop → aftermath → pin card +
+> autosave); Title menu (New Game / Continue / Friendly); Netyard dressing +
+> intro card. Remaining for G2: flashback cold-open, 2 tutorial drills, music
+> track, bitmap fonts, external playtest on device.
+
 - [ ] Dialogue overlay scene (portraits, typewriter, choices, blips) + dialogue/flags
       engine + `ch1` condensed content files.
 - [ ] Scripted-events hook in MatchCore (flashback forced-shot beat).
