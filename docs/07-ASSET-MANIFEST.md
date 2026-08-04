@@ -6,6 +6,14 @@
 
 ## 1. How assets get made — the three lanes
 
+**OFFICIAL v1 ART PATH (user decision, 2026-08): code-first.** Claude Code authors ALL
+art programmatically to the best achievable quality — real pixel-art sheets, not just
+greyboxes — targeting "keepable" status, with the doc 06 bible as the quality bar. Human
+polish (Aseprite edits) or commissioning are optional upgrades decided AFTER playing the
+vertical slice. Lane A below is therefore promoted: code-generated assets may graduate
+from `PLACEHOLDER` to `FINAL` if they pass the doc 06 §9 acceptance checklist; anything
+that can't pass stays `PLACEHOLDER` and is listed as an upgrade candidate.
+
 | Lane | What | Rule |
 |---|---|---|
 | **A. Placeholder (Claude Code)** | Programmatic/greybox sprites, tone-generated SFX, silence-with-metronome music | Allowed through Phase 2 development builds ONLY; every placeholder is visibly labelled (magenta accent + `PH-` key prefix) and listed below as `PLACEHOLDER` |

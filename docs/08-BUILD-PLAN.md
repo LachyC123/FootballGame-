@@ -11,22 +11,29 @@ Progress tracking: keep the checkboxes in this file updated as work completes.
 
 ## Phase 0 — Foundations (G0: promise is frozen)
 
-- [ ] Scaffold from official Phaser 4 + TypeScript + Vite template; strip demo code;
-      pin exact dependency versions; strict TS config; ESLint + import-boundary rule
-      (`domain/` purity, doc 05 §2); Prettier; Vitest + Playwright wired; CI script
-      (`npm run check` = typecheck + lint + unit + build + budgets).
-- [ ] `app/` composition root, scene registry, 480×270 scale config (`FIT`, pixelArt,
-      integer zoom), Boot → Preload → Title skeleton with authored placeholder look.
-- [ ] Platform shell: safe-area CSS variables, `touch-action` policy, orientation
+- [x] Scaffold Phaser 4.2.1 + TypeScript strict + Vite (hand-rolled to the doc 05 shape,
+      no demo code — see DECISIONS.md); versions pinned via lockfile; ESLint
+      import-boundary rule (`domain/` purity, doc 05 §2); Vitest + Playwright wired; CI
+      script (`npm run check` = lint + unit + build + journeys).
+- [x] `app/` composition root, scene registry, 480×270 scale config (`FIT`, pixelArt,
+      roundPixels), Boot → Preload → Title skeleton with labelled placeholder look.
+- [x] Platform shell: safe-area CSS variables, `touch-action` policy, orientation
       (portrait → authored rotate panel), visibility pause hook, audio unlock stub.
-- [ ] Content pipeline stub: `src/content/` schemas (doc 05 §6) with zod-style
-      validation + a CI test that validates all JSON; seed RNG util + tests.
-- [ ] Save service: IndexedDB wrapper, SaveV1, settings in localStorage, migration
-      harness + fixture test.
-- [ ] `dev/` scene launcher via query params.
+- [x] Content pipeline stub: `src/content/` schemas (doc 05 §6) with hand-rolled
+      validation + a CI test that validates all shipped JSON; seed RNG util + tests.
+- [x] Save service: IndexedDB wrapper (atomic current/previous rotation + corrupt-save
+      quarantine), SaveV1 incl. trust/promises, settings in localStorage, migration
+      harness + tests.
+- [x] `dev/` scene launcher via query params.
 
 **Acceptance:** `npm run check` green; app boots to Title on a phone browser with
 correct safe areas and rotate overlay; docs 01–07 exist (done); repo pushes clean.
+
+> **Phase 0 status: PASS (2026-08-04).** 19 unit tests + 2 Chromium journeys green;
+> production bundle 383 KB gzip (budget 1.5 MB). Outstanding for the user: verify boot
+> on a physical iPhone/Android browser when a deploy URL exists (Phase 1 gate needs it
+> anyway). Playwright uses the environment's pre-installed Chromium via
+> `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium`.
 
 ## Phase 1 — Match core spike (G1: the riskiest mechanic feels good on a phone)
 
