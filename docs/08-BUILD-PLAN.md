@@ -1,0 +1,151 @@
+# 08 — PHASED BUILD PLAN (execution order for Claude Code)
+
+> Maps the Master Plan's gates (G0–G5) onto THIS game. Each phase lists concrete tasks
+> and acceptance criteria. **Do not start a phase until the previous phase's criteria
+> are checked.** Work in small commits; every phase ends with all tests green and a
+> short evidence note (screenshots / clip / device note) in the PR or commit message.
+
+Progress tracking: keep the checkboxes in this file updated as work completes.
+
+---
+
+## Phase 0 — Foundations (G0: promise is frozen)
+
+- [ ] Scaffold from official Phaser 4 + TypeScript + Vite template; strip demo code;
+      pin exact dependency versions; strict TS config; ESLint + import-boundary rule
+      (`domain/` purity, doc 05 §2); Prettier; Vitest + Playwright wired; CI script
+      (`npm run check` = typecheck + lint + unit + build + budgets).
+- [ ] `app/` composition root, scene registry, 480×270 scale config (`FIT`, pixelArt,
+      integer zoom), Boot → Preload → Title skeleton with authored placeholder look.
+- [ ] Platform shell: safe-area CSS variables, `touch-action` policy, orientation
+      (portrait → authored rotate panel), visibility pause hook, audio unlock stub.
+- [ ] Content pipeline stub: `src/content/` schemas (doc 05 §6) with zod-style
+      validation + a CI test that validates all JSON; seed RNG util + tests.
+- [ ] Save service: IndexedDB wrapper, SaveV1, settings in localStorage, migration
+      harness + fixture test.
+- [ ] `dev/` scene launcher via query params.
+
+**Acceptance:** `npm run check` green; app boots to Title on a phone browser with
+correct safe areas and rotate overlay; docs 01–07 exist (done); repo pushes clean.
+
+## Phase 1 — Match core spike (G1: the riskiest mechanic feels good on a phone)
+
+The riskiest thing in this game = **3v3 feel on touch**. Build ONLY the match.
+
+- [ ] Domain `MatchCore`: fixed-step sim, ball physics (drag/bounce/height z), pitch +
+      corner wedges, possession/first-touch, pass (ground/loft/lead), shot (charge/
+      assist cone), tackle/stumble, shoulder charge, stamina, goals, clock, match FSM
+      (doc 03 §11) — pure, unit-tested, deterministic (seed test in CI).
+- [ ] Gameplay binding: MatchScene renders domain state with placeholder kit
+      (doc 07 §6); input pipeline (touch stick + 2 buttons + keyboard) → semantic
+      actions with 120 ms buffer; pointercancel clears state.
+- [ ] Minimal AI: `CHASE/CARRY/SUPPORT/GUARD` states + one mid profile so 3v3 runs.
+- [ ] HUD v0: score/clock, possession ring, stamina, charge.
+- [ ] Feel pass #1: implement feel-response matrix rows for pass/shot/wall/tackle/goal
+      with placeholder VFX/SFX (jsfxr) + dev feel-tuner sliders.
+- [ ] Retry loop: results stub → retry ≤1 s.
+
+**Acceptance (test on a real phone — document device + notes):** a full 3v3 match is
+playable start→finish on iPhone-class Safari AND mid Android Chrome at stable frame
+rate; touch controls pass the "eyes stay on the pitch" check; suspend/resume mid-match
+is safe; determinism test green. **This phase decides tuning values — expect iteration.**
+
+## Phase 2 — Vertical slice (G2: one polished minute proves the whole game)
+
+Scope: **Chapter 1 only, condensed**: flashback → 2 tutorial drills (pass + shoot) →
+meet Tero/Nino (dialogue) → match vs Gulls → results/pin → Ledger stinger.
+
+- [ ] Dialogue overlay scene (portraits, typewriter, choices, blips) + dialogue/flags
+      engine + `ch1` condensed content files.
+- [ ] Scripted-events hook in MatchCore (flashback forced-shot beat).
+- [ ] Tutorial drill framework (win conditions, prompt system, prompt retirement).
+- [ ] Full AI system: utility scoring, blackboard, team profiles; implement `press-chaos`
+      (Gulls) + teammate `supportive` AI incl. Ivy-style lane ping (behind flag).
+- [ ] Results screen v1 with stat strip + rewards; autosave points live.
+- [ ] Audio buses + mix rules; audio unlock flow final.
+- [ ] **Final-direction art for the slice** (doc 07 §6 priority list) integrated: Ash,
+      Juno, Bram, Salt rigs; Netyard arena; core UI; bell/kick/wall SFX; 1 match track.
+      (If final art isn't ready, the phase is NOT closable — flag to the user.)
+- [ ] Playwright journeys: cold load → new game → flashback → drill → match → results.
+
+**Acceptance:** a stranger playing the slice on a phone can (five-second test) name
+role/goal/threat; completes flashback→first win without help; budgets hold (initial JS,
+first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pass.
+
+## Phase 3 — Systems complete (G3: content can be added without engineering)
+
+- [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller
+      (patrols, interaction prompts, condition-matched dialogue), triggers, gates,
+      fast-travel signposts, quest HUD line.
+- [ ] Quest engine: all five step types data-driven; chapter advancement; Nino
+      quest-restate behaviour.
+- [ ] Shop, inventory/equip (+1 stat boots), shells economy, results-reward idempotency.
+- [ ] Training minigames ×3 as MatchScene variants with target scores.
+- [ ] Remaining AI profiles implemented + dev AI visualiser; difficulty reaction-time
+      scaling; showboat + physicality behaviours; Vey adaptation hook (behind flag).
+- [ ] Settings screen complete (doc 04 §10) incl. reduced motion, shake slider,
+      left-handed mirror, auto-switch toggle — all persisted.
+- [ ] Pause/suspend/resume + match checkpoint save; Free Match mode shell.
+- [ ] Full Chapter 1 (uncondensed) authored end-to-end as the content template.
+
+**Acceptance:** adding a hypothetical "Chapter 7" would require ONLY new content files
++ assets (prove it: a dev-only test chapter loads from data alone); Chapter 1 full
+playthrough green in Playwright; unit coverage per doc 05 §9 table.
+
+## Phase 4 — Content production (chapters 2–6)
+
+Author in order, one chapter per pass, each pass = content files + hub map + arena +
+crew + dialogue + tests before the next chapter starts:
+
+- [ ] Ch.2 Spicegate (Spice Runners, wall-pass rally, Juno beat, Free Match unlock)
+- [ ] Ch.3 Old Cobble (Saints, Ivy recruitment, shooting gallery)
+- [ ] Ch.4 Foundry (Ironworks, gauntlet shift, Bram beat)
+- [ ] Ch.5 Voltside (Volt FC, Kairo scenes, hidden Rui quest)
+- [ ] Ch.6 Crown Point (Monarchs, Vey adaptation ON, dual endings via Ledger, credits)
+- [ ] Endless Gauntlet mode; local streak records; cameo teams.
+- [ ] Ambient NPC pools ×6 districts (pre/post win); barks for all captains; DJ Tide
+      lines; landmark interactions.
+
+**Acceptance per chapter:** completable start→finish on device; content validation
+green; visual baseline screenshots approved; chapter's district NPC pools flip on win.
+
+## Phase 5 — Alpha → Beta hardening (G4)
+
+- [ ] Full-game playthrough tests (both endings); save-migration fixtures; corrupt-save
+      recovery UX; storage-eviction handling.
+- [ ] Performance: worst-legal-state scenario (6 players + max VFX + crowd t3) profiled
+      on baseline devices; quality governor tiers wired & tested; 20-min soak, memory
+      settle test; retry/kickoff dead-time audit.
+- [ ] PWA: vite-plugin-pwa + Workbox per Master Plan caching table; update-ready flow;
+      offline play after first load; install icons/manifest with real title.
+- [ ] Accessibility pass: reduced motion audit, colour-blind sim screenshots, mute-run
+      of tutorial + Ch.1, touch-target audit.
+- [ ] Balance pass: play all matches at Standard; tune AI profiles & difficulty curve;
+      Sharp/Relaxed verified.
+- [ ] All placeholder assets replaced or explicitly waived with the user; provenance
+      table complete; generated credits + licence notices.
+
+## Phase 6 — Gold (G5)
+
+- [ ] Device matrix run (Master Plan tiers A–F as available to the user — request
+      user's physical devices; document results).
+- [ ] Freeze: version stamp, rollback plan, final captures (trailer clip, store/social
+      screenshots), README player-facing section, deploy to hosting (user chooses host;
+      any static host works — propose options at this point).
+- [ ] Launch checklist from Master Plan §15 "Gold release done" table, item by item.
+
+---
+
+## Standing rules for every phase (Master Plan AI contract)
+
+1. **Task packet discipline:** one player-visible outcome per task; include tests +
+   evidence; note budget deltas.
+2. **Never** add a dependency, change input grammar, alter save schema, or expand scope
+   without flagging it as a decision to the user first.
+3. **Every commit message** states the phase + outcome (e.g. `P1: ball wall-bounce +
+   corner wedges w/ determinism tests`).
+4. **When blocked on assets or taste calls** (art approval, title, host choice, device
+   testing), continue with the next unblocked task and surface the decision list to the
+   user at the end of the working session.
+5. **Tuning values in docs 03 are starting points** — when device testing changes them,
+   update the doc in the same commit (docs stay truthful).
