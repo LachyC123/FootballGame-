@@ -92,8 +92,11 @@ meet Tero/Nino (dialogue) → match vs Gulls → results/pin → Ledger stinger.
 > flags) with CI graph validation; condensed Ch.1 story flow (intro w/ ego/team
 > choice → prematch → Gulls match with loss-retry loop → aftermath → pin card +
 > autosave); Title menu (New Game / Continue / Friendly); Netyard dressing +
-> intro card. Remaining for G2: flashback cold-open, 2 tutorial drills, music
-> track, bitmap fonts, external playtest on device.
+> intro card. Part 2 added: flashback cold-open (scripted
+> forced-shot beat), both tutorial drills with skip (dummy-AI mannequins +
+> kickoff-override rule), Linssen fonts live at pixel-crisp sizes, Kairo + two
+> flashback rigs, crowd ambience bed. Remaining for G2: a music track, and the
+> external playtest on a physical device (user).
 
 - [ ] Dialogue overlay scene (portraits, typewriter, choices, blips) + dialogue/flags
       engine + `ch1` condensed content files.
