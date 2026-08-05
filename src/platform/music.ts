@@ -18,6 +18,25 @@ interface Track {
 }
 
 const TRACKS: Record<string, Track> = {
+  // Old Cobble: slow D-dorian tolling — long bass pedals, a lead that moves
+  // like a bell ringer counting, almost no percussion. The hill is quiet.
+  cloister: {
+    bpm: 66,
+    steps: 64,
+    bassVol: 0.09,
+    leadVol: 0.038,
+    bass: [
+      [0, 26, 30], // D1 pedal
+      [32, 31, 14], // G1
+      [48, 29, 14], // F1
+    ],
+    lead: [
+      [0, 62, 6], [12, 69, 6],
+      [24, 67, 4], [30, 64, 8],
+      [40, 62, 6], [52, 57, 10],
+    ],
+    hats: [16, 48],
+  },
   // Spicegate: D-phrygian sway — the flat second reads as market haze; busier
   // hats stand in for hand drums.
   market: {

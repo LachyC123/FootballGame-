@@ -4,6 +4,7 @@ import type { DialogueGraph, DialogueNode } from '../domain/progress/dialogue';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import ch1Raw from '../content/data/dialogue/ch1.json';
 import ch2Raw from '../content/data/dialogue/ch2.json';
+import ch3Raw from '../content/data/dialogue/ch3.json';
 import speakersRaw from '../content/data/speakers.json';
 
 interface SpeakerMeta {
@@ -13,7 +14,7 @@ interface SpeakerMeta {
 }
 
 const SPEAKERS = speakersRaw as Record<string, SpeakerMeta>;
-const DIALOGUES = { ...ch1Raw, ...ch2Raw } as unknown as Record<string, DialogueGraph>;
+const DIALOGUES = { ...ch1Raw, ...ch2Raw, ...ch3Raw } as unknown as Record<string, DialogueGraph>;
 
 export interface DialogueSceneData {
   dialogueId: string;

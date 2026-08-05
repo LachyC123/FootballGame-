@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 import { FONT_BODY, FONT_DISPLAY, FS_BODY, FS_DISPLAY, GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import { allSfxEntries } from '../content/audioManifest';
 import { getStartOverride } from '../dev/launcher';
-import { KETTLE } from './MatchScene';
-import { spiceMatchConfig } from './HubScene';
+import { CLOISTER, KETTLE } from './MatchScene';
+import { cloisterMatchConfig, spiceMatchConfig } from './HubScene';
 
 /**
  * Preload: loads only the next playable route. Phase 0 has no assets yet;
@@ -43,7 +43,7 @@ export class PreloadScene extends Phaser.Scene {
       this.load.audio(key, url);
     }
     // Generated pixel-art rigs + portraits (scripts/generate-sprites.mjs).
-    const cast = ['ash', 'juno', 'bram', 'salt', 'gull_a', 'gull_b', 'tero', 'nino', 'kairo', 'oldkid_a', 'oldkid_b', 'nadia', 'seppi', 'spice_a', 'spice_b'];
+    const cast = ['ash', 'juno', 'bram', 'salt', 'gull_a', 'gull_b', 'tero', 'nino', 'kairo', 'oldkid_a', 'oldkid_b', 'nadia', 'seppi', 'spice_a', 'spice_b', 'ivy', 'prior', 'saint_a', 'alder'];
     for (const id of cast) {
       this.load.spritesheet(`char_${id}`, `assets/sprites/char_${id}.png`, {
         frameWidth: 24,
@@ -57,11 +57,17 @@ export class PreloadScene extends Phaser.Scene {
     const override = getStartOverride();
     if (override?.district) {
       // Dev: jumping into a later district implies its prerequisites.
-      this.registry.set('flags', ['ch1.metTero', 'ch1.complete']);
+      const flags = ['ch1.metTero', 'ch1.complete'];
+      if (override.district === 'oldcobble') {
+        flags.push('ch2.metNadia', 'ch2.crate', 'ch2.delivered', 'ch2.junoTalk', 'ch2.complete');
+      }
+      this.registry.set('flags', flags);
       this.scene.start(override.scene, { district: override.district });
     } else if (override?.arena === 'kettle') {
       // Dev: preview the Kettle dressing without playing to chapter 2.
       this.scene.start(override.scene, { arena: KETTLE, config: spiceMatchConfig(override.seed) });
+    } else if (override?.arena === 'cloister') {
+      this.scene.start(override.scene, { arena: CLOISTER, config: cloisterMatchConfig(override.seed) });
     } else {
       this.scene.start(override?.scene ?? 'Title');
     }

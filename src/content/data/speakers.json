@@ -43,5 +43,20 @@
     "name": "SEPPI",
     "portrait": "portrait_seppi",
     "blipDetune": -400
+  },
+  "ivy": {
+    "name": "IVY",
+    "portrait": "portrait_ivy",
+    "blipDetune": 650
+  },
+  "prior": {
+    "name": "THE PRIOR",
+    "portrait": "portrait_prior",
+    "blipDetune": -700
+  },
+  "alder": {
+    "name": "KEEPER ALDER",
+    "portrait": "portrait_alder",
+    "blipDetune": -300
   }
 }

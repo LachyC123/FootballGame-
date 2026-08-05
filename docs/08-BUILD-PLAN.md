@@ -217,6 +217,30 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > kicked-off boots, pennant, tally marks scratched by the bed); the
 > Preload screen is branded (title, framed gold bar, "mending the
 > nets…"). Cleared for Chapter 3: Old Cobble.
+>
+> **Chapter 3 SHIPPED (2026-08-05): Old Cobble.** New district up the
+> steps from Spicegate (north arch, ch2.complete-gated): hilltop
+> monastery yard at dusk — you can see the harbor lights you climbed
+> from; cloister arcade with candlelit arches; the bell tower holding
+> the FIRST BELL (glinting, patina); Ivy's practice wall with her chalk
+> target; mossy flagstones, falling leaves, stone planters, the works.
+> New cast: IVY (long-hair style, Saints kit, pace 9 — the one fast
+> thing on the hill), THE PRIOR (guard 9 anchor), DENS (saint_a), and
+> KEEPER ALDER (new hooded style + robe kit). Chapter chain: meet Ivy →
+> Alder's storm-lantern errand (cross-district: Nadia gives it free —
+> "the book stays shut", tying fragment 2) → Alder hangs the light and
+> says the phrase out loud → vouched → THE CLOISTER vs the Saints
+> (press .15/line .15/wall .9 low block, Ivy starting AGAINST you) →
+> aftermath choice: bring Ivy down now (ivy.crew) or make the Prior
+> start her first (ivy.earn) → Saint pin, chapter 4 save. Fragment 3
+> (cloister_plaque, post-win): "FOR S., WHO RANG FIRST" + the oiled
+> wheel + Alder's "ask your coach who held the ladder". Cloister arena
+> theme: stone arcade skyline with the tower, ivy-strand rail, candle
+> strings, verdigris bells, painted bell centre mark, drifting leaves,
+> carved kerb mottos instead of ads. New 'cloister' music (66bpm
+> D-dorian tolling). Dev: ?district=oldcobble, ?arena=cloister. Full
+> chain verified end-to-end by scripted drive. Next: Voltside (Ch.4),
+> Kairo, Vey, the Undertide surfacing.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

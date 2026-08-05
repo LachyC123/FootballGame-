@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validateDialogueFile, DialogueError } from '../../src/domain/progress/dialogue';
 import ch1 from '../../src/content/data/dialogue/ch1.json';
 import ch2 from '../../src/content/data/dialogue/ch2.json';
+import ch3 from '../../src/content/data/dialogue/ch3.json';
 import speakers from '../../src/content/data/speakers.json';
 
 const KNOWN = new Set(Object.keys(speakers));
@@ -20,6 +21,30 @@ describe('shipped dialogue validates', () => {
     expect(flags).toContain('pin.spice');
     const fragment = Object.values(graphs['spice_debtbook']!.nodes).flatMap((n) => n.setFlags ?? []);
     expect(fragment).toContain('undertide.ch2');
+  });
+
+  it('ch3.json passes and completes the chapter', () => {
+    const graphs = validateDialogueFile(ch3, KNOWN);
+    const flags = Object.values(graphs['ch3_aftermath']!.nodes).flatMap((n) => n.setFlags ?? []);
+    expect(flags).toContain('ch3.complete');
+    expect(flags).toContain('pin.saints');
+    const choiceFlags = Object.values(graphs['ch3_aftermath']!.nodes)
+      .flatMap((n) => n.choices ?? [])
+      .flatMap((c) => c.flags ?? []);
+    expect(choiceFlags).toContain('ivy.crew');
+    expect(choiceFlags).toContain('ivy.earn');
+    const fragment = Object.values(graphs['cloister_plaque']!.nodes).flatMap((n) => n.setFlags ?? []);
+    expect(fragment).toContain('undertide.ch3');
+  });
+
+  it('ch3 errand chain sets its stage flags in order', () => {
+    const graphs = validateDialogueFile(ch3, KNOWN);
+    const flagOf = (id: string): string[] =>
+      Object.values(graphs[id]!.nodes).flatMap((n) => n.setFlags ?? []);
+    expect(flagOf('ch3_ivy_intro')).toContain('ch3.metIvy');
+    expect(flagOf('ch3_alder')).toContain('ch3.errand');
+    expect(flagOf('ch3_lantern')).toContain('ch3.lantern');
+    expect(flagOf('ch3_alder2')).toContain('ch3.keeperTalk');
   });
 
   it('ch1 aftermath sets the chapter-complete flags', () => {

@@ -142,5 +142,53 @@
       "stam": 0.6
     },
     "reactionMs": 240
+  },
+  {
+    "id": "team_saints",
+    "name": "Cobble Saints",
+    "crewName": "The Saints",
+    "players": [
+      {
+        "characterId": "chr_prior",
+        "stats": {
+          "pace": 3,
+          "power": 6,
+          "touch": 5,
+          "guard": 9,
+          "engine": 7
+        }
+      },
+      {
+        "characterId": "chr_saint_a",
+        "stats": {
+          "pace": 4,
+          "power": 5,
+          "touch": 5,
+          "guard": 7,
+          "engine": 6
+        }
+      },
+      {
+        "characterId": "chr_ivy",
+        "stats": {
+          "pace": 9,
+          "power": 3,
+          "touch": 7,
+          "guard": 3,
+          "engine": 7
+        }
+      }
+    ],
+    "aiProfile": {
+      "press": 0.15,
+      "line": 0.15,
+      "tempo": 0.3,
+      "risk": 0.2,
+      "phys": 0.4,
+      "show": 0.0,
+      "wall": 0.9,
+      "stam": 0.9
+    },
+    "reactionMs": 210
   }
 ]

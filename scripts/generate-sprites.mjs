@@ -136,6 +136,10 @@ const CHARACTERS = [
   { id: 'spice_b', skin: 0xe0a878, hair: 0x3a352f, style: 'buzz', kit: 'spice', build: 'slim' },
   { id: 'oldkid_a', skin: 0xc59a70, hair: 0x3a352f, style: 'crop', kit: 'oldkids', build: 'big' },
   { id: 'oldkid_b', skin: 0xd8a273, hair: 0x241f2b, style: 'buzz', kit: 'oldkids', build: 'avg' },
+  { id: 'ivy', skin: 0xd8a273, hair: 0x8a4a2c, style: 'long', kit: 'saints', build: 'slim' },
+  { id: 'prior', skin: 0xcaa27c, hair: 0xcfcfd4, style: 'buzz', kit: 'saints', build: 'big' },
+  { id: 'saint_a', skin: 0xe0a878, hair: 0x4a4440, style: 'crop', kit: 'saints', build: 'avg' },
+  { id: 'alder', skin: 0xd9a67e, hair: 0x6e5a3a, style: 'hood', kit: 'cloth', build: 'avg' },
 ];
 
 const KITS = {
@@ -147,6 +151,8 @@ const KITS = {
   oldkids: { shirt: 0x6e7681, shade: 0x4c525b, shorts: 0x3a3f47, socks: 0xb9b3a4, boots: 0x2f2b28 },
   spice: { shirt: 0xb03535, shade: 0x7c2424, shorts: 0x241f2b, socks: 0xf2c14e, boots: 0x2f2b28 },
   market: { shirt: 0x8a6a3a, shade: 0x5e4826, shorts: 0x3a3f47, socks: 0xcbbfa4, boots: 0x2f2b28 },
+  saints: { shirt: 0x6e7a5a, shade: 0x4c563d, shorts: 0x4a4f58, socks: 0xd9cbaa, boots: 0x2f2b28 },
+  cloth: { shirt: 0x6e5a3a, shade: 0x4c3f28, shorts: 0x6e5a3a, socks: 0x4c3f28, boots: 0x2f2b28 },
 };
 
 // Run cycle leg offsets [frontLeg dy, backLeg dy] and body bob per frame.
@@ -291,6 +297,16 @@ function drawHead(c, char, dir, hx, hy) {
       c.rect(hx, hy, 6, 1, lite(hair));
       c.rect(hx + 3, hy + 4, 2, 2, shade(hair)); // knot at the back
     }
+    if (char.style === 'long') {
+      c.rect(hx, hy, 8, 7, hair); // full fall of hair from behind
+      c.rect(hx, hy, 6, 1, lite(hair));
+      c.rect(hx, hy + 6, 8, 1, shade(hair));
+    }
+    if (char.style === 'hood') {
+      c.rect(hx - 1, hy, 10, 7, hair); // cowl covers everything
+      c.rect(hx - 1, hy, 8, 1, lite(hair));
+      c.rect(hx - 1, hy + 6, 10, 1, shade(hair));
+    }
     return;
   }
   switch (char.style) {
@@ -328,6 +344,20 @@ function drawHead(c, char, dir, hx, hy) {
       c.set(hx - 1, hy + 1, hair);
       c.set(hx - 1, hy + 2, shade(hair));
       c.rect(hx + 1, hy + 3, 6, 1, skinShade);
+      break;
+    case 'long':
+      c.rect(hx, hy, 8, 2, hair);
+      c.rect(hx, hy, 6, 1, lite(hair));
+      c.rect(hx, hy + 2, 1, 5, hair); // falls past the jaw both sides
+      c.rect(hx + 7, hy + 2, 1, 5, hair);
+      c.rect(hx + 1, hy + 2, 6, 1, skinShade);
+      break;
+    case 'hood':
+      c.rect(hx - 1, hy - 1, 10, 3, hair); // cowl overhangs the brow
+      c.rect(hx - 1, hy - 1, 8, 1, lite(hair));
+      c.rect(hx - 1, hy + 2, 1, 5, hair);
+      c.rect(hx + 8, hy + 2, 1, 5, hair);
+      c.rect(hx, hy + 2, 8, 1, shade(hair)); // cowl shadow on the face
       break;
   }
   if (dir === 's') {
@@ -408,6 +438,25 @@ function drawPortrait(char) {
       c.set(6, 11, shade(hair));
       c.rect(10, 11, 12, 1, skinShade);
       c.set(23, 20, 0xf2c14e); // earring
+      break;
+    case 'long':
+      // Hair falls past the shoulders on both sides.
+      c.rect(8, 5, 16, 5, hair);
+      c.rect(9, 5, 13, 1, lite(hair));
+      c.rect(7, 9, 3, 16, hair);
+      c.rect(22, 9, 3, 16, hair);
+      c.rect(7, 23, 3, 2, shade(hair));
+      c.rect(22, 23, 3, 2, shade(hair));
+      c.rect(10, 10, 12, 1, skinShade);
+      break;
+    case 'hood':
+      // A keeper's cowl, face half in its shadow.
+      c.rect(6, 3, 20, 8, hair);
+      c.rect(7, 3, 17, 1, lite(hair));
+      c.rect(6, 9, 2, 15, hair);
+      c.rect(24, 9, 2, 15, hair);
+      c.rect(8, 10, 16, 2, shade(hair));
+      c.rect(9, 12, 14, 1, skinShade);
       break;
   }
   // Eyes with a glint, brows, mouth.

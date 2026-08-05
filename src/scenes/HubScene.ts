@@ -8,7 +8,7 @@ import { SfxPlayer } from '../platform/sfxPlayer';
 import { createDefaultSave } from '../domain/progress/save';
 import { commitSave } from '../platform/saveStore';
 import { fadeIn, transitionTo, UI } from '../presentation/ui';
-import { defaultMatchConfig, KETTLE, type ArenaDress, type DrillSpec } from './MatchScene';
+import { CLOISTER, defaultMatchConfig, KETTLE, type ArenaDress, type DrillSpec } from './MatchScene';
 import type { MatchConfig, PlayerState } from '../domain/match/types';
 import * as props from '../presentation/props';
 import * as buildings from '../presentation/buildings';
@@ -19,7 +19,7 @@ import * as buildings from '../presentation/buildings';
  * the objective chip always points forward. Brine Harbor = Ch.1, Spicegate =
  * Ch.2. Districts are data below; Tiled maps arrive when count grows.
  */
-type DistrictId = 'harbor' | 'spicegate';
+type DistrictId = 'harbor' | 'spicegate' | 'oldcobble';
 
 interface HubNpc {
   id: string;
@@ -68,6 +68,24 @@ export function spiceMatchConfig(seed: number): MatchConfig {
       { id: 'chr_nadia', stats: { pace: 6, power: 4, touch: 8, guard: 3, engine: 6 } },
       { id: 'chr_spice_a', stats: { pace: 5, power: 4, touch: 6, guard: 4, engine: 5 } },
       { id: 'chr_spice_b', stats: { pace: 6, power: 3, touch: 6, guard: 3, engine: 5 } },
+    ],
+  };
+  return config;
+}
+
+/** Cobble Saints: the ninety-year low block (docs/03 §10.4) — deep, walled,
+ * patient, and Ivy up front as the one fast thing on the hill. */
+export function cloisterMatchConfig(seed: number): MatchConfig {
+  const config = defaultMatchConfig(seed);
+  config.away = {
+    teamId: 'team_saints',
+    human: false,
+    reactionMs: 210,
+    aiProfile: { press: 0.15, line: 0.15, tempo: 0.3, risk: 0.2, phys: 0.4, show: 0.0, wall: 0.9, stam: 0.9 },
+    players: [
+      { id: 'chr_prior', stats: { pace: 3, power: 6, touch: 5, guard: 9, engine: 7 } },
+      { id: 'chr_saint_a', stats: { pace: 4, power: 5, touch: 5, guard: 7, engine: 6 } },
+      { id: 'chr_ivy', stats: { pace: 9, power: 3, touch: 7, guard: 3, engine: 7 } },
     ],
   };
   return config;
@@ -130,10 +148,13 @@ export class HubScene extends Phaser.Scene {
     this.lastObjective = null;
 
     if (this.district === 'harbor') this.drawHarbor();
-    else this.drawSpicegate();
+    else if (this.district === 'spicegate') this.drawSpicegate();
+    else this.drawOldCobble();
 
     this.sfxp = new SfxPlayer(this);
-    music.play(this.district === 'spicegate' ? 'market' : 'harbor');
+    music.play(
+      this.district === 'spicegate' ? 'market' : this.district === 'oldcobble' ? 'cloister' : 'harbor',
+    );
     fadeIn(this);
 
     // Footstep dust puffs (shared pixel texture with MatchScene).
@@ -153,7 +174,12 @@ export class HubScene extends Phaser.Scene {
     });
     this.stepDust.setDepth(3);
 
-    const spawn = this.district === 'harbor' ? { x: 90, y: 210 } : { x: 40, y: 190 };
+    const spawn =
+      this.district === 'harbor'
+        ? { x: 90, y: 210 }
+        : this.district === 'spicegate'
+          ? { x: 40, y: 190 }
+          : { x: 246, y: 210 }; // Old Cobble: you arrive up the steps from the south
     this.player = {
       view: new CharacterView(this, 'chr_ash'),
       state: {
@@ -172,10 +198,19 @@ export class HubScene extends Phaser.Scene {
       },
     };
 
-    this.npcs = (this.district === 'harbor' ? this.harborNpcs() : this.spicegateNpcs()).filter(
-      (npc) => this.meets(npc.requires),
-    );
-    this.gates = this.district === 'harbor' ? this.harborGates() : this.spicegateGates();
+    const npcSource =
+      this.district === 'harbor'
+        ? this.harborNpcs()
+        : this.district === 'spicegate'
+          ? this.spicegateNpcs()
+          : this.oldcobbleNpcs();
+    this.npcs = npcSource.filter((npc) => this.meets(npc.requires));
+    this.gates =
+      this.district === 'harbor'
+        ? this.harborGates()
+        : this.district === 'spicegate'
+          ? this.spicegateGates()
+          : this.oldcobbleGates();
 
     for (const npc of this.npcs) {
       if (!npc.spriteKey || !this.textures.exists(npc.spriteKey)) continue;
@@ -305,13 +340,15 @@ export class HubScene extends Phaser.Scene {
         x: 330,
         y: 130,
         dialogueId: () =>
-          this.has('ch2.complete')
-            ? 'hub_nadia'
-            : !this.has('ch2.metNadia')
-              ? 'ch2_nadia_intro'
-              : this.has('ch2.crate') && !this.has('ch2.delivered')
-                ? 'ch2_deliver'
-                : 'ch2_nadia_wait',
+          this.has('ch3.errand') && !this.has('ch3.lantern')
+            ? 'ch3_lantern'
+            : this.has('ch2.complete')
+              ? 'hub_nadia'
+              : !this.has('ch2.metNadia')
+                ? 'ch2_nadia_intro'
+                : this.has('ch2.crate') && !this.has('ch2.delivered')
+                  ? 'ch2_deliver'
+                  : 'ch2_nadia_wait',
       },
       {
         id: 'seppi',
@@ -376,6 +413,122 @@ export class HubScene extends Phaser.Scene {
           }
         },
       },
+      {
+        x: 246,
+        y: 104,
+        r: 24,
+        label: () =>
+          this.has('ch2.complete') ? 'OLD COBBLE STEPS ▴ [A]' : 'THE STEPS — the hill hears no drums yet',
+        locked: () => !this.has('ch2.complete'),
+        action: () => {
+          this.registry.set('district', 'oldcobble');
+          transitionTo(this, 'Hub', { district: 'oldcobble' }, 250);
+        },
+      },
+    ];
+  }
+
+  private oldcobbleNpcs(): HubNpc[] {
+    return [
+      {
+        id: 'ivy',
+        spriteKey: 'char_ivy',
+        x: 150,
+        y: 148,
+        dialogueId: () =>
+          this.has('ch3.complete')
+            ? this.has('ivy.crew')
+              ? 'hub_ivy_crew'
+              : 'hub_ivy_earn'
+            : !this.has('ch3.metIvy')
+              ? 'ch3_ivy_intro'
+              : 'ch3_ivy_wait',
+      },
+      {
+        id: 'alder',
+        spriteKey: 'char_alder',
+        x: 258,
+        y: 116,
+        dialogueId: () =>
+          this.has('ch3.complete')
+            ? 'hub_alder'
+            : !this.has('ch3.metIvy')
+              ? 'ch3_alder_first'
+              : !this.has('ch3.errand')
+                ? 'ch3_alder'
+                : !this.has('ch3.lantern')
+                  ? 'ch3_alder_wait'
+                  : !this.has('ch3.keeperTalk')
+                    ? 'ch3_alder2'
+                    : 'ch3_alder_vouched',
+      },
+      {
+        id: 'prior',
+        spriteKey: 'char_prior',
+        x: 386,
+        y: 168,
+        dialogueId: () =>
+          this.has('ch3.complete')
+            ? 'hub_prior'
+            : this.has('ch3.keeperTalk')
+              ? 'ch3_prior_ready'
+              : 'ch3_prior',
+      },
+      // Undertide fragment 3: the tower plaque, unlocked once the Saints fall.
+      {
+        id: 'plaque',
+        spriteKey: '',
+        x: 240,
+        y: 98,
+        requires: ['ch3.complete'],
+        dialogueId: 'cloister_plaque',
+        prompt: 'THE TOWER [A]',
+      },
+    ];
+  }
+
+  private oldcobbleGates(): Gate[] {
+    return [
+      {
+        x: 246,
+        y: 238,
+        r: 22,
+        label: () => '▾ THE STEPS — down to Spicegate [A]',
+        locked: () => false,
+        action: () => {
+          this.registry.set('district', 'spicegate');
+          transitionTo(this, 'Hub', { district: 'spicegate' }, 250);
+        },
+      },
+      {
+        x: 430,
+        y: 190,
+        r: 34,
+        label: () =>
+          !this.has('ch3.keeperTalk') && !this.has('ch3.complete')
+            ? 'THE CLOISTER — the Saints only play the vouched-for'
+            : !this.has('ch3.complete')
+              ? 'CHALLENGE THE SAINTS [A]'
+              : 'PLAY A FRIENDLY [A]',
+        locked: () => !this.has('ch3.keeperTalk') && !this.has('ch3.complete'),
+        action: () => {
+          if (!this.has('ch3.complete')) {
+            this.sequence = [
+              { kind: 'dialogue', id: 'ch3_prematch' },
+              { kind: 'match', config: (): MatchConfig => cloisterMatchConfig(Math.floor(Math.random() * 1e9)), arena: CLOISTER },
+              { kind: 'dialogue', id: 'ch3_aftermath' },
+            ];
+            this.startSequence();
+          } else {
+            music.stop(250);
+            transitionTo(this, 'Match', {
+              returnTo: 'Hub',
+              config: cloisterMatchConfig(Math.floor(Math.random() * 1e9)),
+              arena: CLOISTER,
+            });
+          }
+        },
+      },
     ];
   }
 
@@ -385,14 +538,25 @@ export class HubScene extends Phaser.Scene {
       if (!this.has('ch1.metTero')) return '▸ Find Coach Tero';
       if (!this.has('ch1.complete')) return '▸ Enter the Netyard — take back the pin';
       if (!this.has('ch2.complete')) return '▸ Spicegate is open — head east';
-      return '▸ Old Cobble opens soon · the coast is yours';
+      if (!this.has('ch3.complete')) return '▸ Old Cobble is open — the steps past Spicegate';
+      return '▸ Three pins home · the coast is yours';
     }
-    if (!this.has('ch2.metNadia')) return '▸ Find Nadia at the Kettle';
-    if (!this.has('ch2.crate')) return "▸ Seppi's stall — earn your cage time";
-    if (!this.has('ch2.delivered')) return '▸ Deliver the crate to Nadia';
-    if (!this.has('ch2.junoTalk')) return '▸ Talk to Juno — she knows this crew';
-    if (!this.has('ch2.complete')) return '▸ Challenge the Spice Runners at the Kettle';
-    return '▸ Old Cobble opens soon · Spicegate is yours';
+    if (this.district === 'spicegate') {
+      if (!this.has('ch2.metNadia')) return '▸ Find Nadia at the Kettle';
+      if (!this.has('ch2.crate')) return "▸ Seppi's stall — earn your cage time";
+      if (!this.has('ch2.delivered')) return '▸ Deliver the crate to Nadia';
+      if (!this.has('ch2.junoTalk')) return '▸ Talk to Juno — she knows this crew';
+      if (!this.has('ch2.complete')) return '▸ Challenge the Spice Runners at the Kettle';
+      if (this.has('ch3.errand') && !this.has('ch3.lantern')) return "▸ A storm-lantern for the hill — Nadia's stall";
+      if (!this.has('ch3.complete')) return '▸ The steps to Old Cobble are open — the north arch';
+      return '▸ Spicegate is yours';
+    }
+    if (!this.has('ch3.metIvy')) return '▸ Someone is playing alone up here — find them';
+    if (!this.has('ch3.errand')) return '▸ Ask the bell keeper to vouch for you';
+    if (!this.has('ch3.lantern')) return '▸ Bring a storm-lantern up from Spicegate';
+    if (!this.has('ch3.keeperTalk')) return '▸ Take the lantern to Keeper Alder';
+    if (!this.has('ch3.complete')) return '▸ Challenge the Saints at the Cloister';
+    return '▸ The hill is quiet · three pins home';
   }
 
   // ---- sequence runner ----------------------------------------------------
@@ -467,18 +631,23 @@ export class HubScene extends Phaser.Scene {
       this.sequenceIndex = this.sequence.findIndex((s) => s.kind === 'match') - 1;
       this.inDialogue = true;
       this.scene.launch('Dialogue', {
-        dialogueId: this.district === 'harbor' ? 'ch1_retry' : 'ch2_retry',
+        dialogueId:
+          this.district === 'harbor' ? 'ch1_retry' : this.district === 'spicegate' ? 'ch2_retry' : 'ch3_retry',
       });
     }
   };
 
   private finishChapter(): void {
     this.sequenceIndex = -1;
-    const harbor = this.district === 'harbor';
-    void this.saveProgress(harbor ? 2 : 3);
+    const chapter = this.district === 'harbor' ? 2 : this.district === 'spicegate' ? 3 : 4;
+    void this.saveProgress(chapter);
     this.pinCeremony(
-      harbor ? 'THE GULL PIN IS YOURS' : 'THE SPICE PIN IS YOURS',
-      harbor ? 'Stinger' : null,
+      this.district === 'harbor'
+        ? 'THE GULL PIN IS YOURS'
+        : this.district === 'spicegate'
+          ? 'THE SPICE PIN IS YOURS'
+          : 'THE SAINT PIN IS YOURS',
+      this.district === 'harbor' ? 'Stinger' : null,
     );
   }
 
@@ -908,6 +1077,148 @@ export class HubScene extends Phaser.Scene {
     buildings.signboard(this, g, 438, 140, 'THE KETTLE', { color: UI.gold, hang: true });
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'SPICEGATE MARKET', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#5e4a45' })
+      .setOrigin(0.5)
+      .setAlpha(0.85);
+    this.duskGrade();
+  }
+
+  private drawOldCobble(): void {
+    const g = this.add.graphics();
+    // Dusk over the hill — and far below, the whole town you climbed from.
+    g.fillStyle(0x1c2030);
+    g.fillRect(0, 0, GAME_WIDTH, 30);
+    g.fillStyle(0x141822);
+    for (let x = 8; x < GAME_WIDTH; x += 26) {
+      g.fillRect(x, 20 + ((x * 7) % 3), 14, 8 - ((x * 7) % 3));
+    }
+    g.fillStyle(0x1a2732);
+    g.fillRect(0, 26, GAME_WIDTH, 4); // the sea, a thin line from up here
+    for (let i = 0; i < 14; i++) {
+      // Harbor lights still burning below. One of them is Tero's window.
+      g.fillStyle(0xf2c14e, 0.5 + ((i * 13) % 3) * 0.12);
+      g.fillRect(14 + ((i * 37) % 452), 21 + ((i * 11) % 6), 1, 1);
+    }
+    // Parapet at the yard's edge.
+    g.fillStyle(0x3a3e3a);
+    g.fillRect(0, 30, GAME_WIDTH, 5);
+    g.fillStyle(0x4c524c);
+    g.fillRect(0, 30, GAME_WIDTH, 2);
+    // The monastery wall and its cloister arcade.
+    g.fillStyle(0x33372f);
+    g.fillRect(0, 35, GAME_WIDTH, 55);
+    g.fillStyle(0x3b4036, 0.9);
+    for (let by = 38; by < 88; by += 6) {
+      for (let bx = ((by / 6) % 2) * 7; bx < GAME_WIDTH; bx += 14) g.fillRect(bx, by, 13, 5);
+    }
+    for (let ax = 24; ax < GAME_WIDTH - 30; ax += 52) {
+      if (ax > 190 && ax < 290) continue; // the tower owns the centre
+      g.fillStyle(0x14161a, 0.95);
+      g.fillRect(ax, 56, 20, 34);
+      g.fillCircle(ax + 10, 58, 10);
+      g.fillStyle(0xc9a06a, 0.35); // candlelight deep in the walk
+      g.fillRect(ax + 9, 78, 2, 2);
+    }
+    // The bell tower — the First Bell lives here.
+    g.fillStyle(0x3a3e3a);
+    g.fillRect(216, 6, 60, 92);
+    g.fillStyle(0x4c524c);
+    g.fillRect(216, 6, 60, 3);
+    g.fillRect(216, 6, 3, 92);
+    g.fillStyle(0x2b2f2b);
+    for (let sy = 14; sy < 92; sy += 9) g.fillRect(219, sy, 54, 1);
+    g.fillStyle(0x14161a);
+    g.fillRect(228, 16, 36, 26); // the bell chamber
+    g.fillCircle(246, 20, 17);
+    g.fillStyle(0xa08d48); // the First Bell, old gold going green
+    g.fillRect(238, 20, 16, 12);
+    g.fillRect(240, 32, 12, 3);
+    g.fillStyle(0x6e7a5a, 0.8);
+    g.fillRect(238, 26, 4, 6); // patina
+    g.fillStyle(0x241f2b);
+    g.fillRect(245, 35, 2, 2); // clapper
+    const bellGlint = this.add.rectangle(250, 22, 2, 2, 0xffffff, 0.9).setDepth(3).setAlpha(0);
+    this.tweens.add({ targets: bellGlint, alpha: { from: 0, to: 0.9 }, duration: 200, yoyo: true, repeat: -1, repeatDelay: 3400 });
+    // Tower door below the chamber — the plaque waits inside.
+    g.fillStyle(0x241f2b);
+    g.fillRect(238, 66, 16, 24);
+    g.fillCircle(246, 66, 8);
+    g.fillStyle(0x3a3026);
+    g.fillRect(240, 70, 12, 20);
+    g.fillStyle(0xc9a06a, 0.5);
+    g.fillRect(249, 80, 2, 2);
+    // Yard paving: cool stone gone mossy at the joints.
+    buildings.flagstones(g, 0, 90, GAME_WIDTH, GAME_HEIGHT - 90, {
+      base: 0x272b27,
+      alt: 0x2d322c,
+      dark: 0x22261f,
+      mortar: 0x1c1f1b,
+      weed: 0x4a6b3a,
+    });
+    buildings.drainGrate(g, 180, 200);
+    // Ivy's practice wall: a chalk target ring and a scuffed spot — she has
+    // been out here alone for years.
+    g.fillStyle(0x33372f);
+    g.fillRect(96, 90, 96, 14);
+    g.lineStyle(2, 0xe8e3d0, 0.3);
+    g.strokeCircle(144, 97, 6);
+    g.fillStyle(0x22261f, 0.7);
+    g.fillEllipse(144, 104, 30, 6);
+    props.chalkCrescent(g, 122, 122, 9, 0.12);
+    // The Cloister cage, holding its ninety years.
+    buildings.cage(g, 404, 150, 68, 84, { tint: 0x6e7a5a, tintAlpha: 0.12, accent: 0xa08d48 });
+    buildings.signboard(this, g, 438, 140, 'THE CLOISTER', { color: UI.gold, hang: true });
+    // Ivy on the cage — the plant, not the girl. Though also the girl.
+    g.lineStyle(1, 0x4a6b3a, 0.8);
+    for (let vx = 408; vx < 468; vx += 12) {
+      g.lineBetween(vx, 150, vx + 2, 150 + 10 + ((vx * 7) % 12));
+      g.fillStyle((vx * 13) % 3 === 0 ? 0x6e8a4a : 0x4a6b3a, 0.9);
+      g.fillRect(vx + 1, 158 + ((vx * 7) % 8), 2, 2);
+    }
+    // South steps back down to Spicegate.
+    g.fillStyle(0x2d2622);
+    g.fillRect(226, 236, 40, 34);
+    g.fillStyle(0x241f2b, 0.5);
+    for (let sy = 240; sy < 268; sy += 6) g.fillRect(226, sy, 40, 2);
+    buildings.roadPillars(g, 214, 214, 214);
+    buildings.roadPillars(g, 262, 214, 214);
+    // Yard furniture: benches for the patient, planters, candles at dusk.
+    props.bench(g, 60, 150);
+    props.bench(g, 320, 132);
+    props.lamppost(this, g, 90, 190);
+    props.lamppost(this, g, 360, 210);
+    g.fillStyle(0x4a4f58); // stone planters
+    g.fillRect(30, 106, 12, 8);
+    g.fillRect(452, 100, 12, 8);
+    g.fillStyle(0x4a6b3a);
+    g.fillRect(32, 100, 3, 7);
+    g.fillRect(37, 102, 3, 5);
+    g.fillRect(455, 96, 3, 5);
+    g.fillRect(459, 94, 3, 7);
+    props.puddle(this, g, 260, 170, 22);
+    props.pigeon(this, 210, 150);
+    props.pigeon(this, 226, 156);
+    props.pigeon(this, 300, 200);
+    props.cat(this, 60, 180, 226);
+    props.ambientWalker(this, 'char_saint_a', 70, 320, 216, 12000);
+    // Leaves letting go of the hill, one at a time.
+    for (let i = 0; i < 7; i++) {
+      const leaf = this.add
+        .rectangle(50 + i * 64, 96 + (i % 3) * 30, 2, 2, i % 2 === 0 ? 0x8a6d3a : 0x6e8a4a, 0.8)
+        .setDepth(6);
+      this.tweens.add({
+        targets: leaf,
+        y: leaf.y + 120,
+        x: leaf.x + (i % 2 === 0 ? 24 : -18),
+        angle: 160,
+        alpha: 0,
+        duration: 8000 + i * 1500,
+        repeat: -1,
+        delay: i * 1100,
+        ease: 'Sine.easeInOut',
+      });
+    }
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'OLD COBBLE', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#4c524c' })
       .setOrigin(0.5)
       .setAlpha(0.85);
     this.duskGrade();

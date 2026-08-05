@@ -32,7 +32,7 @@ export interface ArenaDress {
   floorAccent: number;
   crowdColors: number[];
   /** Which dressing kit the arena uses — every venue is a place, not a skin. */
-  theme: 'netyard' | 'kettle';
+  theme: 'netyard' | 'kettle' | 'cloister';
   bellMetal: number;
 }
 
@@ -58,6 +58,17 @@ export const KETTLE: ArenaDress = {
   bellMetal: 0xb06a44,
 };
 
+export const CLOISTER: ArenaDress = {
+  title: 'THE CLOISTER',
+  subtitle: 'NO DRUMS ON THE HILL. THEY RING INSTEAD.',
+  awayLabel: 'SAINTS',
+  netColor: 0x4a6b3a,
+  floorAccent: 0x6e7a5a,
+  crowdColors: [0x6e5a3a, 0x8a7a5c, 0xd9cbaa, 0xc9a06a],
+  theme: 'cloister',
+  bellMetal: 0xa08d48,
+};
+
 interface SceneData {
   config?: MatchConfig;
   story?: boolean;
@@ -72,6 +83,9 @@ const NAMES: Record<string, string> = {
   chr_bram: 'BRAM',
   chr_salt: 'SALT',
   chr_nadia: 'NADIA',
+  chr_ivy: 'IVY',
+  chr_prior: 'THE PRIOR',
+  chr_saint_a: 'DENS',
 };
 
 const BALL_COLOR = 0xf5f1e3;
@@ -883,7 +897,8 @@ export class MatchScene extends Phaser.Scene {
 
     // Painted court identity: a rope-ring emblem (this town paints with what
     // it has) and the arena's name worn into the asphalt.
-    const ropeTone = this.arena.theme === 'netyard' ? 0x8a7a5c : 0x9c5a3a;
+    const ropeTone =
+      this.arena.theme === 'netyard' ? 0x8a7a5c : this.arena.theme === 'kettle' ? 0x9c5a3a : 0x6e7a5a;
     g.lineStyle(2, ropeTone, 0.2);
     g.strokeCircle(PITCH.centerX, PITCH.centerY, 37);
     g.lineStyle(1, ropeTone, 0.16);
@@ -914,7 +929,7 @@ export class MatchScene extends Phaser.Scene {
       g.beginPath();
       g.arc(PITCH.centerX, PITCH.centerY, 20, Math.PI * 0.25, Math.PI * 1.25);
       g.strokePath();
-    } else {
+    } else if (this.arena.theme === 'kettle') {
       // The Kettle's painted spice swirl.
       g.lineStyle(2, 0xb03535, 0.16);
       g.beginPath();
@@ -924,6 +939,17 @@ export class MatchScene extends Phaser.Scene {
       g.beginPath();
       g.arc(PITCH.centerX + 3, PITCH.centerY - 2, 12, Math.PI * 0.8, Math.PI * 2.1);
       g.strokePath();
+    } else {
+      // The Cloister's painted bell — dome, mouth, clapper.
+      g.lineStyle(2, 0xc9a06a, 0.15);
+      g.beginPath();
+      g.arc(PITCH.centerX, PITCH.centerY + 2, 16, Math.PI, Math.PI * 2);
+      g.strokePath();
+      g.lineBetween(PITCH.centerX - 16, PITCH.centerY + 2, PITCH.centerX - 20, PITCH.centerY + 8);
+      g.lineBetween(PITCH.centerX + 16, PITCH.centerY + 2, PITCH.centerX + 20, PITCH.centerY + 8);
+      g.lineBetween(PITCH.centerX - 20, PITCH.centerY + 8, PITCH.centerX + 20, PITCH.centerY + 8);
+      g.fillStyle(0xc9a06a, 0.18);
+      g.fillCircle(PITCH.centerX, PITCH.centerY + 12, 2);
     }
 
     // Corner wedge plates (match the physics).
@@ -1020,19 +1046,50 @@ export class MatchScene extends Phaser.Scene {
         g.fillRect(cx - 12, minY + 1, 2, 2);
         g.fillRect(cx + 10, minY + 1, 2, 2);
       }
-    } else {
+    } else if (this.arena.theme === 'kettle') {
       // Striped awning cloth lashed along the rail, scalloped hem.
       for (let x = minX; x < maxX; x += 12) {
         g.fillStyle((x / 12) % 2 === 0 ? 0xb03535 : 0xe8d9b8, 0.45);
         g.fillRect(x, minY + 1, Math.min(12, maxX - x), 4);
         g.fillTriangle(x, minY + 5, x + 12, minY + 5, x + 6, minY + 8);
       }
+    } else {
+      // Ivy has taken the rail — trailing strands, leaves catching light.
+      g.lineStyle(1, 0x4a6b3a, 0.8);
+      for (let x = minX + 6; x < maxX; x += 14) {
+        const drop = 4 + ((x * 7) % 6);
+        g.lineBetween(x, minY, x + 1, minY + drop);
+        g.fillStyle((x * 13) % 3 === 0 ? 0x6e8a4a : 0x4a6b3a, 0.9);
+        g.fillRect(x, minY + drop - 1, 2, 2);
+        if ((x * 11) % 4 === 0) g.fillRect(x - 1, minY + Math.floor(drop / 2), 2, 2);
+      }
     }
 
     // Backdrop band above the cage — the place the cage lives in.
-    g.fillStyle(this.arena.theme === 'netyard' ? 0x14171e : 0x241a1c);
+    g.fillStyle(
+      this.arena.theme === 'netyard' ? 0x14171e : this.arena.theme === 'kettle' ? 0x241a1c : 0x1c1e1a,
+    );
     g.fillRect(0, 0, GAME_WIDTH, minY - 4);
-    if (this.arena.theme === 'netyard') {
+    if (this.arena.theme === 'cloister') {
+      // The cloister arcade: stone arches, and the bell tower over them —
+      // the FIRST bell, the one the others are named for.
+      g.fillStyle(0x2e3230);
+      g.fillRect(0, 0, GAME_WIDTH, 12);
+      g.fillStyle(0x14161a, 0.9);
+      for (let ax = 10; ax < GAME_WIDTH; ax += 34) {
+        g.fillRect(ax, 4, 14, 8);
+        g.fillCircle(ax + 7, 5, 7);
+      }
+      g.fillStyle(0x3a3e3a);
+      g.fillRect(218, 0, 22, 12); // tower
+      g.fillStyle(0x14161a);
+      g.fillRect(223, 3, 12, 8);
+      g.fillStyle(0xa08d48);
+      g.fillRect(227, 4, 4, 4); // the First Bell
+      g.fillRect(228, 8, 2, 1);
+      const towerGlow = this.add.rectangle(229, 6, 8, 8, 0xc9a06a, 0.1).setDepth(1);
+      this.tweens.add({ targets: towerGlow, alpha: 0.02, duration: 2400, yoyo: true, repeat: -1 });
+    } else if (this.arena.theme === 'netyard') {
       // Masts and rigging on the water side, the harbor light at the point.
       for (let x = 30; x < 420; x += 74) {
         g.fillStyle(0x1b2029, 1);
@@ -1080,12 +1137,21 @@ export class MatchScene extends Phaser.Scene {
     // Advertising hoardings along the bottom band (street-final fiction).
     g.fillStyle(0x11141a);
     g.fillRect(0, maxY + 2, GAME_WIDTH, GAME_HEIGHT - maxY - 2);
-    const ads: Array<[string, number, string]> = [
-      ["MABEL'S BAIT", 0x2e9e8f, '#7fd4c8'],
-      ['RADIO SOLPORT', 0xf2c14e, '#f2c14e'],
-      ['SPICE MARKET', 0xb03535, '#e08a8a'],
-      ['KEEP A LIGHT ON', 0x8a94a2, '#aab2bd'],
-    ];
+    const ads: Array<[string, number, string]> =
+      this.arena.theme === 'cloister'
+        ? [
+            // No ads on the hill — mottos carved into the kerb stones.
+            ['THE BLOCK HOLDS', 0x4c524c, '#8a948a'],
+            ['RING AND BE STILL', 0x6e7a5a, '#a5b295'],
+            ['NINETY YEARS', 0x4c524c, '#8a948a'],
+            ['KEEP A LIGHT ON', 0xa08d48, '#c9b48a'],
+          ]
+        : [
+            ["MABEL'S BAIT", 0x2e9e8f, '#7fd4c8'],
+            ['RADIO SOLPORT', 0xf2c14e, '#f2c14e'],
+            ['SPICE MARKET', 0xb03535, '#e08a8a'],
+            ['KEEP A LIGHT ON', 0x8a94a2, '#aab2bd'],
+          ];
     ads.forEach(([label, color, textColor], i) => {
       const bx = 8 + i * 118;
       g.fillStyle(0x1b1f27);
@@ -1128,10 +1194,14 @@ export class MatchScene extends Phaser.Scene {
         if (this.arena.theme === 'netyard') {
           lightsGroup.add(this.add.circle(lx, ly + 2, 1.5, 0xf2c14e, 0.95));
           lightsGroup.add(this.add.circle(lx, ly + 2, 3, 0xf2c14e, 0.12));
-        } else {
+        } else if (this.arena.theme === 'kettle') {
           // Paper lanterns on the Kettle's strings.
           lightsGroup.add(this.add.rectangle(lx, ly + 3, 4, 5, i % 2 === 0 ? 0xb03535 : 0xd08f2e, 0.95));
           lightsGroup.add(this.add.rectangle(lx, ly + 1, 2, 1, 0x241f2b, 1));
+        } else {
+          // Candle lamps on the Cloister's strings — warmer, dimmer.
+          lightsGroup.add(this.add.rectangle(lx, ly + 3, 3, 4, 0xc9a06a, 0.9));
+          lightsGroup.add(this.add.circle(lx, ly + 3, 3, 0xc9a06a, 0.1));
         }
       }
     }
@@ -1162,6 +1232,40 @@ export class MatchScene extends Phaser.Scene {
       g.fillStyle(0x2e9e8f);
       g.fillCircle(476, minY + 36, 3);
       this.buildPerchedGulls();
+    } else if (this.arena.theme === 'cloister') {
+      // Autumn on the hill: stone planters, a leaned broom, drifting leaves.
+      g.fillStyle(0x4a4f58);
+      g.fillRect(2, maxY - 64, 11, 8);
+      g.fillStyle(0x3a4048);
+      g.fillRect(2, maxY - 64, 11, 2);
+      g.fillStyle(0x4a6b3a);
+      g.fillRect(4, maxY - 70, 3, 6);
+      g.fillRect(8, maxY - 68, 3, 4);
+      g.fillStyle(0x54432f); // broom against the far wall
+      g.fillRect(470, minY + 28, 2, 22);
+      g.fillStyle(0x8a7a5c);
+      g.fillRect(468, minY + 48, 6, 5);
+      g.fillStyle(0xc9a06a, 0.9); // candle cluster
+      g.fillRect(470, maxY - 40, 2, 4);
+      g.fillRect(474, maxY - 38, 2, 3);
+      const candle = this.add.rectangle(472, maxY - 42, 5, 3, 0xc9a06a, 0.25).setDepth(1);
+      this.tweens.add({ targets: candle, alpha: 0.08, duration: 900, yoyo: true, repeat: -1 });
+      for (let i = 0; i < 6; i++) {
+        const leaf = this.add
+          .rectangle(40 + i * 78, 30 + (i % 3) * 20, 2, 2, i % 2 === 0 ? 0x8a6d3a : 0x6e8a4a, 0.8)
+          .setDepth(1);
+        this.tweens.add({
+          targets: leaf,
+          y: leaf.y + 190,
+          x: leaf.x + (i % 2 === 0 ? 26 : -20),
+          angle: 180,
+          alpha: 0,
+          duration: 9000 + i * 1700,
+          repeat: -1,
+          delay: i * 1400,
+          ease: 'Sine.easeInOut',
+        });
+      }
     } else {
       // The Kettle's namesake: a drum in the corner, always steaming.
       g.fillStyle(0x3a3026);
