@@ -192,7 +192,21 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > bolts, lantern-headed lampposts, sacks with ties + spice glints, rugs
 > with woven diamond + fringe, posters with tape + peeling corner, rope
 > tails, cork floats in nets; new fish crates (harbor) and terracotta
-> pot stacks (market). Next: Old Cobble (Ch.3), Ivy.
+> pot stacks (market). **Arena identity pass (2026-08-05):** ArenaDress
+> gains theme ('netyard'|'kettle') + bellMetal; every venue is now a
+> place. Both arenas: REAL BELLS on gantries over each goal that swing
+> when rung (ringBell on the bell event, side picked from ball x),
+> rope-ring centre emblem, arena name worn into the asphalt, corner
+> string lights. Netyard: net swags with cork floats off the top rail,
+> mast-and-rigging skyline with a pulsing lighthouse whose beam sweeps
+> the cage, creel stack + buoys in the margins, and three perched gulls
+> on the top rail that scatter on nearby wall impacts (and all of them
+> when a bell rings) then drift back. Kettle: brick parapet strung with
+> pennants, striped awning cloth with scalloped hem on the rail, paper
+> lanterns on the corner strings, copper bells, painted spice-swirl
+> centre, pot stack + spice sacks, and the namesake corner drum always
+> steaming. Dev launcher: ?scene=Match&arena=kettle previews the Kettle.
+> Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

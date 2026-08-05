@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../app/constants';
 import { allSfxEntries } from '../content/audioManifest';
 import { getStartOverride } from '../dev/launcher';
+import { KETTLE } from './MatchScene';
+import { spiceMatchConfig } from './HubScene';
 
 /**
  * Preload: loads only the next playable route. Phase 0 has no assets yet;
@@ -37,6 +39,9 @@ export class PreloadScene extends Phaser.Scene {
       // Dev: jumping into a later district implies its prerequisites.
       this.registry.set('flags', ['ch1.metTero', 'ch1.complete']);
       this.scene.start(override.scene, { district: override.district });
+    } else if (override?.arena === 'kettle') {
+      // Dev: preview the Kettle dressing without playing to chapter 2.
+      this.scene.start(override.scene, { arena: KETTLE, config: spiceMatchConfig(override.seed) });
     } else {
       this.scene.start(override?.scene ?? 'Title');
     }

@@ -11,6 +11,7 @@ import { music } from '../platform/music';
 import { drawPanel, fadeIn, makeButton, transitionTo, UI } from '../presentation/ui';
 import { SfxPlayer } from '../platform/sfxPlayer';
 import { CharacterView } from '../presentation/characterView';
+import * as props from '../presentation/props';
 
 /**
  * MatchScene: renders MatchCore state; owns the fixed-step accumulator, HUD,
@@ -30,6 +31,9 @@ export interface ArenaDress {
   netColor: number;
   floorAccent: number;
   crowdColors: number[];
+  /** Which dressing kit the arena uses — every venue is a place, not a skin. */
+  theme: 'netyard' | 'kettle';
+  bellMetal: number;
 }
 
 const NETYARD: ArenaDress = {
@@ -39,6 +43,8 @@ const NETYARD: ArenaDress = {
   netColor: 0x39525a,
   floorAccent: 0x2e9e8f,
   crowdColors: [0x2e9e8f, 0xc2643a, 0xd9d3c0, 0x8a94a2],
+  theme: 'netyard',
+  bellMetal: 0xd9a437,
 };
 
 export const KETTLE: ArenaDress = {
@@ -48,6 +54,8 @@ export const KETTLE: ArenaDress = {
   netColor: 0x7c4a2a,
   floorAccent: 0xb03535,
   crowdColors: [0xb03535, 0xf2c14e, 0xd9d3c0, 0xc2643a],
+  theme: 'kettle',
+  bellMetal: 0xb06a44,
 };
 
 interface SceneData {
@@ -111,6 +119,10 @@ export class MatchScene extends Phaser.Scene {
   private bellText!: Phaser.GameObjects.Text;
   private stepClock = 0;
   private lastClockShown = -1;
+  // Arena identity: real bells over the goals, gulls on the wall.
+  private bells: Array<{ c: Phaser.GameObjects.Container; side: -1 | 1 }> = [];
+  private perchedGulls: Array<{ c: Phaser.GameObjects.Container; homeX: number; away: boolean }> =
+    [];
 
   constructor() {
     super('Match');
@@ -526,6 +538,7 @@ export class MatchScene extends Phaser.Scene {
         if (e.pos) {
           this.spark.emitParticleAt(e.pos.x, e.pos.y, Math.round(2 + v * 8));
           if (v > 0.5) this.shockwave(e.pos.x, e.pos.y, 0x8a8f98);
+          if (v > 0.35) this.scareGulls(e.pos.x, e.pos.y);
         }
         if (v > 0.6) shake(40, 0.0015);
         break;
@@ -550,6 +563,8 @@ export class MatchScene extends Phaser.Scene {
         shake(150, 0.007);
         const px = e.pos?.x ?? GAME_WIDTH / 2;
         const py = e.pos?.y ?? GAME_HEIGHT / 2;
+        this.ringBell(px);
+        for (const gull of this.perchedGulls) this.scareGulls(gull.homeX, PITCH.minY); // a bell scatters every gull
         this.shockwave(px, py);
         this.time.delayedCall(80, () => this.shockwave(px, py, 0xe8e3d0));
         this.confetti.emitParticleAt(px, py, 40);
@@ -643,6 +658,83 @@ export class MatchScene extends Phaser.Scene {
       case 'heavyTouch':
         this.sfxp.play('step', 0.25, 500);
         break;
+    }
+  }
+
+  /** Swing the bell over whichever goal just got rung. */
+  private ringBell(atX: number): void {
+    const side = atX > PITCH.centerX ? 1 : -1;
+    const bell = this.bells.find((b) => b.side === side);
+    if (!bell) return;
+    this.tweens.killTweensOf(bell.c);
+    bell.c.setAngle(0);
+    this.tweens.add({
+      targets: bell.c,
+      angle: { from: -26, to: 26 },
+      duration: 110,
+      yoyo: true,
+      repeat: 5,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        this.tweens.add({ targets: bell.c, angle: 0, duration: 240, ease: 'Sine.easeOut' });
+      },
+    });
+    this.shockwave(bell.c.x, bell.c.y + 5, this.arena.bellMetal);
+  }
+
+  /** Netyard gulls perch on the top rail and scatter off nearby impacts. */
+  private buildPerchedGulls(): void {
+    this.perchedGulls = [];
+    for (const gx of [120, 296, 398]) {
+      const c = this.add.container(gx, PITCH.minY - 3).setDepth(2);
+      const gg = this.add.graphics();
+      gg.fillStyle(0xd9d3c0);
+      gg.fillRect(-2, -2, 4, 2);
+      gg.fillRect(1, -4, 2, 2);
+      gg.fillStyle(0x8a94a2);
+      gg.fillRect(-2, -2, 2, 1);
+      gg.fillStyle(0xd08f2e);
+      gg.fillRect(3, -3, 1, 1);
+      c.add(gg);
+      this.tweens.add({
+        targets: c,
+        y: c.y - 1,
+        duration: 240,
+        yoyo: true,
+        repeat: -1,
+        repeatDelay: 2200 + ((gx * 13) % 1900),
+      });
+      this.perchedGulls.push({ c, homeX: gx, away: false });
+    }
+  }
+
+  private scareGulls(px: number, py: number): void {
+    if (py > PITCH.minY + 46) return;
+    for (const gull of this.perchedGulls) {
+      if (gull.away || Math.abs(px - gull.homeX) > 72) continue;
+      gull.away = true;
+      this.tweens.killTweensOf(gull.c);
+      this.tweens.add({
+        targets: gull.c,
+        x: gull.homeX + (gull.homeX < PITCH.centerX ? -44 : 44),
+        y: -14,
+        alpha: 0,
+        duration: 650,
+        ease: 'Cubic.easeOut',
+      });
+      this.time.delayedCall(7000 + ((gull.homeX * 31) % 4000), () => {
+        if (!gull.c.active) return;
+        gull.c.setPosition(gull.homeX, PITCH.minY - 10).setAlpha(0);
+        this.tweens.add({
+          targets: gull.c,
+          y: PITCH.minY - 3,
+          alpha: 1,
+          duration: 500,
+          onComplete: () => {
+            gull.away = false;
+          },
+        });
+      });
     }
   }
 
@@ -782,15 +874,50 @@ export class MatchScene extends Phaser.Scene {
     g.fillStyle(0x2c313a, 0.8);
     g.fillRect(200, minY, 3, maxY - minY); // tar repair seam
 
-    // Chalk lines + centre crescent (Brine Harbor motif).
+    // Painted court identity: a rope-ring emblem (this town paints with what
+    // it has) and the arena's name worn into the asphalt.
+    const ropeTone = this.arena.theme === 'netyard' ? 0x8a7a5c : 0x9c5a3a;
+    g.lineStyle(2, ropeTone, 0.2);
+    g.strokeCircle(PITCH.centerX, PITCH.centerY, 37);
+    g.lineStyle(1, ropeTone, 0.16);
+    g.strokeCircle(PITCH.centerX, PITCH.centerY, 34);
+    for (let a = 0; a < 4; a++) {
+      const ang = Math.PI / 4 + (a * Math.PI) / 2;
+      g.fillStyle(ropeTone, 0.22);
+      g.fillRect(PITCH.centerX + Math.cos(ang) * 37 - 1, PITCH.centerY + Math.sin(ang) * 37 - 1, 3, 3);
+    }
+    this.add
+      .text(PITCH.centerX, 206, this.arena.title, {
+        fontFamily: FONT_DISPLAY,
+        fontSize: FS_DISPLAY,
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setScale(1.5)
+      .setAlpha(0.05);
+
+    // Chalk lines + themed centre mark.
     g.lineStyle(1, 0x9aa3ad, 0.55);
     g.strokeRect(minX, minY, maxX - minX, maxY - minY);
     g.lineBetween(PITCH.centerX, minY, PITCH.centerX, maxY);
     g.strokeCircle(PITCH.centerX, PITCH.centerY, 30);
-    g.lineStyle(2, 0xf2c14e, 0.14);
-    g.beginPath();
-    g.arc(PITCH.centerX, PITCH.centerY, 20, Math.PI * 0.25, Math.PI * 1.25);
-    g.strokePath();
+    if (this.arena.theme === 'netyard') {
+      // Sol's crescent — the Brine Harbor motif.
+      g.lineStyle(2, 0xf2c14e, 0.14);
+      g.beginPath();
+      g.arc(PITCH.centerX, PITCH.centerY, 20, Math.PI * 0.25, Math.PI * 1.25);
+      g.strokePath();
+    } else {
+      // The Kettle's painted spice swirl.
+      g.lineStyle(2, 0xb03535, 0.16);
+      g.beginPath();
+      g.arc(PITCH.centerX, PITCH.centerY, 20, 0, Math.PI * 1.4);
+      g.strokePath();
+      g.lineStyle(2, 0xd08f2e, 0.14);
+      g.beginPath();
+      g.arc(PITCH.centerX + 3, PITCH.centerY - 2, 12, Math.PI * 0.8, Math.PI * 2.1);
+      g.strokePath();
+    }
 
     // Corner wedge plates (match the physics).
     g.fillStyle(0x2c313a, 1);
@@ -838,20 +965,95 @@ export class MatchScene extends Phaser.Scene {
       g.strokeRect(gx, GOAL_TOP, goalDepth, GOAL_BOTTOM - GOAL_TOP);
     }
 
-    // Arena dressing: nets/banners draped over the top band.
-    g.lineStyle(1, this.arena.netColor, 0.5);
-    for (let x = minX; x < maxX; x += 12) {
-      g.lineBetween(x, minY, x + 6, minY + 5);
-      g.lineBetween(x + 6, minY, x, minY + 5);
+    // THE BELLS. You don't score in Solport — you ring one. A gantry stands
+    // over each goal recess with a real bell that swings when it's rung.
+    this.bells = [];
+    for (const [bx, side] of [
+      [minX - goalDepth / 2, -1],
+      [maxX + goalDepth / 2, 1],
+    ] as const) {
+      g.fillStyle(0x2f333c); // gantry posts + crossbar
+      g.fillRect(bx - 6, GOAL_TOP - 13, 2, 13);
+      g.fillRect(bx + 4, GOAL_TOP - 13, 2, 13);
+      g.fillRect(bx - 7, GOAL_TOP - 14, 14, 2);
+      g.fillStyle(0x424855);
+      g.fillRect(bx - 7, GOAL_TOP - 14, 14, 1);
+      const bell = this.add.container(bx, GOAL_TOP - 12).setDepth(2);
+      const bg2 = this.add.graphics();
+      const metal = this.arena.bellMetal;
+      bg2.fillStyle(0x241f2b);
+      bg2.fillRect(-1, 0, 2, 2); // hanger
+      bg2.fillStyle(metal);
+      bg2.fillRect(-2, 2, 4, 2);
+      bg2.fillRect(-3, 4, 6, 3);
+      bg2.fillStyle(0xf6dc8e);
+      bg2.fillRect(-2, 2, 1, 5); // lit edge
+      bg2.fillStyle(0x8a6423);
+      bg2.fillRect(-4, 7, 8, 2); // mouth flare
+      bg2.fillStyle(0x241f2b);
+      bg2.fillRect(0, 9, 1, 1); // clapper
+      bell.add(bg2);
+      this.bells.push({ c: bell, side });
     }
 
-    // Skyline + animated crowd band above the cage.
-    g.fillStyle(0x14171e);
+    // Wall drape: the Netyard hangs its nets; the Kettle drapes market cloth.
+    if (this.arena.theme === 'netyard') {
+      g.lineStyle(1, this.arena.netColor, 0.5);
+      for (let x = minX; x < maxX; x += 12) {
+        g.lineBetween(x, minY, x + 6, minY + 5);
+        g.lineBetween(x + 6, minY, x, minY + 5);
+      }
+      // Net swags sagging off the top rail, corks knotted at the gathers.
+      g.lineStyle(1, this.arena.netColor, 0.8);
+      for (let cx = minX + 28; cx < maxX - 10; cx += 56) {
+        g.beginPath();
+        g.arc(cx, minY + 1, 12, Math.PI * 0.12, Math.PI * 0.88);
+        g.strokePath();
+        g.fillStyle(0xc9b48a, 0.9);
+        g.fillRect(cx - 12, minY + 1, 2, 2);
+        g.fillRect(cx + 10, minY + 1, 2, 2);
+      }
+    } else {
+      // Striped awning cloth lashed along the rail, scalloped hem.
+      for (let x = minX; x < maxX; x += 12) {
+        g.fillStyle((x / 12) % 2 === 0 ? 0xb03535 : 0xe8d9b8, 0.45);
+        g.fillRect(x, minY + 1, Math.min(12, maxX - x), 4);
+        g.fillTriangle(x, minY + 5, x + 12, minY + 5, x + 6, minY + 8);
+      }
+    }
+
+    // Backdrop band above the cage — the place the cage lives in.
+    g.fillStyle(this.arena.theme === 'netyard' ? 0x14171e : 0x241a1c);
     g.fillRect(0, 0, GAME_WIDTH, minY - 4);
-    g.fillStyle(0x1b2029, 1);
-    for (let x = 6; x < GAME_WIDTH; x += 60) {
-      g.fillRect(x, 2, 3, 10);
-      g.fillRect(x, 2, 10, 2);
+    if (this.arena.theme === 'netyard') {
+      // Masts and rigging on the water side, the harbor light at the point.
+      for (let x = 30; x < 420; x += 74) {
+        g.fillStyle(0x1b2029, 1);
+        g.fillRect(x, 1, 2, 11);
+        g.fillRect(x - 4, 3, 10, 1);
+        g.lineStyle(1, 0x1b2029, 0.8);
+        g.lineBetween(x + 1, 1, x + 8, 12);
+      }
+      g.fillStyle(0x2a303c); // lighthouse tower
+      g.fillRect(452, 2, 6, 10);
+      g.fillStyle(0xd9d3c0);
+      g.fillRect(452, 5, 6, 2);
+      const beacon = this.add.rectangle(455, 3, 4, 2, 0xf2c14e, 0.95).setDepth(1);
+      this.tweens.add({ targets: beacon, alpha: 0.2, duration: 1300, yoyo: true, repeat: -1 });
+    } else {
+      // Brick parapet strung with pennants over the courtyard.
+      g.fillStyle(0x3a2520, 1);
+      g.fillRect(0, 0, GAME_WIDTH, 12);
+      g.fillStyle(0x452c25, 0.9);
+      for (let by = 0; by < 12; by += 4) {
+        for (let bx = (by / 4) % 2 === 0 ? 0 : 5; bx < GAME_WIDTH; bx += 10) g.fillRect(bx, by, 9, 3);
+      }
+      g.lineStyle(1, 0x241f2b, 0.9);
+      g.lineBetween(0, 12, GAME_WIDTH, 14);
+      for (let px = 8; px < GAME_WIDTH; px += 26) {
+        g.fillStyle(px % 52 === 8 ? 0xb03535 : 0xd08f2e, 0.9);
+        g.fillTriangle(px, 12, px + 8, 12, px + 4, 17);
+      }
     }
     this.crowdA?.destroy();
     this.crowdB?.destroy();
@@ -906,6 +1108,81 @@ export class MatchScene extends Phaser.Scene {
     g.fillCircle(7, maxY - 38, 3);
     g.fillStyle(0x9c9784);
     g.fillRect(6, maxY - 39, 1, 1);
+
+    // String lights swagged off the top corners (out of the HUD's way).
+    const lightsGroup = this.add.container(0, 0).setDepth(2);
+    for (const flip of [1, -1] as const) {
+      const ox = flip === 1 ? minX : maxX;
+      g.lineStyle(1, 0x241f2b, 0.8);
+      g.lineBetween(ox, minY + 2, ox + flip * 92, minY + 15);
+      for (let i = 1; i <= 5; i++) {
+        const lx = ox + flip * i * 17;
+        const ly = minY + 2 + i * 2.4 + (i === 5 ? 0 : 1);
+        if (this.arena.theme === 'netyard') {
+          lightsGroup.add(this.add.circle(lx, ly + 2, 1.5, 0xf2c14e, 0.95));
+          lightsGroup.add(this.add.circle(lx, ly + 2, 3, 0xf2c14e, 0.12));
+        } else {
+          // Paper lanterns on the Kettle's strings.
+          lightsGroup.add(this.add.rectangle(lx, ly + 3, 4, 5, i % 2 === 0 ? 0xb03535 : 0xd08f2e, 0.95));
+          lightsGroup.add(this.add.rectangle(lx, ly + 1, 2, 1, 0x241f2b, 1));
+        }
+      }
+    }
+    this.tweens.add({ targets: lightsGroup, alpha: 0.72, duration: 1500, yoyo: true, repeat: -1 });
+
+    if (this.arena.theme === 'netyard') {
+      // The harbor light sweeps the cage every few seconds.
+      const beam = this.add.graphics({ x: 455, y: 2 }).setDepth(1);
+      beam.fillStyle(0xfff4d6, 0.04);
+      beam.fillTriangle(0, 0, -170, 290, -60, 300);
+      this.tweens.add({
+        targets: beam,
+        angle: { from: -14, to: 26 },
+        duration: 5200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+      // Creel stack and buoys in the dead margins — nets get mended here.
+      g.lineStyle(1, 0x54432f, 1);
+      g.strokeRect(2, maxY - 62, 11, 8);
+      g.strokeRect(3, maxY - 70, 9, 8);
+      g.fillStyle(0x11141a, 0.9);
+      g.fillEllipse(7.5, maxY - 58, 6, 4);
+      g.fillEllipse(7.5, maxY - 66, 5, 4);
+      g.fillStyle(0xc2643a);
+      g.fillCircle(472, minY + 30, 3);
+      g.fillStyle(0x2e9e8f);
+      g.fillCircle(476, minY + 36, 3);
+      this.buildPerchedGulls();
+    } else {
+      // The Kettle's namesake: a drum in the corner, always steaming.
+      g.fillStyle(0x3a3026);
+      g.fillRect(468, minY + 26, 10, 12);
+      g.fillStyle(0x54432f);
+      g.fillRect(468, minY + 26, 10, 2);
+      g.lineStyle(1, 0x241f2b, 0.9);
+      g.strokeRect(468, minY + 26, 10, 12);
+      props.potStack(g, 2, maxY - 66);
+      props.sack(g, 3, maxY - 50, 0xd08f2e);
+      if (!this.textures.exists('px-steam')) {
+        const sg = this.make.graphics({ x: 0, y: 0 }, false);
+        sg.fillStyle(0xe8d9b8);
+        sg.fillRect(0, 0, 2, 2);
+        sg.generateTexture('px-steam', 2, 2);
+        sg.destroy();
+      }
+      this.add
+        .particles(473, minY + 26, 'px-steam', {
+          speedY: { min: -12, max: -6 },
+          speedX: { min: -3, max: 3 },
+          alpha: { start: 0.3, end: 0 },
+          scale: { start: 1, end: 2 },
+          lifespan: 2200,
+          frequency: 300,
+        })
+        .setDepth(1);
+    }
 
     // Vignette.
     g.fillStyle(0x0a0b10, 0.16);
