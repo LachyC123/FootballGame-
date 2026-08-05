@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 
+# Pages' environment protection only allows deploys from main, so branch
+# pushes always failed at the deploy step — merge to main to publish.
 on:
   push:
-    branches: [main, claude/pixel-soccer-game-design-oscwa3]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
