@@ -419,6 +419,89 @@ export function shopfrontRow(g: G, x: number, y: number, w: number, h: number): 
   g.fillRect(x + w - 23, y + 4, 5, 2);
 }
 
+/**
+ * Flagstone paving: irregular stone courses with per-stone weathering, mortar
+ * gaps, the odd crack, and weeds in the joints. Kills the checkerboard tell.
+ */
+export function flagstones(
+  g: G,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  opts: { base?: number; alt?: number; dark?: number; mortar?: number; weed?: number } = {},
+): void {
+  const base = opts.base ?? 0x25282f;
+  const alt = opts.alt ?? 0x2a2e36;
+  const dark = opts.dark ?? 0x212429;
+  const mortar = opts.mortar ?? 0x1c1f25;
+  const weed = opts.weed ?? 0x2e4a41;
+  g.fillStyle(mortar);
+  g.fillRect(x, y, w, h);
+  const rowH = 13;
+  for (let ry = y, row = 0; ry < y + h; ry += rowH, row++) {
+    let sx = x - Math.floor(seeded(row * 17) * 18);
+    while (sx < x + w) {
+      const sw = 20 + Math.floor(seeded(sx * 3 + row * 29) * 22);
+      const t = seeded(sx * 7 + row * 11);
+      const cx0 = Math.max(x, sx);
+      const cw = Math.min(x + w, sx + sw) - cx0 - 1;
+      const ch = Math.min(y + h, ry + rowH) - ry - 1;
+      if (cw > 0 && ch > 0) {
+        g.fillStyle(t > 0.75 ? alt : t < 0.16 ? dark : base);
+        g.fillRect(cx0, ry, cw, ch);
+        // Lit top edge on some stones.
+        if (t > 0.55) {
+          g.fillStyle(0xffffff, 0.04);
+          g.fillRect(cx0, ry, cw, 1);
+        }
+        // A crack across the occasional stone.
+        if (seeded(sx * 13 + row * 7) > 0.9 && cw > 10) {
+          g.lineStyle(1, mortar, 0.9);
+          g.lineBetween(cx0 + 2, ry + ch - 1, cx0 + Math.min(cw - 2, 8), ry + 1);
+        }
+        // Weeds in a few joints.
+        if (seeded(sx * 5 + row * 23) > 0.88) {
+          g.fillStyle(weed, 0.9);
+          g.fillRect(cx0 + cw - 1, ry + ch - 3, 1, 2);
+          g.fillRect(cx0 + cw, ry + ch - 2, 1, 2);
+        }
+      }
+      sx += sw;
+    }
+  }
+}
+
+/** A cast-iron drain grate set into the paving. */
+export function drainGrate(g: G, x: number, y: number): void {
+  g.fillStyle(0x1a1d23);
+  g.fillRect(x, y, 14, 8);
+  g.fillStyle(0x3a4048);
+  g.fillRect(x, y, 14, 1);
+  g.fillStyle(0x0e1014);
+  for (let i = 2; i < 13; i += 3) g.fillRect(x + i, y + 2, 1, 5);
+}
+
+/** Quay bollards with chain sag between them, along the water's edge. */
+export function bollards(g: G, y: number, xs: number[]): void {
+  for (let i = 0; i < xs.length; i++) {
+    const bx = xs[i]!;
+    if (i < xs.length - 1) {
+      const nx = xs[i + 1]!;
+      const mid = (bx + nx) / 2;
+      g.lineStyle(1, 0x5b6472, 0.9);
+      g.lineBetween(bx + 2, y - 3, mid, y + 1);
+      g.lineBetween(mid, y + 1, nx - 2, y - 3);
+    }
+    g.fillStyle(0x39424e);
+    g.fillRect(bx - 2, y - 5, 4, 6);
+    g.fillStyle(0x4c5663);
+    g.fillRect(bx - 3, y - 6, 6, 2);
+    g.fillStyle(0x5b6472);
+    g.fillRect(bx - 2, y - 6, 2, 1);
+  }
+}
+
 /** Squared stone gate pillars flanking a road exit at the screen edge. */
 export function roadPillars(g: G, x: number, y1: number, y2: number): void {
   for (const py of [y1, y2]) {

@@ -660,18 +660,12 @@ export class HubScene extends Phaser.Scene {
     buildings.farShore(g, 46);
     g.fillStyle(0x39424e);
     g.fillRect(0, 78, GAME_WIDTH, 6);
-    g.fillStyle(0x23262d);
-    g.fillRect(0, 84, GAME_WIDTH, GAME_HEIGHT - 84);
-    g.fillStyle(0x272b33);
-    for (let x = 0; x < GAME_WIDTH; x += 32) {
-      for (let y = 84 + ((x / 32) % 2 === 0 ? 0 : 16); y < GAME_HEIGHT; y += 32) {
-        g.fillRect(x, y, 16, 16);
-      }
-    }
-    for (let x = 20; x < GAME_WIDTH; x += 90) {
-      g.fillStyle(0x39424e);
-      g.fillCircle(x, 81, 3);
-    }
+    // Quay paving: flagstone courses with cracks and weeds, not a checkerboard.
+    buildings.flagstones(g, 0, 84, GAME_WIDTH, GAME_HEIGHT - 84);
+    buildings.drainGrate(g, 232, 168);
+    buildings.drainGrate(g, 96, 236);
+    // Bollards and chain along the water's edge.
+    buildings.bollards(g, 81, [20, 108, 246, 334, 424]);
     // Gulls drifting over the water.
     for (let i = 0; i < 3; i++) {
       const bird = this.add
@@ -742,6 +736,8 @@ export class HubScene extends Phaser.Scene {
     props.ropeCoil(g, 160, 172);
     props.netPile(g, 52, 162);
     props.netPile(g, 260, 100);
+    props.fishCrate(g, 138, 96);
+    props.fishCrate(g, 372, 168);
     props.puddle(this, g, 250, 175, 30);
     props.puddle(this, g, 120, 232, 22);
     props.bench(g, 214, 106);
@@ -773,6 +769,17 @@ export class HubScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'BRINE HARBOR', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#4a4a55' })
       .setOrigin(0.5)
       .setAlpha(0.8);
+    this.duskGrade();
+  }
+
+  /** Soft edge darkening so the district sits in evening light, not a void. */
+  private duskGrade(): void {
+    const grade = this.add.graphics().setDepth(15);
+    grade.fillStyle(0x0e0e14, 0.08);
+    grade.fillRect(0, 0, 16, GAME_HEIGHT);
+    grade.fillRect(GAME_WIDTH - 16, 0, 16, GAME_HEIGHT);
+    grade.fillStyle(0x0e0e14, 0.12);
+    grade.fillRect(0, GAME_HEIGHT - 12, GAME_WIDTH, 12);
   }
 
   private drawSpicegate(): void {
@@ -782,15 +789,24 @@ export class HubScene extends Phaser.Scene {
     g.fillRect(0, 0, GAME_WIDTH, 60);
     g.fillStyle(0xc2643a, 0.35);
     g.fillRect(0, 50, GAME_WIDTH, 4);
-    // Market floor — warm brick.
-    g.fillStyle(0x2b2422);
-    g.fillRect(0, 54, GAME_WIDTH, GAME_HEIGHT - 54);
-    g.fillStyle(0x322a26);
-    for (let x = 0; x < GAME_WIDTH; x += 32) {
-      for (let y = 54 + ((x / 32) % 2 === 0 ? 0 : 16); y < GAME_HEIGHT; y += 32) {
-        g.fillRect(x, y, 16, 16);
-      }
+    // Market floor — worn brick pavers, stained by years of spice trade.
+    buildings.flagstones(g, 0, 54, GAME_WIDTH, GAME_HEIGHT - 54, {
+      base: 0x2d2624,
+      alt: 0x342b27,
+      dark: 0x261f1d,
+      mortar: 0x1e1917,
+      weed: 0x4a3a26,
+    });
+    for (const [sx, sy, sw, color] of [
+      [150, 160, 26, 0xc2643a],
+      [260, 200, 20, 0xb03535],
+      [90, 120, 18, 0xd08f2e],
+      [340, 230, 24, 0xc2643a],
+    ] as const) {
+      g.fillStyle(color, 0.07);
+      g.fillEllipse(sx, sy, sw, sw * 0.5);
     }
+    buildings.drainGrate(g, 208, 190);
     // The street the market leans against: brick shopfronts, shutters, arches.
     buildings.shopfrontRow(g, 0, 50, GAME_WIDTH, 40);
     // Stall rows: legs, planked counters, spice mounds, scalloped awnings.
@@ -809,6 +825,8 @@ export class HubScene extends Phaser.Scene {
     props.sack(g, 236, 116, 0xd08f2e);
     props.sack(g, 178, 116, 0xb03535);
     props.barrel(g, 132, 120);
+    props.potStack(g, 246, 122);
+    props.potStack(g, 130, 226);
     props.crate(g, 200, 122, 14);
     props.crate(g, 212, 128, 12);
     props.puddle(this, g, 200, 246, 26);
@@ -892,5 +910,6 @@ export class HubScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'SPICEGATE MARKET', { fontFamily: FONT_BODY, fontSize: FS_BODY, color: '#5e4a45' })
       .setOrigin(0.5)
       .setAlpha(0.85);
+    this.duskGrade();
   }
 }

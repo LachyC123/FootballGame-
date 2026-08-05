@@ -177,7 +177,22 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > floating district labels replaced by physical nailed signboards; road
 > exits framed by stone pillars. Chapter-gate radius widened to 34 (the
 > walkable corner sat outside the old 26px trigger — flake source).
-> Next: Old Cobble (Ch.3), Ivy.
+> **Refinement pass (2026-08-05): characters, world, props.** Sprite rig
+> v3: lit shirt tops + shaded undersides, kit-colour sock stripes, shorts
+> trim, hair crown highlights + hairline shadows, jaw shadows. Portrait
+> v2: hair volume, face side-shade, chin/neck shadow, eye glints, brows
+> in hair-shade, collar trim — and the missing 'wrap' portrait style
+> (Nadia was rendering bald in dialogue). World: checkerboard floors
+> replaced with seeded flagstone courses (per-stone weathering, mortar,
+> cracks, joint weeds) and worn brick pavers with spice stains; drain
+> grates; quay bollards with chain sag; dusk-grade edge vignette on both
+> districts; match asphalt gains kickoff/goalmouth scuffs, hairline
+> cracks, a tar repair seam. Props: contact shadows everywhere, crates
+> with planks/nails/stencils, barrels with stave highlight + banded
+> bolts, lantern-headed lampposts, sacks with ties + spice glints, rugs
+> with woven diamond + fringe, posters with tape + peeling corner, rope
+> tails, cork floats in nets; new fish crates (harbor) and terracotta
+> pot stacks (market). Next: Old Cobble (Ch.3), Ivy.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

@@ -229,16 +229,23 @@ function drawFrame(char, dir, pose) {
   } else {
     c.rect(lx, groundY - legH - legL, legW, legH + legL, kit.socks);
     c.rect(rx, groundY - legH - legR, legW, legH + legR, kit.socks);
+    // Sock stripe in the kit colour — the football-kit tell.
+    c.rect(lx, groundY - legH - legL, legW, 1, kit.shirt);
+    c.rect(rx, groundY - legH - legR, legW, 1, kit.shirt);
     c.rect(lx, groundY - 1 - legL, legW, 2, kit.boots);
     c.rect(rx, groundY - 1 - legR, legW, 2, kit.boots);
   }
 
-  // Shorts.
+  // Shorts with side trim.
   c.rect(bx, groundY - legH - shortsH, bodyW, shortsH, kit.shorts);
+  c.rect(bx, groundY - legH - shortsH, 1, shortsH, lite(kit.shorts));
+  c.rect(bx + bodyW - 1, groundY - legH - shortsH, 1, shortsH, shade(kit.shorts));
 
-  // Torso + collar + shading + crest.
+  // Torso: lit top row, shaded right + underside, collar, crest.
   c.rect(bx, bodyTop, bodyW, torsoH, kit.shirt);
   c.rect(bx + bodyW - 2, bodyTop, 2, torsoH, kit.shade);
+  c.rect(bx, bodyTop + torsoH - 1, bodyW, 1, kit.shade);
+  c.rect(bx, bodyTop, bodyW - 2, 1, lite(kit.shirt));
   if (dir === 's') {
     c.rect(bx + Math.floor(bodyW / 2) - 1, bodyTop, 2, 1, kit.shade); // collar
     if (char.kit === 'crew') c.set(bx + 1, bodyTop + 1, 0xf2c14e); // crest
@@ -266,18 +273,22 @@ function drawHead(c, char, dir, hx, hy) {
   // Face block: rows hy+2..hy+7 (6 rows), 8 wide.
   c.rect(hx, hy + 2, 8, 6, char.skin);
   c.rect(hx + 6, hy + 3, 2, 5, skinShade);
+  c.rect(hx, hy + 7, 8, 1, skinShade); // jaw shadow
   const hair = char.hair;
   if (dir === 'n') {
     c.rect(hx, hy, 8, 6, hair);
+    c.rect(hx, hy, 6, 1, lite(hair)); // crown catches the light
+    c.rect(hx, hy + 5, 8, 1, shade(hair));
     c.rect(hx, hy + 6, 1, 1, hair);
     c.rect(hx + 7, hy + 6, 1, 1, hair);
     if (char.style === 'bandana') {
       c.rect(hx, hy + 4, 8, 1, 0xdfe3e8);
       c.rect(hx, hy, 8, 4, 0x8d939c);
+      c.rect(hx, hy, 6, 1, 0xa8aeb8);
     }
     if (char.style === 'wrap') {
       c.rect(hx, hy, 8, 4, hair);
-      c.rect(hx, hy, 8, 1, shade(hair));
+      c.rect(hx, hy, 6, 1, lite(hair));
       c.rect(hx + 3, hy + 4, 2, 2, shade(hair)); // knot at the back
     }
     return;
@@ -285,18 +296,23 @@ function drawHead(c, char, dir, hx, hy) {
   switch (char.style) {
     case 'crop':
       c.rect(hx, hy, 8, 2, hair);
+      c.rect(hx, hy, 6, 1, lite(hair));
       c.rect(hx, hy + 2, 1, 2, hair);
       c.rect(hx + 7, hy + 2, 1, 2, hair);
+      c.rect(hx + 1, hy + 2, 6, 1, skinShade); // hairline shadow
       break;
     case 'spiky':
       c.rect(hx, hy, 8, 2, hair);
+      c.rect(hx, hy, 5, 1, lite(hair));
       c.set(hx + 1, hy - 1, hair);
-      c.set(hx + 4, hy - 1, hair);
+      c.set(hx + 4, hy - 1, lite(hair));
       c.set(hx + 6, hy - 1, hair);
       c.rect(hx + 7, hy + 2, 1, 3, hair);
+      c.rect(hx + 1, hy + 2, 6, 1, skinShade);
       break;
     case 'buzz':
       c.rect(hx, hy + 1, 8, 1, hair);
+      c.rect(hx, hy + 1, 5, 1, lite(hair));
       c.set(hx, hy + 2, hair);
       c.set(hx + 7, hy + 2, hair);
       break;
@@ -304,12 +320,14 @@ function drawHead(c, char, dir, hx, hy) {
       c.rect(hx, hy, 8, 2, 0xdfe3e8);
       c.set(hx + 8, hy + 1, 0xdfe3e8);
       c.rect(hx, hy, 8, 1, 0x8d939c);
+      c.rect(hx + 1, hy + 2, 6, 1, skinShade);
       break;
     case 'wrap':
       c.rect(hx, hy, 8, 3, hair);
-      c.rect(hx, hy, 8, 1, shade(hair));
+      c.rect(hx, hy, 6, 1, lite(hair));
       c.set(hx - 1, hy + 1, hair);
       c.set(hx - 1, hy + 2, shade(hair));
+      c.rect(hx + 1, hy + 3, 6, 1, skinShade);
       break;
   }
   if (dir === 's') {
@@ -328,32 +346,49 @@ function shade(hex) {
   return (r << 16) | (g << 8) | b;
 }
 
+function lite(hex) {
+  const r = Math.min(255, ((hex >> 16) & 0xff) + 34);
+  const g = Math.min(255, ((hex >> 8) & 0xff) + 30);
+  const b = Math.min(255, (hex & 0xff) + 24);
+  return (r << 16) | (g << 8) | b;
+}
+
 function drawPortrait(char) {
   const c = new Canvas(32, 32);
   const kit = KITS[char.kit];
-  // Shoulders.
+  const skinShade = shade(char.skin);
+  // Shoulders with collar trim.
   c.rect(6, 25, 20, 7, kit.shirt);
   c.rect(6, 25, 3, 7, kit.shade);
-  // Neck + head.
+  c.rect(22, 25, 4, 7, kit.shade);
+  c.rect(9, 25, 13, 1, lite(kit.shirt));
+  // Neck + head, shaded on the right.
   c.rect(14, 22, 4, 3, char.skin);
+  c.rect(14, 22, 4, 1, skinShade); // chin shadow on the neck
   c.rect(9, 8, 14, 14, char.skin);
+  c.rect(21, 9, 2, 13, skinShade);
   const hair = char.hair;
   switch (char.style) {
     case 'crop':
       c.rect(8, 5, 16, 5, hair);
+      c.rect(9, 5, 13, 1, lite(hair));
       c.rect(8, 10, 2, 4, hair);
       c.rect(22, 10, 2, 4, hair);
+      c.rect(10, 10, 12, 1, skinShade); // hairline shadow
       break;
     case 'spiky':
       c.rect(8, 6, 16, 4, hair);
+      c.rect(9, 6, 12, 1, lite(hair));
       c.set(10, 4, hair);
-      c.set(14, 3, hair);
+      c.set(14, 3, lite(hair));
       c.set(18, 4, hair);
       c.set(21, 5, hair);
       c.rect(22, 10, 2, 6, hair);
+      c.rect(10, 10, 11, 1, skinShade);
       break;
     case 'buzz':
       c.rect(8, 6, 16, 3, hair);
+      c.rect(9, 6, 12, 1, lite(hair));
       c.rect(8, 9, 1, 3, hair);
       c.rect(23, 9, 1, 3, hair);
       break;
@@ -361,13 +396,28 @@ function drawPortrait(char) {
       c.rect(8, 5, 16, 5, 0xdfe3e8);
       c.rect(24, 7, 2, 2, 0xdfe3e8);
       c.rect(8, 5, 16, 2, 0x8d939c);
+      c.rect(9, 5, 13, 1, 0xa8aeb8);
+      c.rect(10, 10, 12, 1, skinShade);
+      break;
+    case 'wrap':
+      // Head wrap with a side knot and an earring — Nadia's whole look.
+      c.rect(8, 4, 16, 7, hair);
+      c.rect(9, 4, 13, 1, lite(hair));
+      c.rect(8, 9, 16, 1, shade(hair));
+      c.rect(6, 7, 2, 4, hair); // knot
+      c.set(6, 11, shade(hair));
+      c.rect(10, 11, 12, 1, skinShade);
+      c.set(23, 20, 0xf2c14e); // earring
       break;
   }
-  // Eyes, brows, mouth.
+  // Eyes with a glint, brows, mouth.
   c.rect(12, 14, 2, 2, OUTLINE);
   c.rect(19, 14, 2, 2, OUTLINE);
-  c.rect(12, 12, 3, 1, hair === 0xdfe3e8 ? 0x4a4440 : hair);
-  c.rect(18, 12, 3, 1, hair === 0xdfe3e8 ? 0x4a4440 : hair);
+  c.set(12, 14, 0x8a94a2);
+  c.set(19, 14, 0x8a94a2);
+  const brow = hair === 0xdfe3e8 || hair === 0xcfcfd4 ? 0x4a4440 : shade(hair);
+  c.rect(12, 12, 3, 1, brow);
+  c.rect(18, 12, 3, 1, brow);
   c.rect(14, 19, 4, 1, 0xa06a4a);
   c.outline(OUTLINE);
   return c;

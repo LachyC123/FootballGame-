@@ -769,6 +769,18 @@ export class MatchScene extends Phaser.Scene {
     g.fillStyle(this.arena.floorAccent, 0.04);
     g.fillRect(minX, 150, 90, 60);
     g.fillRect(320, 40, 110, 70);
+    // Play has worn the asphalt: scuffed patches at kickoff and both goalmouths,
+    // hairline cracks, an old repair seam.
+    g.fillStyle(0x1e2128, 0.55);
+    g.fillEllipse(PITCH.centerX, PITCH.centerY, 40, 22);
+    g.fillEllipse(minX + 20, (GOAL_TOP + GOAL_BOTTOM) / 2, 26, 34);
+    g.fillEllipse(maxX - 20, (GOAL_TOP + GOAL_BOTTOM) / 2, 26, 34);
+    g.lineStyle(1, 0x1a1d23, 0.7);
+    g.lineBetween(120, maxY - 8, 158, maxY - 34);
+    g.lineBetween(150, maxY - 30, 166, maxY - 44);
+    g.lineBetween(352, minY + 12, 384, minY + 30);
+    g.fillStyle(0x2c313a, 0.8);
+    g.fillRect(200, minY, 3, maxY - minY); // tar repair seam
 
     // Chalk lines + centre crescent (Brine Harbor motif).
     g.lineStyle(1, 0x9aa3ad, 0.55);
