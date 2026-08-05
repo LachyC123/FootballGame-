@@ -111,6 +111,8 @@ export class HubScene extends Phaser.Scene {
   private stepClock = 0;
   private stepDust!: Phaser.GameObjects.Particles.ParticleEmitter;
   private lastObjective: string | null = null;
+  private touchGfx!: Phaser.GameObjects.Graphics;
+  private aLabel!: Phaser.GameObjects.Text;
 
   constructor() {
     super('Hub');
@@ -246,8 +248,28 @@ export class HubScene extends Phaser.Scene {
       .setDepth(21);
 
     this.inputSvc = new InputService(this, {
-      a: { x: GAME_WIDTH - 40, y: GAME_HEIGHT - 40, r: 16, hitR: 26 },
+      a: { x: GAME_WIDTH - 40, y: GAME_HEIGHT - 40, r: 16, hitR: 30 },
       b: { x: -100, y: -100, r: 1, hitR: 1 },
+    });
+
+    // Touch UX: the A button is VISIBLE, and the world itself is tappable —
+    // tapping the highlighted NPC/gate (or the prompt bubble) interacts.
+    this.touchGfx = this.add.graphics().setDepth(24);
+    this.aLabel = this.add
+      .text(GAME_WIDTH - 40, GAME_HEIGHT - 41, 'A', {
+        fontFamily: FONT_BODY,
+        fontSize: FS_BODY,
+        color: '#0e0e14',
+      })
+      .setOrigin(0.5)
+      .setDepth(25)
+      .setVisible(false);
+    this.prompt.setInteractive({ useHandCursor: true });
+    this.prompt.on('pointerdown', () => this.doInteract());
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.inDialogue || this.sequenceIndex >= 0 || !this.promptTarget) return;
+      const d = Math.hypot(pointer.worldX - this.promptTarget.x, pointer.worldY - this.promptTarget.y);
+      if (d < 36) this.doInteract();
     });
 
     this.game.events.on('dialogue-done', this.onDialogueDone, this);
@@ -719,7 +741,11 @@ export class HubScene extends Phaser.Scene {
         });
       }
     }
-    if (this.inDialogue || this.sequenceIndex >= 0) return;
+    if (this.inDialogue || this.sequenceIndex >= 0) {
+      this.touchGfx.clear();
+      this.aLabel.setVisible(false);
+      return;
+    }
     // Generous dt cap: hub movement is a clamped box, not physics, so honour
     // real elapsed time even on slow devices — a tight cap silently eats walk
     // distance at low fps and makes gates unreachable.
@@ -769,9 +795,13 @@ export class HubScene extends Phaser.Scene {
 
     if (this.promptTarget) {
       const isGate = 'label' in this.promptTarget;
-      const label = isGate
+      let label = isGate
         ? (this.promptTarget as Gate).label()
         : ((this.promptTarget as HubNpc).prompt ?? 'TALK [A]');
+      // Phones have no [A] key — the world is the button.
+      if (this.sys.game.device.input.touch && label.includes('[A]')) {
+        label = `${label.replace(/\s*\[A\]/, '')} — TAP`;
+      }
       const px = isGate ? Math.min(this.promptTarget.x, GAME_WIDTH - 60) : this.promptTarget.x;
       const py = isGate ? this.promptTarget.y - 24 : this.promptTarget.y - 18;
       this.prompt.setVisible(true).setText(label).setPosition(px, py);
@@ -780,24 +810,59 @@ export class HubScene extends Phaser.Scene {
     }
 
     const interact = cmd.pass;
-    if (interact && !this.prevInteract && this.promptTarget) {
-      if ('label' in this.promptTarget) {
-        const gate = this.promptTarget as Gate;
-        if (gate.locked()) {
-          this.sfxp.play('uiClick', 0.3, 400);
-        } else {
-          gate.action();
-        }
-      } else {
-        const npc = this.promptTarget as HubNpc;
-        this.sfxp.play('uiSelect', 0.4);
-        this.inDialogue = true;
-        this.inputSvc.reset();
-        const id = npc.dialogueId;
-        this.scene.launch('Dialogue', { dialogueId: typeof id === 'function' ? id() : id });
-      }
-    }
+    if (interact && !this.prevInteract && this.promptTarget) this.doInteract();
     this.prevInteract = interact;
+    this.renderTouchUi();
+  }
+
+  /** Fire the current prompt target — from the A button, a key, or a tap. */
+  private doInteract(): void {
+    if (this.inDialogue || this.sequenceIndex >= 0 || !this.promptTarget) return;
+    this.prevInteract = true; // swallow the same press on the next sample
+    if ('label' in this.promptTarget) {
+      const gate = this.promptTarget as Gate;
+      if (gate.locked()) {
+        this.sfxp.play('uiClick', 0.3, 400);
+      } else {
+        gate.action();
+      }
+    } else {
+      const npc = this.promptTarget as HubNpc;
+      this.sfxp.play('uiSelect', 0.4);
+      this.inDialogue = true;
+      this.inputSvc.reset();
+      const id = npc.dialogueId;
+      this.scene.launch('Dialogue', { dialogueId: typeof id === 'function' ? id() : id });
+    }
+  }
+
+  /** Visible touch controls (the match draws its own; the hub was invisible). */
+  private renderTouchUi(): void {
+    const g = this.touchGfx;
+    g.clear();
+    if (!this.sys.game.device.input.touch) {
+      this.aLabel.setVisible(false);
+      return;
+    }
+    const state = this.inputSvc.touchState();
+    const near = this.promptTarget !== null;
+    // A button — glows gold when something is in reach.
+    g.fillStyle(state.a ? 0xf2c14e : near ? 0xf2c14e : 0xe8e3d0, state.a ? 0.6 : near ? 0.45 : 0.3);
+    g.fillCircle(GAME_WIDTH - 40, GAME_HEIGHT - 40, 16);
+    g.lineStyle(1, 0x0e0e14, 0.6);
+    g.strokeCircle(GAME_WIDTH - 40, GAME_HEIGHT - 40, 16);
+    this.aLabel.setVisible(true);
+    // Floating stick feedback while walking.
+    if (state.stick.active) {
+      g.fillStyle(0xe8e3d0, 0.16);
+      g.fillCircle(state.stick.origin.x, state.stick.origin.y, 34);
+      g.fillStyle(0xe8e3d0, 0.4);
+      g.fillCircle(
+        state.stick.origin.x + state.stick.vec.x * 34,
+        state.stick.origin.y + state.stick.vec.y * 34,
+        12,
+      );
+    }
   }
 
   // ---- backdrops ----------------------------------------------------------
