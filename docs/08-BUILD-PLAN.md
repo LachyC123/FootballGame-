@@ -206,7 +206,17 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > lanterns on the corner strings, copper bells, painted spice-swirl
 > centre, pot stack + spice sacks, and the namesake corner drum always
 > steaming. Dev launcher: ?scene=Match&arena=kettle previews the Kettle.
-> Next: Old Cobble (Ch.3), Ivy.
+> **Final pre-Ch.3 sweep (2026-08-05):** every scene reviewed via
+> screenshot sweep (dev launcher gained Flashback/Stinger jumps). Fixed:
+> KICK OFF card no longer collides with the broadcast intro card (intro
+> yields the instant play starts); the flashback's sepia Netyard now IS
+> the Netyard — bell gantries, net swags, rope emblem, crescent, wear in
+> the same spots, warm memory floodlights — so returning in Ch.1 lands
+> as recognition; the Kairo stinger got a real room (rain-streaked
+> window with Volt neon beyond, light spill, bunk with Volt blanket,
+> kicked-off boots, pennant, tally marks scratched by the bed); the
+> Preload screen is branded (title, framed gold bar, "mending the
+> nets…"). Cleared for Chapter 3: Old Cobble.
 
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller

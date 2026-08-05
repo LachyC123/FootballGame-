@@ -121,6 +121,7 @@ export class MatchScene extends Phaser.Scene {
   private lastClockShown = -1;
   // Arena identity: real bells over the goals, gulls on the wall.
   private bells: Array<{ c: Phaser.GameObjects.Container; side: -1 | 1 }> = [];
+  private introCard: Phaser.GameObjects.Text[] = [];
   private perchedGulls: Array<{ c: Phaser.GameObjects.Container; homeX: number; away: boolean }> =
     [];
 
@@ -137,6 +138,7 @@ export class MatchScene extends Phaser.Scene {
     this.arena = data.arena ?? NETYARD;
     this.prevPhase = '';
     this.pauseGroup = [];
+    this.introCard = [];
     music.play(this.drill ? 'harbor' : 'match');
     fadeIn(this);
     this.accumulator = 0;
@@ -445,6 +447,11 @@ export class MatchScene extends Phaser.Scene {
     // Phase-transition presentation: KICK OFF card + whistle.
     if (snap.phase !== this.prevPhase) {
       if (snap.phase === 'play' && this.prevPhase === 'kickoff' && !this.drill) {
+        // The broadcast card yields the stage the instant play starts.
+        for (const t of this.introCard) {
+          this.tweens.killTweensOf(t);
+          t.setAlpha(0);
+        }
         this.sfxp.play('post', 0.15, 800); // short sharp whistle-ish ping
         this.bellText.setText('KICK OFF').setColor('#e8e3d0').setAlpha(1).setScale(1.6);
         this.tweens.add({ targets: this.bellText, scale: 1, duration: 200 });
@@ -1212,6 +1219,7 @@ export class MatchScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setDepth(26);
+    this.introCard = [card, sub];
     this.tweens.add({ targets: [card, sub], alpha: 0, delay: 1400, duration: 400 });
   }
 

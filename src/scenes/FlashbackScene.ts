@@ -213,6 +213,8 @@ export class FlashbackScene extends Phaser.Scene {
   }
 
   private drawSepiaNetyard(): void {
+    // The SAME Netyard the player returns to three years later — bells, net
+    // swags, rope emblem — remembered in sepia. Recognition is the payoff.
     const g = this.add.graphics();
     g.fillStyle(0x2b2620);
     g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -222,10 +224,40 @@ export class FlashbackScene extends Phaser.Scene {
         g.fillRect(x, y, 16, 16);
       }
     }
+    // The asphalt was younger then — lighter wear, but the same spots.
+    g.fillStyle(0x262119, 0.45);
+    g.fillEllipse(240, 135, 36, 20);
+    g.fillEllipse(34, 135, 22, 30);
+    g.fillEllipse(446, 135, 22, 30);
+    // Rope-ring emblem + Sol's crescent, fresh paint back then.
+    g.lineStyle(2, 0x6e6248, 0.35);
+    g.strokeCircle(240, 135, 37);
+    g.lineStyle(2, 0xa08d68, 0.3);
+    g.beginPath();
+    g.arc(240, 135, 20, Math.PI * 0.25, Math.PI * 1.25);
+    g.strokePath();
     g.lineStyle(1, 0x5c5344);
     g.strokeRect(16, 16, 448, 238);
     g.lineBetween(240, 16, 240, 254);
     g.strokeCircle(240, 135, 30);
+    // Net drape + swags along the top rail, corks at the gathers.
+    g.lineStyle(1, 0x4a4234, 0.7);
+    for (let x = 16; x < 464; x += 12) {
+      g.lineBetween(x, 16, x + 6, 21);
+      g.lineBetween(x + 6, 16, x, 21);
+    }
+    for (let cx = 44; cx < 454; cx += 56) {
+      g.beginPath();
+      g.arc(cx, 17, 12, Math.PI * 0.12, Math.PI * 0.88);
+      g.strokePath();
+      g.fillStyle(0x8a7a5c, 0.9);
+      g.fillRect(cx - 12, 17, 2, 2);
+      g.fillRect(cx + 10, 17, 2, 2);
+    }
+    // Warm evening floodlight, the way memory lights things.
+    g.fillStyle(0xc9a06a, 0.05);
+    g.fillTriangle(20, 16, 140, 254, 20, 254);
+    g.fillTriangle(460, 16, 340, 254, 460, 254);
     // The whole harbor came to watch (they fade when the silence lands).
     this.crowd = this.add.graphics().setDepth(2);
     const crowdColors = [0x8a7a5c, 0x6e6248, 0xa08d68];
@@ -236,8 +268,20 @@ export class FlashbackScene extends Phaser.Scene {
       this.crowd.fillCircle(cxp, cyp, 3);
       this.crowd.fillRect(cxp - 2, cyp + 2, 4, 4);
     }
+    // Goals with their bell gantries — the bells were already old.
     g.lineStyle(2, 0x8a7a5c, 0.9);
     g.strokeRect(4, 115, 12, 40);
     g.strokeRect(464, 115, 12, 40);
+    for (const bx of [10, 470]) {
+      g.fillStyle(0x4a4234);
+      g.fillRect(bx - 6, 102, 2, 13);
+      g.fillRect(bx + 4, 102, 2, 13);
+      g.fillRect(bx - 7, 101, 14, 2);
+      g.fillStyle(0xa08d68);
+      g.fillRect(bx - 2, 105, 4, 2);
+      g.fillRect(bx - 3, 107, 6, 3);
+      g.fillStyle(0x6e6248);
+      g.fillRect(bx - 4, 110, 8, 2);
+    }
   }
 }
