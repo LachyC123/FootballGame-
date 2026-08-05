@@ -15,6 +15,14 @@ export class BootScene extends Phaser.Scene {
     const settings = loadSettings();
     this.registry.set('settings', settings);
     this.registry.set('buildVersion', BUILD_VERSION);
-    this.scene.start('Preload');
+    // Load the pixel fonts before any text renders; a failed load falls back
+    // to monospace rather than blocking boot.
+    const fonts = Promise.all([
+      document.fonts.load('16px m5x7'),
+      document.fonts.load('22px m6x11plus'),
+    ]);
+    void Promise.race([fonts, new Promise((r) => setTimeout(r, 1500))]).finally(() => {
+      this.scene.start('Preload');
+    });
   }
 }

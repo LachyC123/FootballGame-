@@ -1,0 +1,391 @@
+{
+  "ch3_ivy_intro": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "system",
+        "text": "A ball hits the cloister wall. Catch. Turn. Again.\nShe's been at it long enough to wear a pale spot in the stone.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "ivy",
+        "text": "You're from the harbor. I heard the Kettle went quiet.\nThat was you, wasn't it.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "ash",
+        "text": "Word climbs fast.",
+        "next": "d"
+      },
+      "d": {
+        "speaker": "ivy",
+        "text": "Nothing else to do up here but listen.\nI'm Ivy. Fastest feet on this hill, not that the Saints care.",
+        "next": "e"
+      },
+      "e": {
+        "speaker": "ivy",
+        "text": "They say I'm not grown into patience yet.\nNinety years of the low block and they want me PATIENT.",
+        "next": "f"
+      },
+      "f": {
+        "speaker": "ash",
+        "text": "So play us. The Crew doesn't wait for anyone to grow.",
+        "next": "g"
+      },
+      "g": {
+        "speaker": "ivy",
+        "text": "The Saints don't play outsiders. Old rule.\nUnless the bell keeper vouches for you — and Alder vouches for nobody.",
+        "next": "h"
+      },
+      "h": {
+        "speaker": "ivy",
+        "text": "He's by the tower. Go on. Ask him.\nI want to watch him say no.",
+        "setFlags": ["ch3.metIvy"],
+        "end": true
+      }
+    }
+  },
+  "ch3_ivy_wait": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "ivy",
+        "text": "Still here. Still faster than all of them.\nHow's the old man treating you?",
+        "end": true
+      }
+    }
+  },
+  "ch3_alder_first": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "alder",
+        "text": "The yard is open to walkers. The cage is not.\nIf you came to play, the hill has rules older than you.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "alder",
+        "text": "Talk to the girl by the wall. She'll enjoy explaining them.\nShe finds the rules as heavy as you will.",
+        "end": true
+      }
+    }
+  },
+  "ch3_alder": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "ash",
+        "text": "Keeper Alder? I'm told you vouch for outsiders.\nI'm told you never do.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "alder",
+        "text": "Both true. Vouching is spending trust,\nand I mind the tower's accounts carefully.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "alder",
+        "text": "But you can earn a hearing. The storm took every lantern\nin the yard last month. The wind up here eats plain wicks.",
+        "next": "d"
+      },
+      "d": {
+        "speaker": "alder",
+        "text": "Nadia at Spicegate keeps the only storm-lanterns that survive\nthis hill. Bring one up the steps. Then we talk.",
+        "next": "e"
+      },
+      "e": {
+        "speaker": "alder",
+        "text": "It matters more than it sounds. On this hill you keep—",
+        "next": "f"
+      },
+      "f": {
+        "speaker": "ash",
+        "text": "...You were going to say something.",
+        "next": "g"
+      },
+      "g": {
+        "speaker": "alder",
+        "text": "Old habit. Go on, harbor kid. The steps are long.",
+        "setFlags": ["ch3.errand"],
+        "end": true
+      }
+    }
+  },
+  "ch3_lantern": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "ash",
+        "text": "Alder needs a storm-lantern. For the yard.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "nadia",
+        "text": "Alder. There's a name that pays on time.\nHe buys wicks he doesn't need, you know. Every month, forty years.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "ash",
+        "text": "Why would anyone buy wicks they don't need?",
+        "next": "d"
+      },
+      "d": {
+        "speaker": "nadia",
+        "text": "Because somebody once told him a light's no good\nif you're the only one keeping it.",
+        "next": "e"
+      },
+      "e": {
+        "speaker": "nadia",
+        "text": "Here. No charge — his account's paid past both our lifetimes.\nTell him the book stays shut.",
+        "setFlags": ["ch3.lantern"],
+        "end": true
+      }
+    }
+  },
+  "ch3_alder_wait": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "alder",
+        "text": "The steps are long. The light matters more.\nNadia's stall, down at Spicegate.",
+        "end": true
+      }
+    }
+  },
+  "ch3_alder2": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "system",
+        "text": "Alder takes the lantern with both hands, like it weighs\nmore than it does. He hangs it at the yard gate and lights it.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "ash",
+        "text": "Nadia says the book stays shut.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "alder",
+        "text": "...Of course she does.",
+        "next": "d"
+      },
+      "d": {
+        "speaker": "alder",
+        "text": "The wind takes every light on this hill, harbor kid.\nSomebody has to keep one on. Tonight it's you.",
+        "next": "e"
+      },
+      "e": {
+        "speaker": "alder",
+        "text": "So: I vouch. The Prior will hate it, which is half the reason.\nGo knock on the Cloister.",
+        "next": "f"
+      },
+      "f": {
+        "speaker": "ash",
+        "text": "And the tower? The door's always locked.",
+        "next": "g"
+      },
+      "g": {
+        "speaker": "alder",
+        "text": "Beat the Saints and I'll show you what's under the bell.\nSome things you earn the long way. That one especially.",
+        "setFlags": ["ch3.keeperTalk"],
+        "end": true
+      }
+    }
+  },
+  "ch3_alder_vouched": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "alder",
+        "text": "The lantern's still burning. Good sign.\nThe Cloister is waiting on you.",
+        "end": true
+      }
+    }
+  },
+  "ch3_prior": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "The yard prays at dusk and plays at its own pace.\nCome back vouched-for, or don't come back.",
+        "end": true
+      }
+    }
+  },
+  "ch3_prior_ready": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "So Alder spent his voice on you. Forty years of silence,\nbroken for a harbor kid. Fine.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "prior",
+        "text": "One condition of ours: Ivy starts. Against you.\nHer asking, not mine. Beat patience with patience — or don't.",
+        "end": true
+      }
+    }
+  },
+  "ch3_prematch": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "Ninety years this block has held.\nWe do not chase. We do not tire. We wait.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "ivy",
+        "text": "And I run. Don't go easy on me, harbor.\nIf you win, I want it to have been true.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "system",
+        "text": "THE CLOISTER — the Saints sit deep and spring Ivy on the break.\nBe patient. Move them. The gaps come to those who wait.",
+        "end": true
+      }
+    }
+  },
+  "ch3_retry": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "You chased. The block ate you. This is the lesson.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "ivy",
+        "text": "Psst. They're statues till the ball moves them.\nSwing it side to side. Make the old bones turn. Again.",
+        "end": true
+      }
+    }
+  },
+  "ch3_aftermath": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "...Ninety years.\nWell. Every wall meets its water.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "prior",
+        "text": "The Saint pin goes down the hill. Carry it evenly.\nIt has never once left Old Cobble. Mind that.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "system",
+        "text": "PIN EARNED — THE COBBLE SAINTS\nThree pins. The ladder has one rung left: Voltside.",
+        "setFlags": ["pin.saints", "ch3.complete"],
+        "next": "d"
+      },
+      "d": {
+        "speaker": "ivy",
+        "text": "Hey. Harbor.\nThat was true. All of it. So — take me down the hill.",
+        "next": "e"
+      },
+      "e": {
+        "speaker": "ash",
+        "text": "You sure? This hill made your feet what they are.",
+        "choices": [
+          { "text": "The harbor could use you. Come down.", "next": "f", "flags": ["ivy.crew"] },
+          { "text": "Make the Prior start you first. Then come.", "next": "g", "flags": ["ivy.earn"] }
+        ]
+      },
+      "f": {
+        "speaker": "ivy",
+        "text": "Ha! Deal. Give me a week to say my goodbyes —\nninety years of statues, somebody's got to hug them.",
+        "next": "h"
+      },
+      "g": {
+        "speaker": "ivy",
+        "text": "...You sound like Alder. Fine. One start, in the yard,\nwith the whole hill watching. THEN I'm coming down.",
+        "next": "h"
+      },
+      "h": {
+        "speaker": "alder",
+        "text": "When you're done celebrating, harbor kid —\nthe tower door is open. I keep my accounts.",
+        "end": true
+      }
+    }
+  },
+  "cloister_plaque": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "system",
+        "text": "Alder unlocks nothing — the door already stands open.\nInside, under the First Bell, a plaque worn smooth by thumbs:",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "system",
+        "text": "FOR S., WHO RANG FIRST.",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "system",
+        "text": "The bell's wheel gleams. A fresh drop of oil.\nForty years of wicks nobody needed. Somebody keeps it turning.",
+        "setFlags": ["undertide.ch3"],
+        "next": "d"
+      },
+      "d": {
+        "speaker": "alder",
+        "text": "She rang this one before any of the cages had theirs.\nAsk your coach who held the ladder. Or don't. Some bells rest.",
+        "end": true
+      }
+    }
+  },
+  "hub_ivy_crew": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "ivy",
+        "text": "Packing takes a week when everything you own is one ball.\nSave me a spot on the quay, harbor.",
+        "end": true
+      }
+    }
+  },
+  "hub_ivy_earn": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "ivy",
+        "text": "The Prior posted the next yard game. My name's FIRST.\nForty years of statues and my name is first. Then I'm yours.",
+        "end": true
+      }
+    }
+  },
+  "hub_prior": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "prior",
+        "text": "The block held ninety years. It can spare one dusk.\nThe girl plays with her whole chest now. Perhaps you knocked something loose.",
+        "end": true
+      }
+    }
+  },
+  "hub_alder": {
+    "start": "a",
+    "nodes": {
+      "a": {
+        "speaker": "alder",
+        "text": "Three pins going home to the harbor. She'd have laughed.",
+        "next": "b"
+      },
+      "b": {
+        "speaker": "ash",
+        "text": "Who would?",
+        "next": "c"
+      },
+      "c": {
+        "speaker": "alder",
+        "text": "...The lantern's burning well tonight. Play on, harbor kid.",
+        "end": true
+      }
+    }
+  }
+}

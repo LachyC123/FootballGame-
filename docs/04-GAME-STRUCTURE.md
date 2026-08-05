@@ -163,6 +163,16 @@ varied play but must never require throwing the match.
 Promise progress appears on the pause screen only — never a permanent objective panel
 during play. Max one active promise per match.
 
+### 7.35 Undertide fragments (doc 02 §1b)
+
+- Six optional landmark interactables, one per district, each ≤3 lines, each setting
+  an `undertide.chN` flag. Never quest-marked, never counted in UI; Nino's Ledger
+  gains a drawn page per fragment (the only visible tracking).
+- ≥4 fragments before the finale unlocks the "Say your whole name" beat; all 6 plus
+  any winning ending unlocks "The Whole Bell" post-game epilogue.
+- Implementation: ordinary hub interactables + dialogue graphs + flags. Zero new
+  engine systems.
+
 ### 7.4 Ending selection (doc 02 Ch.6 has the scene content)
 
 The finale is the ONE match that can be lost with the story continuing. Ending state is

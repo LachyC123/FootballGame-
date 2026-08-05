@@ -3,6 +3,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/journeys',
   timeout: 30_000,
+  // Journeys drive the game with real-time key holds; parallel workers starve
+  // each other's frame budget and make the long walk legs flaky. Run serial.
+  workers: 1,
   webServer: {
     command: 'npm run preview',
     port: 4173,
@@ -11,6 +14,7 @@ export default defineConfig({
   },
   use: {
     baseURL: 'http://localhost:4173',
+    screenshot: 'only-on-failure',
     // Pre-installed Chromium in the remote environment; overridable locally.
     launchOptions: process.env['PW_CHROMIUM_PATH']
       ? { executablePath: process.env['PW_CHROMIUM_PATH'] }

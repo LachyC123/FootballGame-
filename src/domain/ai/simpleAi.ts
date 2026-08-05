@@ -22,13 +22,15 @@ export class SimpleAi {
   private readonly profile: AiProfile;
   private readonly reactionS: number;
   private readonly rng: SeededRng;
+  private readonly dummy: boolean;
   private memory = new Map<string, Memory>();
 
-  constructor(team: 0 | 1, profile: AiProfile, reactionMs: number, rng: SeededRng) {
+  constructor(team: 0 | 1, profile: AiProfile, reactionMs: number, rng: SeededRng, dummy = false) {
     this.team = team;
     this.profile = profile;
     this.reactionS = reactionMs / 1000;
     this.rng = rng;
+    this.dummy = dummy;
   }
 
   decide(view: AiView, out: Map<string, PlayerCommand>, skipId: string | null): void {
@@ -36,6 +38,10 @@ export class SimpleAi {
     const dt = 1 / 60;
     for (const p of mine) {
       if (p.id === skipId) continue;
+      if (this.dummy) {
+        out.set(p.id, { moveX: 0, moveY: 0, sprint: false, pass: false, shoot: false });
+        continue;
+      }
       let mem = this.memory.get(p.id);
       if (!mem) {
         mem = { target: { ...p.pos }, sprint: false, pressPass: false, shootHold: 0, decideIn: 0 };

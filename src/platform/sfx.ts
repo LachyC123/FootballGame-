@@ -52,6 +52,69 @@ export function resumeSfx(): void {
   if (ac && ac.state === 'suspended') void ac.resume().catch(() => undefined);
 }
 
+export function getAudioContext(): AudioContext | null {
+  return audio();
+}
+
+/** Lifecycle hooks: hard-suspend ALL game audio (sfx, crowd, music) on hide. */
+export function suspendAllAudio(): void {
+  if (ctx && ctx.state === 'running') void ctx.suspend().catch(() => undefined);
+}
+
+export function resumeAllAudio(): void {
+  if (ctx && ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
+}
+
+let crowdSrc: AudioBufferSourceNode | null = null;
+let crowdGain: GainNode | null = null;
+let crowdBase = 0.05;
+
+/** Looping filtered-noise crowd bed (docs/07 §6 allows a generated crowd loop). */
+export const crowd = {
+  start(volume = 0.05): void {
+    if (loadSettings().muted) return;
+    const ac = audio();
+    if (!ac || crowdSrc) return;
+    crowdBase = volume;
+    const len = Math.floor(ac.sampleRate * 2);
+    const buffer = ac.createBuffer(1, len, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      // Brown-ish noise reads as distant crowd once lowpassed.
+      last = (last + (Math.random() * 2 - 1) * 0.02) * 0.98;
+      data[i] = last * 8;
+    }
+    crowdSrc = ac.createBufferSource();
+    crowdSrc.buffer = buffer;
+    crowdSrc.loop = true;
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 420;
+    crowdGain = ac.createGain();
+    crowdGain.gain.value = volume;
+    crowdSrc.connect(filter).connect(crowdGain).connect(ac.destination);
+    crowdSrc.start();
+  },
+  stop(): void {
+    crowdSrc?.stop();
+    crowdSrc?.disconnect();
+    crowdGain?.disconnect();
+    crowdSrc = null;
+    crowdGain = null;
+  },
+  /** Roar: the bed surges (goal = big, near-miss = short gasp) then settles. */
+  swell(mult = 4, fallS = 1.8): void {
+    const ac = audio();
+    if (!ac || !crowdGain) return;
+    const t = ac.currentTime;
+    crowdGain.gain.cancelScheduledValues(t);
+    crowdGain.gain.setValueAtTime(crowdGain.gain.value, t);
+    crowdGain.gain.linearRampToValueAtTime(crowdBase * mult, t + 0.1);
+    crowdGain.gain.linearRampToValueAtTime(crowdBase, t + fallS);
+  },
+};
+
 export const sfx = {
   pass: (pitchVar: number): void => blip(220 * (1 + pitchVar * 0.1), 0.07, 'triangle', 0.25, 140),
   kick: (charge: number): void => blip(140 + charge * 60, 0.12, 'square', 0.3, 60),

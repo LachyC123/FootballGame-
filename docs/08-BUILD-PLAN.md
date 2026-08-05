@@ -84,6 +84,20 @@ truth" pillar). **This phase decides tuning values — expect iteration.**
 Scope: **Chapter 1 only, condensed**: flashback → 2 tutorial drills (pass + shoot) →
 meet Tero/Nino (dialogue) → match vs Gulls → results/pin → Ledger stinger.
 
+> **Phase 2 progress (2026-08-04): first slice pass landed.** Done: code-authored
+> 24×24 pixel-art rigs + 32×32 portraits for the 8-person cast
+> (scripts/generate-sprites.mjs — deterministic, auto-outlined, bible-palette),
+> integrated into the match via CharacterView (frames as pure function of domain
+> state); dialogue engine (typewriter, portraits, per-speaker blips, 2-choice,
+> flags) with CI graph validation; condensed Ch.1 story flow (intro w/ ego/team
+> choice → prematch → Gulls match with loss-retry loop → aftermath → pin card +
+> autosave); Title menu (New Game / Continue / Friendly); Netyard dressing +
+> intro card. Part 2 added: flashback cold-open (scripted
+> forced-shot beat), both tutorial drills with skip (dummy-AI mannequins +
+> kickoff-override rule), Linssen fonts live at pixel-crisp sizes, Kairo + two
+> flashback rigs, crowd ambience bed. Remaining for G2: a music track, and the
+> external playtest on a physical device (user).
+
 - [ ] Dialogue overlay scene (portraits, typewriter, choices, blips) + dialogue/flags
       engine + `ch1` condensed content files.
 - [ ] Scripted-events hook in MatchCore (flashback forced-shot beat).
@@ -105,6 +119,129 @@ first-play ≤10 MB, P95 frame); all six Master-Plan platform checklist items pa
 > physical device gates entry into Phase 3.
 
 ## Phase 3 — Systems complete (G3: content can be added without engineering)
+
+> **Phase 3 progress (2026-08-04): Chapter 1 restructured to play IN PLACE
+> (purposeful placement pass).** The StoryScene slideshow is gone. New Game now
+> runs: flashback → arrive in walkable Brine Harbor → objective chip ("Find
+> Coach Tero") → intro dialogue AT Tero → crew appears in the hub → gate reads
+> "CHALLENGE THE GULLS" → drills + match + aftermath run through the cage gate
+> → pin ceremony on the quay → Kairo stinger cutscene (Voltside, he watched it
+> twice) → free roam with post-win NPC states. Flag-driven NPC presence
+> (Juno/Bram appear after the intro; Salt only after losing the pin), dynamic
+> per-NPC dialogue, 3-state gate. Journey test walks the entire flow with real
+> movement input. Chapter 2 SHIPPED: HubScene generalized to
+> districts (harbor + Spicegate as data: draw/NPCs/gates/sequences); Spicegate
+> market map (awnings, lanterns, Kettle steam), Nadia/Seppi/Juno chapter chain
+> (intro → crate errand → delivery → Juno's 'delivery girl' beat with trust
+> choice → Kettle challenge), Spice Runners team (tiki-fast profile), arena
+> dressing system (Netyard/Kettle cards, colours, away labels), scorer-named
+> bell callouts, debt-book fragment (undertide.ch2, initials only), hub
+> footsteps + gulls + lantern flicker polish. **Set-dressing density pass
+> (2026-08-04):** new `presentation/props.ts` drawn-prop library (crates,
+> barrels, rope coils, net piles, gleaming puddles, flickering lampposts,
+> bench, sacks, rugs, posters, chalk marks, prowling cat, pecking pigeons,
+> ambient walkers, swaying laundry). Harbor + Spicegate dressed with them
+> (incl. story-reactive chalk: the Gulls' tag gets crossed out in Crew teal
+> after ch1.complete; Juno's faded delivery cart parked in Spicegate). Match
+> arenas: advertising hoardings below the bottom wall — Mabel's Bait / Radio
+> Solport / Spice Market / "KEEP A LIGHT ON" (Sol's phrase hidden in plain
+> sight) — plus floodlight cones and corner kit clutter. Title key art:
+> moored boats, buoy, quay crates, lamppost, Nino perched watching. Flashback:
+> sepia crowd ring that fades out on the conceded goal ("the crowd goes
+> quiet — and then it goes away"). **Presentation polish pass (2026-08-04):**
+> third music track 'market' (D-phrygian, 96bpm) plays in Spicegate; crowd
+> bed now SWELLS — full roar on goals, a shorter gasp off the post, a long
+> settle over the win screen; on a bell the crowd band physically jumps and
+> confetti drops from the stands, and a second ring blooms off the scorer;
+> win screen rains confetti. Hub: footstep dust puffs, harbor water glints
+> drift with the swell, Spicegate air carries gold spice motes, the
+> objective chip slides in and glints gold whenever the orders change.
+> Title menu buttons stagger in; a gull crosses the sunset on loop.
+> Dialogue panel slides up and settles; portraits pop when a new speaker
+> takes over. Bugfix caught by e2e: hub walk dt cap (0.05s) silently ate
+> walk distance at low fps, making gates unreachable on slow devices —
+> raised to 0.25s; journeys now run serial workers with failure
+> screenshots. **Architecture pass (2026-08-04):** new
+> `presentation/buildings.ts` — buildings now commit to roof plane, wall
+> material, framed openings, and contact shadow. Tero's shop is a real
+> shack (corrugated tin roof with a rust patch, weathered plank wall,
+> framed door + stone step, warm cross-paned window with flickering glow,
+> drying nets, hung buoys); cages (Netyard, Kettle, title quay) are real
+> street cages (concrete kerb, capped posts with base plates, diamond
+> chain-link in both diagonals, sagging top cable, framed gate with
+> hinges + latch); market stalls have legs, planked counters, spice
+> mounds, and scallop-hem awnings that cast shade; Spicegate backs onto a
+> brick shopfront street (courses, shutters, lit lattice windows, arched
+> doorways with lamps, drainpipe); Brine Harbor gains a far-shore
+> skyline (warehouse rooflines, crane, lit windows across the water);
+> floating district labels replaced by physical nailed signboards; road
+> exits framed by stone pillars. Chapter-gate radius widened to 34 (the
+> walkable corner sat outside the old 26px trigger — flake source).
+> **Refinement pass (2026-08-05): characters, world, props.** Sprite rig
+> v3: lit shirt tops + shaded undersides, kit-colour sock stripes, shorts
+> trim, hair crown highlights + hairline shadows, jaw shadows. Portrait
+> v2: hair volume, face side-shade, chin/neck shadow, eye glints, brows
+> in hair-shade, collar trim — and the missing 'wrap' portrait style
+> (Nadia was rendering bald in dialogue). World: checkerboard floors
+> replaced with seeded flagstone courses (per-stone weathering, mortar,
+> cracks, joint weeds) and worn brick pavers with spice stains; drain
+> grates; quay bollards with chain sag; dusk-grade edge vignette on both
+> districts; match asphalt gains kickoff/goalmouth scuffs, hairline
+> cracks, a tar repair seam. Props: contact shadows everywhere, crates
+> with planks/nails/stencils, barrels with stave highlight + banded
+> bolts, lantern-headed lampposts, sacks with ties + spice glints, rugs
+> with woven diamond + fringe, posters with tape + peeling corner, rope
+> tails, cork floats in nets; new fish crates (harbor) and terracotta
+> pot stacks (market). **Arena identity pass (2026-08-05):** ArenaDress
+> gains theme ('netyard'|'kettle') + bellMetal; every venue is now a
+> place. Both arenas: REAL BELLS on gantries over each goal that swing
+> when rung (ringBell on the bell event, side picked from ball x),
+> rope-ring centre emblem, arena name worn into the asphalt, corner
+> string lights. Netyard: net swags with cork floats off the top rail,
+> mast-and-rigging skyline with a pulsing lighthouse whose beam sweeps
+> the cage, creel stack + buoys in the margins, and three perched gulls
+> on the top rail that scatter on nearby wall impacts (and all of them
+> when a bell rings) then drift back. Kettle: brick parapet strung with
+> pennants, striped awning cloth with scalloped hem on the rail, paper
+> lanterns on the corner strings, copper bells, painted spice-swirl
+> centre, pot stack + spice sacks, and the namesake corner drum always
+> steaming. Dev launcher: ?scene=Match&arena=kettle previews the Kettle.
+> **Final pre-Ch.3 sweep (2026-08-05):** every scene reviewed via
+> screenshot sweep (dev launcher gained Flashback/Stinger jumps). Fixed:
+> KICK OFF card no longer collides with the broadcast intro card (intro
+> yields the instant play starts); the flashback's sepia Netyard now IS
+> the Netyard — bell gantries, net swags, rope emblem, crescent, wear in
+> the same spots, warm memory floodlights — so returning in Ch.1 lands
+> as recognition; the Kairo stinger got a real room (rain-streaked
+> window with Volt neon beyond, light spill, bunk with Volt blanket,
+> kicked-off boots, pennant, tally marks scratched by the bed); the
+> Preload screen is branded (title, framed gold bar, "mending the
+> nets…"). Cleared for Chapter 3: Old Cobble.
+>
+> **Chapter 3 SHIPPED (2026-08-05): Old Cobble.** New district up the
+> steps from Spicegate (north arch, ch2.complete-gated): hilltop
+> monastery yard at dusk — you can see the harbor lights you climbed
+> from; cloister arcade with candlelit arches; the bell tower holding
+> the FIRST BELL (glinting, patina); Ivy's practice wall with her chalk
+> target; mossy flagstones, falling leaves, stone planters, the works.
+> New cast: IVY (long-hair style, Saints kit, pace 9 — the one fast
+> thing on the hill), THE PRIOR (guard 9 anchor), DENS (saint_a), and
+> KEEPER ALDER (new hooded style + robe kit). Chapter chain: meet Ivy →
+> Alder's storm-lantern errand (cross-district: Nadia gives it free —
+> "the book stays shut", tying fragment 2) → Alder hangs the light and
+> says the phrase out loud → vouched → THE CLOISTER vs the Saints
+> (press .15/line .15/wall .9 low block, Ivy starting AGAINST you) →
+> aftermath choice: bring Ivy down now (ivy.crew) or make the Prior
+> start her first (ivy.earn) → Saint pin, chapter 4 save. Fragment 3
+> (cloister_plaque, post-win): "FOR S., WHO RANG FIRST" + the oiled
+> wheel + Alder's "ask your coach who held the ladder". Cloister arena
+> theme: stone arcade skyline with the tower, ivy-strand rail, candle
+> strings, verdigris bells, painted bell centre mark, drifting leaves,
+> carved kerb mottos instead of ads. New 'cloister' music (66bpm
+> D-dorian tolling). Dev: ?district=oldcobble, ?arena=cloister. Full
+> chain verified end-to-end by scripted drive. Next: Voltside (Ch.4),
+> Kairo, Vey, the Undertide surfacing.
+
 
 - [ ] Hub engine: Tiled loader + schema validation, player controller, NPC controller
       (patrols, interaction prompts, condition-matched dialogue), triggers, gates,
