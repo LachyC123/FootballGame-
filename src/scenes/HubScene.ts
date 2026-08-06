@@ -113,6 +113,10 @@ export class HubScene extends Phaser.Scene {
   private lastObjective: string | null = null;
   private touchGfx!: Phaser.GameObjects.Graphics;
   private aLabel!: Phaser.GameObjects.Text;
+  // Point-and-click movement: tap the ground to walk, tap a person to talk.
+  private walkTarget: { x: number; y: number } | null = null;
+  private walkInteract: HubNpc | Gate | null = null;
+  private tapStart: { id: number; x: number; y: number; t: number } | null = null;
 
   constructor() {
     super('Hub');
@@ -266,11 +270,13 @@ export class HubScene extends Phaser.Scene {
       .setVisible(false);
     this.prompt.setInteractive({ useHandCursor: true });
     this.prompt.on('pointerdown', () => this.doInteract());
+    this.walkTarget = null;
+    this.walkInteract = null;
+    this.tapStart = null;
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.inDialogue || this.sequenceIndex >= 0 || !this.promptTarget) return;
-      const d = Math.hypot(pointer.worldX - this.promptTarget.x, pointer.worldY - this.promptTarget.y);
-      if (d < 36) this.doInteract();
+      this.tapStart = { id: pointer.id, x: pointer.worldX, y: pointer.worldY, t: this.time.now };
     });
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => this.onTap(pointer));
 
     this.game.events.on('dialogue-done', this.onDialogueDone, this);
     this.game.events.on('story-match-result', this.onMatchResult, this);
@@ -753,11 +759,30 @@ export class HubScene extends Phaser.Scene {
     const cmd = this.inputSvc.sample();
     const state = this.player.state;
 
+    // Movement: manual input wins; otherwise steer toward any tap target.
     const len = Math.hypot(cmd.moveX, cmd.moveY);
+    let mx = 0;
+    let my = 0;
     if (len > 0.15) {
-      state.vel.x = (cmd.moveX / Math.max(1, len)) * WALK_SPEED;
-      state.vel.y = (cmd.moveY / Math.max(1, len)) * WALK_SPEED;
-      state.facing = { x: cmd.moveX / len, y: cmd.moveY / len };
+      mx = cmd.moveX / Math.max(1, len);
+      my = cmd.moveY / Math.max(1, len);
+      this.walkTarget = null;
+      this.walkInteract = null;
+    } else if (this.walkTarget) {
+      const dx = this.walkTarget.x - state.pos.x;
+      const dy = this.walkTarget.y - state.pos.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 4) {
+        this.walkTarget = null;
+      } else {
+        mx = dx / d;
+        my = dy / d;
+      }
+    }
+    if (mx !== 0 || my !== 0) {
+      state.vel.x = mx * WALK_SPEED;
+      state.vel.y = my * WALK_SPEED;
+      state.facing = { x: mx, y: my };
       // Footsteps on the quay stones.
       this.stepClock += dt;
       if (this.stepClock > 0.34) {
@@ -768,6 +793,17 @@ export class HubScene extends Phaser.Scene {
     } else {
       state.vel.x = 0;
       state.vel.y = 0;
+    }
+    // Arrived next to a tapped person or gate? Interact without another press.
+    if (this.walkInteract) {
+      const t = this.walkInteract;
+      const range = 'label' in t ? (t as Gate).r : 26;
+      if (Math.hypot(t.x - state.pos.x, t.y - state.pos.y) < range) {
+        const target = t;
+        this.walkInteract = null;
+        this.walkTarget = null;
+        this.doInteract(target);
+      }
     }
     state.pos.x = Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, state.pos.x + state.vel.x * dt));
     state.pos.y = Math.min(BOUNDS.maxY, Math.max(BOUNDS.minY, state.pos.y + state.vel.y * dt));
@@ -815,19 +851,72 @@ export class HubScene extends Phaser.Scene {
     this.renderTouchUi();
   }
 
-  /** Fire the current prompt target — from the A button, a key, or a tap. */
-  private doInteract(): void {
-    if (this.inDialogue || this.sequenceIndex >= 0 || !this.promptTarget) return;
+  /** A finished tap (short, unmoved): walk there — or walk-and-interact. */
+  private onTap(pointer: Phaser.Input.Pointer): void {
+    if (!this.tapStart || pointer.id !== this.tapStart.id) return;
+    const moved = Math.hypot(pointer.worldX - this.tapStart.x, pointer.worldY - this.tapStart.y);
+    const held = this.time.now - this.tapStart.t;
+    this.tapStart = null;
+    if (held > 300 || moved > 12) return; // that was a stick drag, not a tap
+    if (this.inDialogue || this.sequenceIndex >= 0) return;
+    const tx = pointer.worldX;
+    const ty = pointer.worldY;
+    // Taps on the A button belong to the button.
+    if (Math.hypot(tx - (GAME_WIDTH - 40), ty - (GAME_HEIGHT - 40)) < 32) return;
+    // Tapped a person or a gate? Walk over and interact.
+    let best: HubNpc | Gate | null = null;
+    let bestD = 36;
+    for (const npc of this.npcs) {
+      const d = Math.hypot(npc.x - tx, npc.y - ty);
+      if (d < bestD) {
+        bestD = d;
+        best = npc;
+      }
+    }
+    for (const gate of this.gates) {
+      const d = Math.hypot(gate.x - tx, gate.y - ty);
+      if (d < Math.max(36, gate.r) && d < Math.max(bestD, gate.r)) {
+        bestD = d;
+        best = gate;
+      }
+    }
+    const state = this.player.state;
+    if (best) {
+      const range = 'label' in best ? (best as Gate).r : 26;
+      if (Math.hypot(best.x - state.pos.x, best.y - state.pos.y) < range) {
+        this.doInteract(best); // already close enough — just do it
+        return;
+      }
+      this.walkInteract = best;
+      this.walkTarget = {
+        x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, best.x)),
+        y: Math.min(BOUNDS.maxY, Math.max(BOUNDS.minY, best.y + 10)),
+      };
+      return;
+    }
+    // Plain ground: walk to the tap.
+    this.walkInteract = null;
+    this.walkTarget = {
+      x: Math.min(BOUNDS.maxX, Math.max(BOUNDS.minX, tx)),
+      y: Math.min(BOUNDS.maxY, Math.max(BOUNDS.minY, ty)),
+    };
+  }
+
+  /** Fire an interaction — from the A button, a key, or a tap. */
+  private doInteract(target: HubNpc | Gate | null = this.promptTarget): void {
+    if (this.inDialogue || this.sequenceIndex >= 0 || !target) return;
     this.prevInteract = true; // swallow the same press on the next sample
-    if ('label' in this.promptTarget) {
-      const gate = this.promptTarget as Gate;
+    this.walkTarget = null;
+    this.walkInteract = null;
+    if ('label' in target) {
+      const gate = target as Gate;
       if (gate.locked()) {
         this.sfxp.play('uiClick', 0.3, 400);
       } else {
         gate.action();
       }
     } else {
-      const npc = this.promptTarget as HubNpc;
+      const npc = target as HubNpc;
       this.sfxp.play('uiSelect', 0.4);
       this.inDialogue = true;
       this.inputSvc.reset();

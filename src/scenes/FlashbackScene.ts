@@ -32,13 +32,26 @@ export class FlashbackScene extends Phaser.Scene {
   private card!: Phaser.GameObjects.Text;
   private overlay!: Phaser.GameObjects.Rectangle;
   private crowd!: Phaser.GameObjects.Graphics;
+  // Whoever is dribbling: the ball rides at their feet with a touch rhythm
+  // instead of drifting on its own tween.
+  private carrier: Phaser.GameObjects.Sprite | null = null;
+  private carryLead = { x: 9, y: 5 };
 
   constructor() {
     super('Flashback');
   }
 
+  override update(): void {
+    if (!this.carrier) return;
+    // Push-and-catch: the ball surges a few px ahead of the boot and waits.
+    const pulse = (Math.sin(this.time.now * 0.014) + 1) / 2; // 0..1
+    this.ball.x = this.carrier.x + this.carryLead.x + this.carryLead.x * 0.5 * pulse;
+    this.ball.y = this.carrier.y + this.carryLead.y + 1 * pulse;
+  }
+
   create(): void {
     this.beat = 0;
+    this.carrier = null;
     this.sfxp = new SfxPlayer(this);
     music.stop(500);
     this.drawSepiaNetyard();
@@ -114,11 +127,13 @@ export class FlashbackScene extends Phaser.Scene {
     const reduced = loadSettings().reducedMotion;
     switch (this.beat) {
       case 0: {
-        // Ash dribbles toward the right goal, Kairo makes his run.
-        this.tweens.add({ targets: [this.ash], x: 220, duration: 1600 });
-        this.tweens.add({ targets: [this.ball], x: 230, y: 152, duration: 1600 });
-        this.tweens.add({ targets: [this.kairo], x: 330, y: 100, duration: 1600 });
-        this.tweens.add({ targets: [this.defender], x: 268, duration: 1600 });
+        // Ash dribbles toward the right goal, Kairo makes his run. The ball
+        // rides Ash's boot (update loop), it doesn't float on its own.
+        this.carrier = this.ash;
+        this.carryLead = { x: 9, y: 5 };
+        this.tweens.add({ targets: [this.ash], x: 220, duration: 1600, ease: 'Sine.easeInOut' });
+        this.tweens.add({ targets: [this.kairo], x: 330, y: 100, duration: 1600, ease: 'Sine.easeOut' });
+        this.tweens.add({ targets: [this.defender], x: 268, duration: 1600, ease: 'Sine.easeInOut' });
         this.wait(1700, () => this.next());
         break;
       }
@@ -133,54 +148,84 @@ export class FlashbackScene extends Phaser.Scene {
         // Whatever was pressed: Ash shoots.
         this.tweens.killTweensOf(this.promptText);
         this.promptText.setAlpha(1).setText('');
+        this.carrier = null; // the ball leaves the boot
         this.ash.setFrame(17); // E-row kick contact
         this.sfxp.play('shot', 0.9);
         this.tweens.add({
           targets: this.ball,
           x: 452,
           y: 118,
-          duration: 260,
+          duration: 230,
           ease: 'Linear',
           onComplete: () => {
-            // Clang. Off the frame.
+            // Clang. Off the frame — a hard kick-back that dies into a roll.
             this.sfxp.play('post', 1);
             if (!reduced) this.cameras.main.shake(90, 0.004);
-            this.tweens.add({ targets: this.ball, x: 300, y: 170, duration: 500 });
-          },
-        });
-        this.wait(1400, () => this.next());
-        break;
-      }
-      case 3: {
-        // The counter: their kid takes it the other way and scores.
-        this.rival.setFlipX(false);
-        this.tweens.add({ targets: this.rival, x: 120, y: 160, duration: 1100 });
-        this.tweens.add({
-          targets: this.ball,
-          x: 110,
-          y: 162,
-          duration: 1000,
-          onComplete: () => {
+            this.ball.setScale(0.6, 1.3); // impact squash
+            this.tweens.add({ targets: this.ball, scaleX: 1, scaleY: 1, duration: 140 });
             this.tweens.add({
               targets: this.ball,
-              x: 24,
-              y: 135,
-              duration: 220,
+              x: 330,
+              y: 152,
+              duration: 380,
+              ease: 'Cubic.easeOut',
               onComplete: () => {
-                this.sfxp.play('bell', 0.5, -400);
-                this.overlay.setFillStyle(0x1a1520, 0.45); // the colour drains
-                this.card.setText('');
-                // The crowd goes quiet — and then it goes away.
-                this.tweens.add({ targets: this.crowd, alpha: 0.12, duration: 1800 });
+                this.tweens.add({ targets: this.ball, x: 318, y: 156, duration: 450, ease: 'Sine.easeOut' });
               },
             });
           },
         });
-        this.wait(2100, () => this.next());
+        this.wait(1500, () => this.next());
+        break;
+      }
+      case 3: {
+        // The counter: their kid collects the loose ball, carries it the
+        // whole way, and buries it. Pick up → dribble → finish.
+        this.rival.setFlipX(false);
+        this.tweens.add({
+          targets: this.rival,
+          x: 328,
+          y: 150,
+          duration: 420,
+          ease: 'Sine.easeOut',
+          onComplete: () => {
+            this.carrier = this.rival;
+            this.carryLead = { x: -9, y: 5 };
+            this.rival.setFlipX(true);
+            this.tweens.add({
+              targets: this.rival,
+              x: 118,
+              y: 158,
+              duration: 1050,
+              ease: 'Sine.easeInOut',
+              onComplete: () => {
+                this.carrier = null;
+                this.rival.setFrame(17);
+                this.sfxp.play('shot', 0.7);
+                this.tweens.add({
+                  targets: this.ball,
+                  x: 24,
+                  y: 135,
+                  duration: 210,
+                  ease: 'Linear',
+                  onComplete: () => {
+                    this.sfxp.play('bell', 0.5, -400);
+                    this.overlay.setFillStyle(0x1a1520, 0.45); // the colour drains
+                    this.card.setText('');
+                    // The crowd goes quiet — and then it goes away.
+                    this.tweens.add({ targets: this.crowd, alpha: 0.12, duration: 1800 });
+                  },
+                });
+              },
+            });
+          },
+        });
+        this.wait(2400, () => this.next());
         break;
       }
       case 4: {
         // Silence. Kairo turns and walks off.
+        this.carrier = null; // in case the beat was skipped mid-dribble
         this.kairo.setFlipX(true);
         this.tweens.add({ targets: this.kairo, x: 460, alpha: 0.4, duration: 1600 });
         this.ash.setFrame(9); // stumble/dejected pose
